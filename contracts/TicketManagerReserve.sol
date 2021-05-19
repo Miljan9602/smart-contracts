@@ -37,7 +37,7 @@ contract TicketManagerReserve is HordUpgradable, ReentrancyGuard {
      @param amount is the token amount to be withdrew
      */
     function withdrawToken(address beneficiary, address token, uint256 amount) external onlyHordCongress nonReentrant {
-        require(token != address(this), "TicketManagerReserve: Can not withdraw to TicketManagerReserve contract");
+        require(beneficiary != address(this), "TicketManagerReserve: Can not withdraw to TicketManagerReserve contract");
         require(IERC20(token).balanceOf[address(this)] >= amount, "TicketManagerReserve: Insufficient balance");
         require(IERC20(token).transfer(beneficiary, amount));
         emit WithdrawToken(beneficiary, token, amount);
