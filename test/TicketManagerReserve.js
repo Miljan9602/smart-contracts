@@ -99,7 +99,7 @@ async function setupContracts () {
     ticketManagerReserveContract = ticketManagerReserve.connect(owner);
 }
 
-describe('HordTicketFactory & HordTicketManager Test', () => {
+describe('TicketManagerReserve Test', () => {
     before('setup contracts', async () => {
         await setupAccounts();
         await setupContracts()
