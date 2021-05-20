@@ -7,13 +7,9 @@ const { ethers, expect, isEthException, awaitTx, toHordDenomination, waitForSome
 const hre = require("hardhat");
 
 
-let hordCongress, hordCongressAddress, accounts, owner, ownerAddr, maintainer, maintainerAddr,
-    user, userAddress, config,
-    hordToken, maintainersRegistryContract, ticketFactoryContract, ticketManagerContract,
-    championId, supplyToMint, tx, tokenId, lastAddedId, ticketsToBuy, reservedTickets,
-    hordBalance, ticketsBalance, amountStaked,
-    ticketManagerReserveContract,
-    keyToken
+let hordCongress, hordCongressAddress, accounts, owner, ownerAddr, alice, aliceAddress, bob, bobAddress, maintainer, maintainerAddr,
+    config,
+    hordToken, keyToken, maintainersRegistryContract, ticketManagerReserveContract;
 
 async function setupAccounts () {
     config = configuration[hre.network.name];
@@ -112,12 +108,14 @@ describe('HordTicketFactory & HordTicketManager Test', () => {
     describe('Deposit and Withdraw ERC20 tokens', async() => {
         it('shoud NOT withdraw from the contract with zero token amount', async() => {
             ticketManagerReserveContract = ticketManagerReserveContract.connect(hordCongress);
-            await expect(ticketManagerReserveContract.withdrawToken(ownerAddr, hordToken.address, toHordDenomination(10))).to.be.revertedWith("TicketManagerReserve: Insufficient balance");
+            await expect(ticketManagerReserveContract.withdrawToken(ownerAddr, hordToken.address, toHordDenomination(10)))
+            .to.be.revertedWith("TicketManagerReserve: Insufficient balance");
         });
 
         it('shoud NOT withdraw to the same contract', async() => {
             ticketManagerReserveContract = ticketManagerReserveContract.connect(hordCongress);
-            await expect(ticketManagerReserveContract.withdrawToken(ticketManagerReserveContract.address, hordToken.address, toHordDenomination(10))).to.be.revertedWith("TicketManagerReserve: Can not withdraw to TicketManagerReserve contract");
+            await expect(ticketManagerReserveContract.withdrawToken(ticketManagerReserveContract.address, hordToken.address, toHordDenomination(10)))
+            .to.be.revertedWith("TicketManagerReserve: Can not withdraw to TicketManagerReserve contract");
         });
 
         it('shoud deposit HORD ERC20 token', async() => {
@@ -159,7 +157,8 @@ describe('HordTicketFactory & HordTicketManager Test', () => {
         });
 
         it('shoud NOT be withdrawn ERC20 token by non-congress address', async() => {           
-            await expect(ticketManagerReserveContract.connect(owner).withdrawToken(aliceAddress, hordToken.address, toHordDenomination(1))).to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
+            await expect(ticketManagerReserveContract.connect(owner).withdrawToken(aliceAddress, hordToken.address, toHordDenomination(1)))
+            .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
         it('shoud withdraw ERC20 token', async() => {          
@@ -186,12 +185,14 @@ describe('HordTicketFactory & HordTicketManager Test', () => {
     describe('Deposit and Withdraw Ether', async() => {
         it('shoud NOT withdraw from the contract with zero token amount', async() => {
             ticketManagerReserveContract = ticketManagerReserveContract.connect(hordCongress);
-            await expect(ticketManagerReserveContract.withdrawEther(aliceAddress, toHordDenomination(10))).to.be.revertedWith("TicketManagerReserve: Failed to send Ether");
+            await expect(ticketManagerReserveContract.withdrawEther(aliceAddress, toHordDenomination(10)))
+            .to.be.revertedWith("TicketManagerReserve: Failed to send Ether");
         });
 
         it('shoud NOT withdraw to the same contract', async() => {
             ticketManagerReserveContract = ticketManagerReserveContract.connect(hordCongress);
-            await expect(ticketManagerReserveContract.withdrawEther(ticketManagerReserveContract.address, toHordDenomination(10))).to.be.revertedWith("TicketManagerReserve: Can not withdraw to TicketManagerReserve contract");
+            await expect(ticketManagerReserveContract.withdrawEther(ticketManagerReserveContract.address, toHordDenomination(10)))
+            .to.be.revertedWith("TicketManagerReserve: Can not withdraw to TicketManagerReserve contract");
         });
 
         it('shoud deposit Ether', async() => {
@@ -204,7 +205,8 @@ describe('HordTicketFactory & HordTicketManager Test', () => {
         });
 
         it('shoud NOT withdraw Ether by non-congress address', async() => {           
-            await expect(ticketManagerReserveContract.connect(owner).withdrawEther(aliceAddress, ethers.utils.parseEther("0.1"))).to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
+            await expect(ticketManagerReserveContract.connect(owner).withdrawEther(aliceAddress, ethers.utils.parseEther("0.1")))
+            .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
         it('shoud withdraw Ether', async() => {          
