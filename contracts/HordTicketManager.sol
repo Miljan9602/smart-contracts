@@ -1,7 +1,7 @@
 pragma solidity ^0.6.12;
 
 import "./interfaces/IERC20.sol";
-import "./system/HordUpgradable.sol";
+import "./system/HordMiddleware.sol";
 import "./interfaces/IHordTicketFactory.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155HolderUpgradeable.sol";
 import "./libraries/SafeMath.sol";
@@ -12,7 +12,7 @@ import "./libraries/SafeMath.sol";
  * Date created: 11.5.21.
  * Github: madjarevicn
  */
-contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
+contract HordTicketManager is ERC1155HolderUpgradeable, HordMiddleware {
     using SafeMath for *;
     // Minimal time to stake in order to be eligible for claiming NFT
     uint256 public minTimeToStake;

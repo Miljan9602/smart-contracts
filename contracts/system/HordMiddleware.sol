@@ -9,7 +9,7 @@ import "../interfaces/IMaintainersRegistry.sol";
  * Date created: 8.5.21.
  * Github: madjarevicn
  */
-contract HordUpgradable {
+contract HordMiddleware {
 
     address public hordCongress;
     IMaintainersRegistry public maintainersRegistry;

@@ -1,7 +1,7 @@
 pragma solidity ^0.6.12;
 
 import "./interfaces/IERC20.sol";
-import "./system/HordUpgradable.sol";
+import "./system/HordMiddleware.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 /**
@@ -10,7 +10,8 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
  * Date created: 18.5.21.
  * Github: 0xKey
  */
-contract TicketManagerReserve is HordUpgradable, ReentrancyGuardUpgradeable {
+contract TicketManagerReserve is ReentrancyGuardUpgradeable, HordMiddleware {
+
     event DepositEther(address indexed depositor, uint256 amount);
     event WithdrawEther(address indexed beneficiary, uint256 amount);
     event DepositToken(address indexed depositor, address indexed token, uint256 amount);
