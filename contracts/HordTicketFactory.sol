@@ -1,12 +1,12 @@
 //"SPDX-License-Identifier: UNLICENSED"
-pragma solidity ^0.6.12;
+pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155PausableUpgradeable.sol";
 import "./system/HordUpgradable.sol";
 import "./interfaces/IHordTicketManager.sol";
 
 /**
- * HordTicketManager contract.
+ * HordTicketFactory contract.
  * @author Nikola Madjarevic
  * Date created: 8.5.21.
  * Github: madjarevicn
@@ -17,6 +17,8 @@ contract HordTicketFactory is HordUpgradable, ERC1155PausableUpgradeable {
     uint256 public lastMintedTokenId;
     // Maximal number of fungible tickets per Pool
     uint256 public maxFungibleTicketsPerPool;
+    // Maximal number of fungible tickets per Pool
+    mapping (uint256 => uint256) tokenIdToMaxFungibleTicketsPerPool;
     // Mapping token ID to minted supply
     mapping (uint256 => uint256) tokenIdToMintedSupply;
 
@@ -104,6 +106,9 @@ contract HordTicketFactory is HordUpgradable, ERC1155PausableUpgradeable {
         require(initialSupply <= maxFungibleTicketsPerPool, "MintNewHPoolNFT: Initial supply overflow.");
         require(tokenId == lastMintedTokenId.add(1), "MintNewHPoolNFT: Token ID is wrong.");
 
+        // Store maximal fungible tickets per pool at the moment of token creation
+        tokenIdToMaxFungibleTicketsPerPool[tokenId] = maxFungibleTicketsPerPool;
+
         // Set initial supply
         tokenIdToMintedSupply[tokenId] = initialSupply;
 
@@ -132,7 +137,7 @@ contract HordTicketFactory is HordUpgradable, ERC1155PausableUpgradeable {
     onlyMaintainer
     {
         require(tokenIdToMintedSupply[tokenId] > 0, "AddTokenSupply: Firstly MINT token, then expand supply.");
-        require(tokenIdToMintedSupply[tokenId].add(supplyToAdd) <= maxFungibleTicketsPerPool, "More than allowed.");
+        require(tokenIdToMintedSupply[tokenId].add(supplyToAdd) <= tokenIdToMaxFungibleTicketsPerPool[tokenId], "More than allowed.");
 
         _mint(address(hordTicketManager), tokenId, supplyToAdd, "0x0");
 
@@ -140,6 +145,22 @@ contract HordTicketFactory is HordUpgradable, ERC1155PausableUpgradeable {
         emit AddedNFTSupply(tokenId, supplyToAdd);
     }
 
+    /**
+     * @notice  Register max fungible tickets per pool for token id
+     * @param   tokenId is the ID of the token
+     * @param   _maximalFungibleTicketsPerPoolForTokenId is new maximal amount of tokens per pool
+     * @dev     used only for allowing adding token supply.
+     */
+    function setMaxFungibleTicketsPerPoolForTokenId(
+        uint tokenId,
+        uint _maximalFungibleTicketsPerPoolForTokenId
+    )
+    public
+    onlyMaintainer
+    {
+        require(tokenIdToMintedSupply[tokenId] <= _maximalFungibleTicketsPerPoolForTokenId);
+        tokenIdToMaxFungibleTicketsPerPool[tokenId] = _maximalFungibleTicketsPerPoolForTokenId;
+    }
 
     /**
      * @notice  Get total supply minted for tokenId

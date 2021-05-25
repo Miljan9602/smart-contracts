@@ -235,7 +235,9 @@ describe('HordTicketFactory & HordTicketManager Test', () => {
     describe('Claiming tickets', async() => {
         it('should NOT BE ABLE claim NFT tickets and withdraw amount staked', async() => {
             ticketManagerContract = ticketManagerContract.connect(user);
-            tx = await awaitTx(ticketManagerContract.claimNFTs(tokenId));
+            let startIndex = 0;
+            let endIndex = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId);
+            tx = await awaitTx(ticketManagerContract.claimNFTs(tokenId, startIndex, endIndex));
             expect(tx.events.length).to.equal(0);
         });
 
@@ -252,7 +254,9 @@ describe('HordTicketFactory & HordTicketManager Test', () => {
 
         it('should claim NFT tickets and withdraw amount staked', async() => {
             ticketManagerContract = ticketManagerContract.connect(user);
-            tx = await awaitTx(ticketManagerContract.claimNFTs(tokenId));
+            let startIndex = 0;
+            let endIndex = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId);
+            tx = await awaitTx(ticketManagerContract.claimNFTs(tokenId, startIndex, endIndex));
             expect(tx.events.length).to.equal(3);
             expect(tx.events[2].event).to.equal('NFTsClaimed');
         });

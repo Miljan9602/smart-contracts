@@ -1,4 +1,4 @@
-pragma solidity ^0.6.12;
+pragma solidity 0.6.12;
 
 import "./interfaces/IERC20.sol";
 import "./system/HordUpgradable.sol";
@@ -185,7 +185,9 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
      * @param   tokenId is representing token class for which user has performed stake
      */
     function claimNFTs(
-        uint tokenId
+        uint tokenId,
+        uint startIndex,
+        uint endIndex
     )
     public
     {
@@ -194,8 +196,8 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
         uint256 totalStakeToWithdraw;
         uint256 ticketsToWithdraw;
 
-        uint256 i = 0;
-        while (i < userStakesForNft.length) {
+        uint256 i = startIndex;
+        while (i < userStakesForNft.length && i < endIndex) {
             UserStake storage stake = userStakesForNft[i];
 
             if(stake.isWithdrawn || stake.unlockingTime > block.timestamp) {
@@ -340,4 +342,19 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
         return championIdToMintedTokensIds[championId];
     }
 
+    /**
+     * @notice  Function to get number of stakes for user and token
+     * @param   user is the address of selected user
+     * @param   tokenId is the ID of the token
+     */
+    function getNumberOfStakesForUserAndToken(
+        address user,
+        uint tokenId
+    )
+    external
+    view
+    returns (uint256)
+    {
+        return addressToTokenIdToStakes[user][tokenId].length;
+    }
 }
