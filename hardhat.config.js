@@ -63,8 +63,8 @@ module.exports = {
       url: 'https://mainnet.infura.io/v3/1692a3b8ad92406189c2c7d2b01660bc',
       accounts: [process.env.PK],
       chainId: 1,
-      gasPrice: 43000000000, // 44 GWEI gas price for deployment.
-      timeout: 10000000
+      gasPrice: 45000000000, // 44 GWEI gas price for deployment.
+      timeout: 900000000
     },
     local: {
       url: 'http://localhost:8545',
