@@ -56,7 +56,8 @@
     "minTimeToStake": 2592000,
     "minAmountToStake": 3000,
     "maxFungibleTicketsPerPool": 100,
-    "uri": "https://api.hord.app/hpool_nft/metadata",
+    "uri": "https://api.hord.app/hpool_nft_metadata?id={id}",
+    "contractMetadataUri": "https://api.hord.app/hpool_nft/metadata",
     "maintainers": [
       "0x60d389237410bCD37948F08B7c7A55104c4D1d18",
       "0x2f3bf83Fdb4f57b943E7dD248eCe7Ea7493D4C50",
