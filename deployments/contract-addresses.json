@@ -2,7 +2,10 @@
     "mainnet": {
         "HordCongress": "0x604faB7ce497059eb87c86399eD7467d1A82517f",
         "HordCongressMembersRegistry": "0xfB3bE996A28fc3bA9f7fD21a40F66D225e1312ef",
-        "HordToken": "0x43A96962254855F16b925556f9e97BE436A43448"
+        "HordToken": "0x43A96962254855F16b925556f9e97BE436A43448",
+        "MaintainersRegistry": "0x9aAD99aE3e2E1f1169144dbf3a969e6D9E5838Ac",
+        "HordTicketManager": "0xD9F4f990744b26B2ac315afbBD85f0f345330f84",
+        "HordTicketFactory": "0x4DEebb678AB3a6e8dA63309b6DCe368d343C552a"
     },
     "ropsten": {
         "HordCongress": "0x4981B3d3CBa6fE660A4DA390a31b83e8dC28e40D",

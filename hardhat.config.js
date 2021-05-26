@@ -60,7 +60,7 @@ module.exports = {
     },
     mainnet: {
       // Infura public nodes
-      url: 'https://mainnet.infura.io/v3/1692a3b8ad92406189c2c7d2b01660bc',
+      url: 'https://mainnet.tenderly.co',
       accounts: [process.env.PK],
       chainId: 1,
       gasPrice: 45000000000, // 44 GWEI gas price for deployment.
