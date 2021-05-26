@@ -1,46 +1,56 @@
 const hre = require('hardhat');
+const fetch = require('axios');
+const { getSavedContractAddresses, getSavedContractProxies } = require('../scripts/utils');
+const { generateTenderlySlug, checksumNetworkAndBranch, toCamel } = require('../scripts/helpers/helpers')
 
-const { getSavedContractAddresses } = require('../scripts/utils');
-const branch = require('git-branch');
-const assert = require('assert');
+require('dotenv').config();
 
-const toCamel = (s) => {
-    return s.replace(/([-_][a-z])/ig, ($1) => {
-        return $1.toUpperCase()
-            .replace('-', '')
-            .replace('_', '');
-    });
-};
+const tenderlyPush = async (contracts, slug) => {
+    const axios = require('axios')
+    await axios.post(`https://api.tenderly.co/api/v1/account/2key/project/${generateTenderlySlug()}/addresses`, {
+        "contracts" : contracts
+    }, {
+        headers: {
+            'Content-Type': 'application/json',
+            'x-access-key' : process.env.ACCESS_KEY
+        }
+    })
+        .then(res => {
+            console.log(`statusCode: ${res.status} ✅`);
+        })
+        .catch(error => {
+            console.error(error)
+        });
+}
 
-const checksumNetworkAndBranch = (network, branch) => {
-    if(network === 'ropsten') {
-        assert.strictEqual(branch ,'develop','Wrong branch');
-    }
-    else if(network === 'ropstenStaging') {
-        assert.strictEqual(branch ,'staging','Wrong branch');
-    }
-    else if(network === 'mainnet') {
-        assert.strictEqual(branch ,'master','Wrong branch');
-    } else {
-        new Error('Wrong network configuration')
-    }
-};
 
 async function main() {
-    const gitBranch = branch.sync();
-
-    checksumNetworkAndBranch(hre.network.name, gitBranch);
+    checksumNetworkAndBranch(hre.network.name);
     const contracts = getSavedContractAddresses()[hre.network.name]
+    const proxies = getSavedContractProxies()[hre.network.name];
 
-    let contractsToPush = [];
+    const contractsToPush = [];
+    // Implementations
     Object.keys(contracts).forEach(name => {
         contractsToPush.push({
             name: toCamel(name),
             address: contracts[name]
         })
     });
-    console.log(contractsToPush);
+
     await hre.tenderly.push(...contractsToPush)
+
+    const payload = [];
+
+    Object.keys(proxies).forEach(name => {
+        payload.push({
+            "network_id": hre.network.config.chainId.toString(),
+            "address": proxies[name],
+            "display_name": name+'Proxy'
+        });
+    });
+
+    await tenderlyPush(payload);
 }
 
 main()

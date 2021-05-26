@@ -4,7 +4,8 @@ require("@nomiclabs/hardhat-web3")
 require('@openzeppelin/hardhat-upgrades')
 require("@tenderly/hardhat-tenderly");
 require('dotenv').config();
-const branch = require('git-branch');
+
+const { generateTenderlySlug } = require('./scripts/helpers/helpers');
 
 
 
@@ -15,17 +16,6 @@ task('accounts', 'Prints the list of accounts', async () => {
   }
 })
 
-const branchToSlug = {
-  "develop" : "hord-test",
-  "staging" : "hord-staging",
-  "master" : "hord-prod",
-}
-
-const generateTenderlySlug = () => {
-  let gitBranch = branch.sync();
-  console.log(branchToSlug[gitBranch]);
-  return branchToSlug[gitBranch];
-}
 
 // You have to export an object to set up your config
 // This object can have the following optional entries:
