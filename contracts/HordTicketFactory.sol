@@ -80,6 +80,18 @@ contract HordTicketFactory is HordUpgradable, ERC1155PausableUpgradeable {
     }
 
     /**
+     * @notice  Function to set uri, callable only by congress
+     */
+    function setNewUri(
+        string memory _newUri
+    )
+    public
+    onlyHordCongress
+    {
+        _setURI(_newUri);
+    }
+
+    /**
      * @notice Set maximal fungible tickets possible to mint per pool (pool == class == tokenId)
      */
     function setMaxFungibleTicketsPerPool(
