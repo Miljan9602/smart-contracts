@@ -1,12 +1,18 @@
 {
     "local": {
-        "MaintainersRegistry": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
-        "HordTicketManager": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
-        "HordTicketFactory": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"
+        "MaintainersRegistry": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+        "HordTicketManager": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+        "HordTicketFactory": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
     },
     "ropsten": {
-        "MaintainersRegistry": "0x97d938Cfd462bA4b322cc76bf0A94B83Bfce628C",
-        "HordTicketManager": "0x9cF8945B671950FE2414f26c6B73cCeE593FcaC4",
-        "HordTicketFactory": "0x23bB7384a3e74AC0D0abe4bB0A5BC9dEeE18dc06"
+        "MaintainersRegistry": "0xAEE26e9af071a40F8AE83EDF5478810d5F1971a6",
+        "HordTicketManager": "0xACF8D0f8D17725b7E3750951f31C631BC310A90e",
+        "HordTicketFactory": "0xd493Ba925F3260522127D42d95673827B87B8748"
+    },
+    "mainnet": {
+        "MaintainersRegistry": "0x03B93C3bcbc5422A3d9deADAD764ce55A7c4F03b",
+        "HordTicketManager": "0x3083f888A3b9Fd334dBe230c9AEE5555da754f04",
+        "HordTicketFactory": "0x32AA07E6ebF2340eeF1f717197ade6982B815536",
+        "ProxyAdmin": "0x8b3558B725e941dAd8f587A40E86721cb3082125"
     }
 }
