@@ -36,7 +36,8 @@ async function main() {
             maintainersRegistry.address,
             hordTicketManager.address,
             config["maxFungibleTicketsPerPool"],
-            config["uri"]
+            config["uri"],
+            config["contractMetadataUri"]
         ]
     );
     await hordTicketFactory.deployed()
@@ -60,6 +61,8 @@ async function main() {
     let ticketFactoryImplementation = await admin.getProxyImplementation(hordTicketFactory.address);
     console.log('HordTicketFactory Implementation: ', ticketFactoryImplementation);
     saveContractAddress(hre.network.name, 'HordTicketFactory', ticketFactoryImplementation);
+
+    saveContractProxies(hre.network.name, 'ProxyAdmin', admin.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
