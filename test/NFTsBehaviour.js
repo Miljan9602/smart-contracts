@@ -68,7 +68,8 @@ async function setupContracts () {
             maintainersRegistry.address,
             hordTicketManager.address,
             config["maxFungibleTicketsPerPool"],
-            config["uri"]
+            config["uri"],
+            config["contractMetadataUri"]
         ]
     );
     await hordTicketFactory.deployed()

@@ -79,7 +79,8 @@ async function setupContracts () {
             maintainersRegistry.address,
             hordTicketManager.address,
             config["maxFungibleTicketsPerPool"],
-            config["uri"]
+            config["uri"],
+            config["contractMetadataUri"]
         ]
     );
     await hordTicketFactory.deployed()
@@ -144,7 +145,7 @@ describe('TicketManagerReserve Test', () => {
             // Approve KEY ERC20 token
             keyToken.connect(alice).approve(ticketManagerReserveContract.address, toHordDenomination(10));
             keyToken.connect(bob).approve(ticketManagerReserveContract.address, toHordDenomination(10));
-            
+
             // Deposit KEY ERC20 tokesn
             await ticketManagerReserveContract.connect(alice).depositToken(keyToken.address, toHordDenomination(10));
             tokenBalance = await ticketManagerReserveContract.getTokenBalance(keyToken.address)
@@ -153,15 +154,15 @@ describe('TicketManagerReserve Test', () => {
             await ticketManagerReserveContract.connect(bob).depositToken(keyToken.address, toHordDenomination(10));
             tokenBalance = await ticketManagerReserveContract.getTokenBalance(keyToken.address)
             expect(tokenBalance).to.be.equal(toHordDenomination(20));
-            
+
         });
 
-        it('shoud NOT be withdrawn ERC20 token by non-congress address', async() => {           
+        it('shoud NOT be withdrawn ERC20 token by non-congress address', async() => {
             await expect(ticketManagerReserveContract.connect(owner).withdrawToken(aliceAddress, hordToken.address, toHordDenomination(1)))
             .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
-        it('shoud withdraw ERC20 token', async() => {          
+        it('shoud withdraw ERC20 token', async() => {
             // Withdraw Hord ERC20 token
             await ticketManagerReserveContract.connect(hordCongress).withdrawToken(aliceAddress, hordToken.address, toHordDenomination(1));
 
@@ -204,17 +205,17 @@ describe('TicketManagerReserve Test', () => {
             expect(ethBalance).to.be.equal(ethers.utils.parseEther("1"));
         });
 
-        it('shoud NOT withdraw Ether by non-congress address', async() => {           
+        it('shoud NOT withdraw Ether by non-congress address', async() => {
             await expect(ticketManagerReserveContract.connect(owner).withdrawEther(aliceAddress, ethers.utils.parseEther("0.1")))
             .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
-        it('shoud withdraw Ether', async() => {          
+        it('shoud withdraw Ether', async() => {
             let oldContractEthBalance = await ticketManagerReserveContract.getEtherBalance();
             let oldBobEthBalance = await bob.getBalance();
 
             await ticketManagerReserveContract.connect(hordCongress).withdrawEther(bobAddress, ethers.utils.parseEther("0.1"));
-            
+
             let newEthBalance = await ticketManagerReserveContract.getEtherBalance();
             let newBobEthBalance = await bob.getBalance();
 
