@@ -24,19 +24,25 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
     uint256 public constant one = 10e18;
 
+
     struct hPool {
         PoolState poolState;
         uint256 championEthDeposit;
         address championAddress;
         uint256 createdAt;
         uint256 nftTicketId;
-        uint256 followersEthDeposit;
         bool isValidated;
+        address [] subscribers;
+        uint256 [] subscriptionAmounts;
+        uint256 followersEthDeposit;
         address hPoolAddress;
     }
 
+
+
     // All hPools
     hPool [] hPools;
+
     // Support listing pools per champion
     mapping (address => uint[]) championAddressToHPoolIds;
 
@@ -105,21 +111,18 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         require(msg.value >= getMinimalETHToInitPool(), "ETH amount is less than minimal deposit.");
 
         // Create hPool structure
-        hPool memory hp = hPool({
-            poolState: PoolState.PENDING_INIT,
-            championEthDeposit: msg.value,
-            championAddress: msg.sender,
-            createdAt: block.timestamp,
-            nftTicketId: 0,
-            followersEthDeposit: 0,
-            isValidated: false,
-            hPoolAddress: address(0)
-        });
+        hPool memory hp;
+
+        hp.poolState= PoolState.PENDING_INIT;
+        hp.championEthDeposit= msg.value;
+        hp.championAddress= msg.sender;
+        hp.createdAt= block.timestamp;
 
         // Compute ID to match position in array
         uint poolId = hPools.length;
         // Push hPool structure
         hPools.push(hp);
+
         // Add Id to list of ids for champion
         championAddressToHPoolIds[msg.sender].push(poolId);
 
@@ -179,6 +182,14 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
+    function subscribeForHPool(
+        uint poolId
+    )
+    external
+    payable
+    {
+
+    }
 
     /**
      * @notice          Function to get minimal amount of ETH champion needs to
