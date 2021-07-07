@@ -45,11 +45,55 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
 
     event PoolInitRequested(uint256 poolId, address champion, uint256 championEthDeposit, uint256 timestamp);
+    event AggregatorInterfaceSet(address oracleAddress);
+    event TicketIdSetForPool(uint256 poolId, uint256 nftTicketId);
+    event HPoolStateChanged(uint256 poolId, PoolState newState);
+    event MinimalUSDToInitPoolSet(uint256 newMinimalAmountToInitPool);
+    event MaximalUSDAllocationPerTicket(uint256 newMaximalAllocationPerTicket);
+
 
     function initialize () initializer external {
 //        setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
     }
 
+
+    function setAggregatorInterface(
+        address linkOracleAddress
+    )
+    external
+    onlyMaintainer
+    {
+        require(linkOracleAddress != address(0), "Link oracle address can not be 0x0.");
+        linkOracle = AggregatorV3Interface(linkOracleAddress);
+
+        emit AggregatorInterfaceSet(linkOracleAddress);
+    }
+
+
+    function setMinimalUSDToInitPool(
+        uint256 _minUSDToInitPool
+    )
+    external
+    onlyMaintainer
+    {
+        require(_minUSDToInitPool != 0 , "Minimal USD to init pool must be > 0");
+        minUSDToInitPool = _minUSDToInitPool;
+
+        emit MinimalUSDToInitPoolSet(minUSDToInitPool);
+    }
+
+
+    function setMaxUSDAllocationPerTicket(
+        uint256 _maxUSDAllocationPerTicket
+    )
+    external
+    onlyMaintainer
+    {
+        require(_maxUSDAllocationPerTicket != 0 , "Maximal USD allocation per ticket can not be 0.");
+        maxUSDAllocationPerTicket = _maxUSDAllocationPerTicket;
+
+        emit MaximalUSDAllocationPerTicket(maxUSDAllocationPerTicket);
+    }
 
     function createHPool()
     external
@@ -78,10 +122,17 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hPools.push(hp);
         // Add Id to list of ids for champion
         championAddressToHPoolIds[msg.sender].push(poolId);
-        // Trigger event PoolInitRequested
+
+        // Trigger events
         emit PoolInitRequested(poolId, msg.sender, msg.value, block.timestamp);
+        emit HPoolStateChanged(poolId, hp.poolState);
     }
 
+
+    /**
+     * @notice          Function to set NFT for pool, which will at the same time validate the pool itself.
+     * @param           poolId is the ID of the pool contract.
+     */
     function setNftForPool(
         uint poolId,
         uint _nftTicketId
@@ -101,9 +152,17 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hp.isValidated = true;
         hp.nftTicketId = _nftTicketId;
         hp.poolState = PoolState.TICKET_SALE;
+
+        emit TicketIdSetForPool(poolId, hp.nftTicketId);
+        emit HPoolStateChanged(poolId, hp.poolState);
     }
 
 
+    /**
+     * @notice          Function to start subscription phase. Can be started only if previous
+     *                  state of the hPool was TICKET_SALE.
+     * @param           poolId is the ID of the pool contract.
+     */
     function startSubscriptionPhase(
         uint poolId
     )
@@ -116,43 +175,52 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         require(hp.poolState == PoolState.TICKET_SALE, "Bad state transition.");
         hp.poolState = PoolState.SUBSCRIPTION;
+
+        emit HPoolStateChanged(poolId, hp.poolState);
     }
 
 
-    function setAggregatorInterface(
-        address linkOracleAddress
-    )
-    external
-    onlyMaintainer
+    /**
+     * @notice          Function to get minimal amount of ETH champion needs to
+     *                  put in, in order to create hPool.
+     * @return         Amount of ETH (in WEI units)
+     */
+    function getMinimalETHToInitPool()
+    public
+    view
+    returns (uint256)
     {
-        require(linkOracleAddress != address(0), "Link oracle address can not be 0x0.");
-        linkOracle = AggregatorV3Interface(linkOracleAddress);
-    }
-
-
-    function getMinimalETHToInitPool() public view returns (uint256) {
-        uint256 latestPrice = uint256(getLatestETHPrice());
+        uint256 latestPrice = uint256(getLatestPrice());
         uint256 usdEThRate = one.mul(one).div(latestPrice);
         return usdEThRate.mul(minUSDToInitPool).div(one);
     }
 
 
     /**
-     * @notice          Function to fetch the latest token price from ChainLink oracle
+     * @notice          Function to get maximal amount of ETH user can subscribe with
+     *                  per 1 access ticket
+     * @return         Amount of ETH (in WEI units)
      */
-    function getLatestETHPrice()
+    function getMaxSubscriptionInETHPerTicket()
+    public
+    view
+    returns (uint256)
+    {
+        uint256 latestPrice = uint256(getLatestPrice());
+        uint256 usdEThRate = one.mul(one).div(latestPrice);
+        return usdEThRate.mul(maxUSDAllocationPerTicket).div(one);
+    }
+
+
+    /**
+     * @notice          Function to fetch the latest price of the stored oracle.
+     */
+    function getLatestPrice()
     public
     view
     returns (int)
     {
-        (
-            uint80 roundID,
-            int price,
-            uint startedAt,
-            uint timeStamp,
-            uint80 answeredInRound
-        ) = linkOracle.latestRoundData();
-
+        (,int price,,,) = linkOracle.latestRoundData();
         return price;
     }
 
@@ -160,14 +228,25 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     /**
      * @notice          Function to fetch on how many decimals is the response
      */
-    function getDecimalsReturnPrecision(
-        address oracleAddress
-    )
+    function getDecimalsReturnPrecision()
     public
     view
     returns (uint8)
     {
-        return AggregatorV3Interface(oracleAddress).decimals();
+        return linkOracle.decimals();
     }
 
+
+    /**
+     * @notice          Function to get IDs of all pools for the champion.
+     */
+    function getChampionPoolIds(
+        address champion
+    )
+    external
+    view
+    returns (uint256 [] memory)
+    {
+        return championAddressToHPoolIds[champion];
+    }
 }
