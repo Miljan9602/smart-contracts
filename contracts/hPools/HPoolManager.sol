@@ -21,9 +21,13 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
     uint256 public minUSDToInitPool;
     uint256 public maxUSDAllocationPerTicket;
-
     uint256 public constant one = 10e18;
 
+
+    struct Subscription {
+        address user;
+        uint256 amountEth;
+    }
 
     struct hPool {
         PoolState poolState;
@@ -32,24 +36,28 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 createdAt;
         uint256 nftTicketId;
         bool isValidated;
-        address [] subscribers;
-        uint256 [] subscriptionAmounts;
         uint256 followersEthDeposit;
         address hPoolAddress;
     }
 
-
+    // Instance of oracle
+    AggregatorV3Interface linkOracle;
 
     // All hPools
     hPool [] hPools;
 
+    // Map pool Id to all subscriptions
+    mapping(uint256 => Subscription[]) poolIdToSubscriptions;
+
+    // Mapping user to ids of all pools he has subscribed for
+    mapping(address => uint256[]) userToPoolIdsSubscribedFor;
+
     // Support listing pools per champion
     mapping (address => uint[]) championAddressToHPoolIds;
 
-    // Instance of oracle
-    AggregatorV3Interface linkOracle;
-
-
+    /**
+     * Events
+     */
     event PoolInitRequested(uint256 poolId, address champion, uint256 championEthDeposit, uint256 timestamp);
     event AggregatorInterfaceSet(address oracleAddress);
     event TicketIdSetForPool(uint256 poolId, uint256 nftTicketId);
