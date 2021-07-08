@@ -401,6 +401,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         return amountOfTicketsToUse;
     }
 
+
     /**
      * @notice          Function to get user subscription for the pool.
      * @param           poolId is the ID of the pool
