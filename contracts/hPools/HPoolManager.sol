@@ -28,6 +28,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     struct Subscription {
         address user;
         uint256 amountEth;
+        uint256 numberOfTickets;
     }
 
     struct hPool {
@@ -243,7 +244,27 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hPool storage hp = hPools[poolId];
         require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in SUBSCRIPTION state.");
 
-        //TODO: Implement flow for subscriptions
+        Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
+        require(s.amountEth == 0, "User can not subscribe more than once.");
+
+        uint256 numberOfTicketsToUse = getRequiredNumberOfTicketsToUse(msg.value);
+        require(numberOfTicketsToUse > 0);
+
+        hordTicketFactory.safeTransferFrom(
+            msg.sender,
+            address(this),
+            hp.nftTicketId,
+            numberOfTicketsToUse,
+            "0x0"
+        );
+
+        s.amountEth = msg.value;
+        s.numberOfTickets = numberOfTicketsToUse;
+        s.user = msg.sender;
+
+        // Store subscription
+        poolIdToSubscriptions[poolId].push(s);
+        userToPoolIdToSubscription[msg.sender][poolId] = s;
 
         emit Subscribed(poolId, msg.sender, msg.value);
     }
@@ -358,5 +379,24 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 maxUserSubscriptionPerTicket = getMaxSubscriptionInETHPerTicket();
 
         return numberOfTickets.mul(maxUserSubscriptionPerTicket);
+    }
+
+
+    /**
+     * @notice          Function to return required number of tickets for user to use in order to subscribe
+     *                  with selected amount
+     * @param           subscriptionAmount is the amount of ETH user wants to subscribe with.
+     */
+    function getRequiredNumberOfTicketsToUse(uint256 subscriptionAmount) public view returns (uint256) {
+
+        uint256 maxParticipationPerTicket = getMaxSubscriptionInETHPerTicket();
+        uint amountOfTicketsToUse = (subscriptionAmount).div(maxParticipationPerTicket);
+
+
+        if(subscriptionAmount.mul(maxParticipationPerTicket) < amountOfTicketsToUse) {
+            amountOfTicketsToUse++;
+        }
+
+        return amountOfTicketsToUse;
     }
 }
