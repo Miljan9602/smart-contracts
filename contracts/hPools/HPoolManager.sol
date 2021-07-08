@@ -241,7 +241,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     payable
     {
         hPool storage hp = hPools[poolId];
-        require(hp.poolState = PoolState.SUBSCRIPTION, "hPool is not in SUBSCRIPTION state.");
+        require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in SUBSCRIPTION state.");
 
         //TODO: Implement flow for subscriptions
 
@@ -332,6 +332,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     {
         return userToPoolIdsSubscribedFor[user];
     }
+
 
     /**
      * @notice          Function to compute how much user can currently subscribe in ETH for the hPool.
