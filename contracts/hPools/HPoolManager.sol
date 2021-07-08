@@ -47,11 +47,11 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     }
 
     // Instance of oracle
-    AggregatorV3Interface linkOracle;
+    AggregatorV3Interface public linkOracle;
     // Instance of hord ticket factory
-    IHordTicketFactory hordTicketFactory;
+    IHordTicketFactory public hordTicketFactory;
     // All hPools
-    hPool [] hPools;
+    hPool [] public hPools;
     // Map pool Id to all subscriptions
     mapping(uint256 => Subscription[]) poolIdToSubscriptions;
     // Map user address to pool id to his subscription for that pool
@@ -399,5 +399,27 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         }
 
         return amountOfTicketsToUse;
+    }
+
+    /**
+     * @notice          Function to get user subscription for the pool.
+     * @param           poolId is the ID of the pool
+     * @param           user is the address of user
+     * @return          amount of ETH user deposited and number of tickets taken from user.
+     */
+    function getUserSubscriptionForPool(
+        uint256 poolId,
+        address user
+    )
+    external
+    view
+    returns (uint256, uint256)
+    {
+        Subscription memory subscription = userToPoolIdToSubscription[user][poolId];
+
+        return (
+            subscription.amountEth,
+            subscription.numberOfTickets
+        );
     }
 }
