@@ -4,6 +4,7 @@ import "../system/HordMiddleware.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "../interfaces/AggregatorV3Interface.sol";
 import "../libraries/SafeMath.sol";
+import "../interfaces/IHordTicketFactory.sol";
 
 /**
  * HPoolManager contract.
@@ -43,12 +44,16 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     // Instance of oracle
     AggregatorV3Interface linkOracle;
 
+    // Instance of hord ticket factory
+    IHordTicketFactory hordTicketFactory;
+
     // All hPools
     hPool [] hPools;
 
     // Map pool Id to all subscriptions
     mapping(uint256 => Subscription[]) poolIdToSubscriptions;
-
+    // Map user address to pool id to his subscription for that pool
+    mapping(address => mapping(uint256 => Subscription)) userToPoolIdToSubscription;
     // Mapping user to ids of all pools he has subscribed for
     mapping(address => uint256[]) userToPoolIdsSubscribedFor;
 
@@ -66,11 +71,32 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     event MaximalUSDAllocationPerTicket(uint256 newMaximalAllocationPerTicket);
 
 
-    function initialize () initializer external {
-//        setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
+    /**
+     * @notice          Initializer function, can be called only once, replacing constructor
+     * @param           _hordCongress is the address of HordCongress contract
+     * @param           _maintainersRegistry is the address of the MaintainersRegistry contract
+     */
+    function initialize (
+        address _hordCongress,
+        address _maintainersRegistry,
+        address _hordTicketFactory
+    )
+    initializer
+    external
+    {
+        require(_hordCongress != address(0), "HordCongress address can not be 0x0.");
+        require(_maintainersRegistry != address(0), "MaintainersRegistry address can not be 0x0.");
+        require(_hordTicketFactory != address(0), "HordTicketFactory address can not be 0x0.");
+
+        setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
+        hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
     }
 
 
+    /**
+     * @notice          Function to set Chainlink Aggregator address
+     * @param           linkOracleAddress is the address of the oracle we're using.
+     */
     function setAggregatorInterface(
         address linkOracleAddress
     )
@@ -84,6 +110,10 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     }
 
 
+    /**
+     * @notice          Function to set minimal usd required for initializing pool
+     * @param           _minUSDToInitPool represents minimal amount of USD which is required to init pool, in WEI
+     */
     function setMinimalUSDToInitPool(
         uint256 _minUSDToInitPool
     )
@@ -97,6 +127,10 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     }
 
 
+    /**
+     * @notice          Function to set maximal USD allocation per NFT ticket holding
+     * @param           _maxUSDAllocationPerTicket is the maximal allocation in USD user can subscribe per ticket.
+     */
     function setMaxUSDAllocationPerTicket(
         uint256 _maxUSDAllocationPerTicket
     )
@@ -109,6 +143,12 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit MaximalUSDAllocationPerTicket(maxUSDAllocationPerTicket);
     }
 
+
+    /**
+     * @notice          Function where champion can create his pool.
+     *                  In case champion is not approved, maintainer can cancel his pool creation,
+     *                  and return him back the funds.
+     */
     function createHPool()
     external
     payable
@@ -190,14 +230,6 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
-    function subscribeForHPool(
-        uint poolId
-    )
-    external
-    payable
-    {
-
-    }
 
     /**
      * @notice          Function to get minimal amount of ETH champion needs to
@@ -267,5 +299,45 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     returns (uint256 [] memory)
     {
         return championAddressToHPoolIds[champion];
+    }
+
+
+    /**
+     * @notice          Function to get IDs of pools for which user subscribed
+     */
+    function getPoolsUserSubscribedFor(
+        address user
+    )
+    external
+    view
+    returns (uint256 [] memory)
+    {
+        return userToPoolIdsSubscribedFor[user];
+    }
+
+    /**
+     * @notice          Function to compute how much user can currently subscribe in ETH for the hPool.
+     */
+    function getMaxUserSubscriptionInETH(
+        address user,
+        uint256 poolId
+    )
+    public
+    view
+    returns (uint256)
+    {
+        hPool memory hp = hPools[poolId];
+
+        uint256 amountOfTickets = hordTicketFactory.balanceOf(user, hp.nftTicketId);
+        uint256 maxUserSubscriptionPerTicket = getMaxSubscriptionInETHPerTicket();
+
+        Subscription memory s = userToPoolIdToSubscription[user][poolId];
+
+        if(amountOfTickets.mul(maxUserSubscriptionPerTicket) <= s.amountEth) {
+            // Means user already participated something and doesn't have enough to add more.
+            return 0;
+        }
+
+        return amountOfTickets.mul(maxUserSubscriptionPerTicket).sub(s.amountEth);
     }
 }
