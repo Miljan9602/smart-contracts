@@ -20,17 +20,21 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     enum PoolState {PENDING_INIT, TICKET_SALE, SUBSCRIPTION}
 
 
+    // Minimal amount of USD to initialize pool (for champions)
     uint256 public minUSDToInitPool;
+    // Maximal USD allocation per Ticket
     uint256 public maxUSDAllocationPerTicket;
+    // Constant, representing 1ETH in WEI units.
     uint256 public constant one = 10e18;
 
-
+    // Subscription struct, represents subscription of user
     struct Subscription {
         address user;
         uint256 amountEth;
         uint256 numberOfTickets;
     }
 
+    // Hpool struct
     struct hPool {
         PoolState poolState;
         uint256 championEthDeposit;
@@ -44,13 +48,10 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
     // Instance of oracle
     AggregatorV3Interface linkOracle;
-
     // Instance of hord ticket factory
     IHordTicketFactory hordTicketFactory;
-
     // All hPools
     hPool [] hPools;
-
     // Map pool Id to all subscriptions
     mapping(uint256 => Subscription[]) poolIdToSubscriptions;
     // Map user address to pool id to his subscription for that pool
