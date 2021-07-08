@@ -56,7 +56,6 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     mapping(address => mapping(uint256 => Subscription)) userToPoolIdToSubscription;
     // Mapping user to ids of all pools he has subscribed for
     mapping(address => uint256[]) userToPoolIdsSubscribedFor;
-
     // Support listing pools per champion
     mapping (address => uint[]) championAddressToHPoolIds;
 
@@ -347,16 +346,16 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     {
         hPool memory hp = hPools[poolId];
 
-        uint256 amountOfTickets = hordTicketFactory.balanceOf(user, hp.nftTicketId);
-        uint256 maxUserSubscriptionPerTicket = getMaxSubscriptionInETHPerTicket();
-
         Subscription memory s = userToPoolIdToSubscription[user][poolId];
 
-        if(amountOfTickets.mul(maxUserSubscriptionPerTicket) <= s.amountEth) {
-            // Means user already participated something and doesn't have enough to add more.
+        if(s.amountEth > 0) {
+            // User already subscribed, can subscribe only once.
             return 0;
         }
 
-        return amountOfTickets.mul(maxUserSubscriptionPerTicket).sub(s.amountEth);
+        uint256 numberOfTickets = hordTicketFactory.balanceOf(user, hp.nftTicketId);
+        uint256 maxUserSubscriptionPerTicket = getMaxSubscriptionInETHPerTicket();
+
+        return numberOfTickets.mul(maxUserSubscriptionPerTicket);
     }
 }
