@@ -69,6 +69,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     event HPoolStateChanged(uint256 poolId, PoolState newState);
     event MinimalUSDToInitPoolSet(uint256 newMinimalAmountToInitPool);
     event MaximalUSDAllocationPerTicket(uint256 newMaximalAllocationPerTicket);
+    event Subscribed(uint poolId, address user, uint amountETH);
 
 
     /**
@@ -228,6 +229,24 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hp.poolState = PoolState.SUBSCRIPTION;
 
         emit HPoolStateChanged(poolId, hp.poolState);
+    }
+
+
+    /**
+     * @notice          Function for users to subscribe for the hPool.
+     */
+    function subscribeForHPool(
+        uint256 poolId
+    )
+    external
+    payable
+    {
+        hPool storage hp = hPools[poolId];
+        require(hp.poolState = PoolState.SUBSCRIPTION, "hPool is not in SUBSCRIPTION state.");
+
+        //TODO: Implement flow for subscriptions
+
+        emit Subscribed(poolId, msg.sender, msg.value);
     }
 
 
