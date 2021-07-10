@@ -70,8 +70,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     event HPoolStateChanged(uint256 poolId, PoolState newState);
     event MinimalUSDToInitPoolSet(uint256 newMinimalAmountToInitPool);
     event MaximalUSDAllocationPerTicket(uint256 newMaximalAllocationPerTicket);
-    event Subscribed(uint poolId, address user, uint amountETH);
-
+    event Subscribed(uint256 poolId, address user, uint256 amountETH, uint256 numberOfTickets);
+    event TicketsWithdrawn(uint256 poolId, address user, uint256 numberOfTickets);
 
     /**
      * @notice          Initializer function, can be called only once, replacing constructor
@@ -267,9 +267,31 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         poolIdToSubscriptions[poolId].push(s);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
 
-        emit Subscribed(poolId, msg.sender, msg.value);
+        emit Subscribed(poolId, msg.sender, msg.value, numberOfTicketsToUse);
     }
 
+    function withdrawTickets(uint poolId) public {
+        hPool storage hp = hPools[poolId];
+        Subscription storage s = userToPoolIdToSubscription[msg.sender][poolId];
+
+        require(s.amountEth > 0, "User did not partcipate in this hPool.");
+        require(s.numberOfTickets > 0, "User have already withdrawn his tickets.");
+        require(uint (hp.poolState) > 2, "Only after Subscription phase user can withdraw tickets.");
+
+        hordTicketFactory.safeTransferFrom(
+            address(this),
+            msg.sender,
+            hp.nftTicketId,
+            s.numberOfTickets,
+            "0x0"
+        );
+
+        // Trigger event that user have withdrawn tickets
+        emit TicketsWithdrawn(poolId, msg.sender, s.numberOfTickets);
+
+        // Remove users tickets.
+        s.numberOfTickets = 0;
+    }
 
     /**
      * @notice          Function to get minimal amount of ETH champion needs to
