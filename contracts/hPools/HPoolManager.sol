@@ -19,7 +19,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
     enum PoolState {PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, LIVE}
 
-
+    // Minimal subscription which should be collected in order to launch HPool.
+    uint256 public minimalSubscriptionToLaunchPool;
     // Minimal amount of USD to initialize pool (for champions)
     uint256 public minUSDToInitPool;
     // Maximal USD allocation per Ticket
@@ -270,6 +271,20 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit Subscribed(poolId, msg.sender, msg.value, numberOfTicketsToUse);
     }
 
+    /**
+     * @notice          Maintainer should end subscription phase in case all the criteria is reached
+     */
+    function endSubscriptionPhase(
+        uint poolId
+    )
+    public
+    onlyMaintainer {
+        hPool storage hp = hPools[poolId];
+        require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in subscription state.");
+        require(hp.followersEthDeposit >= getMinSubscriptionToLaunchInETH(), "hPool subscription amount is below threshold.");
+        hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
+    }
+
     function withdrawTickets(uint poolId) public {
         hPool storage hp = hPools[poolId];
         Subscription storage s = userToPoolIdToSubscription[msg.sender][poolId];
@@ -322,6 +337,19 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 latestPrice = uint256(getLatestPrice());
         uint256 usdEThRate = one.mul(one).div(latestPrice);
         return usdEThRate.mul(maxUSDAllocationPerTicket).div(one);
+    }
+
+    /**
+     * @notice          Function to get minimal subscription in ETH so pool can launch
+     */
+    function getMinSubscriptionToLaunchInETH()
+    public
+    view
+    returns (uint256)
+    {
+        uint256 latestPrice = uint256(getLatestPrice());
+        uint256 usdEThRate = one.mul(one).div(latestPrice);
+        return usdEThRate.mul(minimalSubscriptionToLaunchPool).div(one);
     }
 
 
