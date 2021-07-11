@@ -9,8 +9,8 @@ _HORD enables crypto champions to tokenize and monetize their influence, and emp
 
 ### Ethereum Mainnet Addresses:
 
-- `HordToken` : [https://etherscan.io/token/0x43A96962254855F16b925556f9e97BE436A43448][Token]
-- `HordTicketFactory (NFT)` : [https://etherscan.io/address/0x32aa07e6ebf2340eef1f717197ade6982b815536][NFT Tickets]
+- `HordToken` : [0x43A96962254855F16b925556f9e97BE436A43448](https://etherscan.io/token/0x43A96962254855F16b925556f9e97BE436A43448) 
+- `HordTicketFactory (NFT)` : [0x32aa07e6ebf2340eef1f717197ade6982b815536](https://etherscan.io/address/0x32aa07e6ebf2340eef1f717197ade6982b815536)
 
 ### Developer instructions
 
