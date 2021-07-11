@@ -3,6 +3,6 @@ module.exports = {
         'interfaces/',
         'libraries/',
         'token/Context.sol',
-        'upgradabilityTest/*.sol'
+        'upgradabilityTest/'
     ]
 };
