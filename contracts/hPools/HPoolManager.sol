@@ -17,7 +17,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     using SafeMath for *;
 
 
-    enum PoolState {PENDING_INIT, TICKET_SALE, SUBSCRIPTION}
+    enum PoolState {PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, LIVE}
 
 
     // Minimal amount of USD to initialize pool (for champions)
