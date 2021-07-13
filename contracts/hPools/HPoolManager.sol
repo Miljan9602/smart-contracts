@@ -16,7 +16,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
     using SafeMath for *;
 
-
+    // States of the pool contract
     enum PoolState {PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, LIVE}
 
     // Minimal subscription which should be collected in order to launch HPool.
@@ -170,7 +170,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hp.createdAt= block.timestamp;
 
         // Compute ID to match position in array
-        uint poolId = hPools.length;
+        uint256 poolId = hPools.length;
         // Push hPool structure
         hPools.push(hp);
 
@@ -189,7 +189,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      */
     function setNftForPool(
         uint poolId,
-        uint _nftTicketId
+        uint256 _nftTicketId
     )
     external
     onlyMaintainer
@@ -218,7 +218,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      * @param           poolId is the ID of the pool contract.
      */
     function startSubscriptionPhase(
-        uint poolId
+        uint256 poolId
     )
     external
     onlyMaintainer
@@ -275,7 +275,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      * @notice          Maintainer should end subscription phase in case all the criteria is reached
      */
     function endSubscriptionPhase(
-        uint poolId
+        uint256 poolId
     )
     public
     onlyMaintainer {
@@ -285,13 +285,13 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
     }
 
-    function withdrawTickets(uint poolId) public {
+    function withdrawTickets(uint256 poolId) public {
         hPool storage hp = hPools[poolId];
         Subscription storage s = userToPoolIdToSubscription[msg.sender][poolId];
 
         require(s.amountEth > 0, "User did not partcipate in this hPool.");
         require(s.numberOfTickets > 0, "User have already withdrawn his tickets.");
-        require(uint (hp.poolState) > 2, "Only after Subscription phase user can withdraw tickets.");
+        require(uint256 (hp.poolState) > 2, "Only after Subscription phase user can withdraw tickets.");
 
         hordTicketFactory.safeTransferFrom(
             address(this),
@@ -441,7 +441,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     function getRequiredNumberOfTicketsToUse(uint256 subscriptionAmount) public view returns (uint256) {
 
         uint256 maxParticipationPerTicket = getMaxSubscriptionInETHPerTicket();
-        uint amountOfTicketsToUse = (subscriptionAmount).div(maxParticipationPerTicket);
+        uint256 amountOfTicketsToUse = (subscriptionAmount).div(maxParticipationPerTicket);
 
 
         if(subscriptionAmount.mul(maxParticipationPerTicket) < amountOfTicketsToUse) {
