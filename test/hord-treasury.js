@@ -91,12 +91,12 @@ describe('HordTreasury Test', () => {
 
         it('shoud deposit HORD ERC20 token', async() => {
             // Transfer HORD ERC20 token to alice and bob
-            hordToken.connect(owner).transfer(aliceAddress, toHordDenomination(100));
-            hordToken.connect(owner).transfer(bobAddress, toHordDenomination(100));
+            await hordToken.connect(owner).transfer(aliceAddress, toHordDenomination(100));
+            await hordToken.connect(owner).transfer(bobAddress, toHordDenomination(100));
 
             // Approve HORD ERC20 token
-            hordToken.connect(alice).approve(hordTreasuryContract.address, toHordDenomination(10));
-            hordToken.connect(bob).approve(hordTreasuryContract.address, toHordDenomination(10));
+            await hordToken.connect(alice).approve(hordTreasuryContract.address, toHordDenomination(10));
+            await hordToken.connect(bob).approve(hordTreasuryContract.address, toHordDenomination(10));
 
             // Deposit HORD ERC20 tokesn
             await hordTreasuryContract.connect(alice).depositToken(hordToken.address, toHordDenomination(10));
@@ -109,12 +109,12 @@ describe('HordTreasury Test', () => {
 
 
             // Transfer KEY ERC20 token to alice and bob
-            keyToken.connect(owner).transfer(aliceAddress, toHordDenomination(100));
-            keyToken.connect(owner).transfer(bobAddress, toHordDenomination(100));
+            await keyToken.connect(owner).transfer(aliceAddress, toHordDenomination(100));
+            await keyToken.connect(owner).transfer(bobAddress, toHordDenomination(100));
 
             // Approve KEY ERC20 token
-            keyToken.connect(alice).approve(hordTreasuryContract.address, toHordDenomination(10));
-            keyToken.connect(bob).approve(hordTreasuryContract.address, toHordDenomination(10));
+            await keyToken.connect(alice).approve(hordTreasuryContract.address, toHordDenomination(10));
+            await keyToken.connect(bob).approve(hordTreasuryContract.address, toHordDenomination(10));
 
             // Deposit KEY ERC20 tokesn
             await hordTreasuryContract.connect(alice).depositToken(keyToken.address, toHordDenomination(10));
