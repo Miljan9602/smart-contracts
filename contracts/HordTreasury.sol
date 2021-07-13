@@ -5,12 +5,12 @@ import "./system/HordMiddleware.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 /**
- * TicketManagerReserve contract.
+ * HordTreasury contract.
  * @author David Lee
  * Date created: 18.5.21.
  * Github: 0xKey
  */
-contract TicketManagerReserve is ReentrancyGuardUpgradeable, HordMiddleware {
+contract HordTreasury is ReentrancyGuardUpgradeable, HordMiddleware {
 
     event DepositEther(address indexed depositor, uint256 amount);
     event WithdrawEther(address indexed beneficiary, uint256 amount);
@@ -46,8 +46,8 @@ contract TicketManagerReserve is ReentrancyGuardUpgradeable, HordMiddleware {
      @param amount is the token amount to be withdrew
      */
     function withdrawToken(address beneficiary, address token, uint256 amount) external onlyHordCongress nonReentrant {
-        require(beneficiary != address(this), "TicketManagerReserve: Can not withdraw to TicketManagerReserve contract");
-        require(IERC20(token).balanceOf(address(this)) >= amount, "TicketManagerReserve: Insufficient balance");
+        require(beneficiary != address(this), "HordTreasury: Can not withdraw to HordTreasury contract");
+        require(IERC20(token).balanceOf(address(this)) >= amount, "HordTreasury: Insufficient balance");
         require(IERC20(token).transfer(beneficiary, amount));
         emit WithdrawToken(beneficiary, token, amount);
     }
@@ -58,9 +58,9 @@ contract TicketManagerReserve is ReentrancyGuardUpgradeable, HordMiddleware {
      @param amount is Ether amount to be withdrew
      */
     function withdrawEther(address beneficiary, uint256 amount) external onlyHordCongress nonReentrant {
-        require(beneficiary != address(this), "TicketManagerReserve: Can not withdraw to TicketManagerReserve contract");
+        require(beneficiary != address(this), "HordTreasury: Can not withdraw to HordTreasury contract");
         (bool success,) = payable(beneficiary).call{ value: amount }("");
-        require(success, "TicketManagerReserve: Failed to send Ether");
+        require(success, "HordTreasury: Failed to send Ether");
         emit WithdrawEther(beneficiary, amount);
     }
 
