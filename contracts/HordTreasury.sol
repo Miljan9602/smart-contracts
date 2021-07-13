@@ -1,9 +1,8 @@
 pragma solidity 0.6.12;
 
-import "./interfaces/IERC20.sol";
 import "./system/HordMiddleware.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
-
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 /**
  * HordTreasury contract.
  * @author David Lee
@@ -11,6 +10,8 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
  * Github: 0xKey
  */
 contract HordTreasury is ReentrancyGuardUpgradeable, HordMiddleware {
+
+    using SafeERC20 for IERC20;
 
     event DepositEther(address indexed depositor, uint256 amount);
     event WithdrawEther(address indexed beneficiary, uint256 amount);
@@ -33,10 +34,9 @@ contract HordTreasury is ReentrancyGuardUpgradeable, HordMiddleware {
      @param token is the token address to be deposited
      @param amount is the token amount to be deposited
      */
-    function depositToken(address token, uint256 amount) external {
-        require(amount <= IERC20(token).allowance(msg.sender, address(this)));
-        require(IERC20(token).transferFrom(msg.sender, address(this), amount));
-        emit DepositToken(msg.sender, token, amount);
+    function depositToken(IERC20 token, uint256 amount) external {
+        token.safeTransferFrom(msg.sender, address(this), amount);
+        emit DepositToken(msg.sender, address(token), amount);
     }
 
     /**
@@ -45,11 +45,11 @@ contract HordTreasury is ReentrancyGuardUpgradeable, HordMiddleware {
      @param token is the token address to be withdrew
      @param amount is the token amount to be withdrew
      */
-    function withdrawToken(address beneficiary, address token, uint256 amount) external onlyHordCongress nonReentrant {
+    function withdrawToken(address beneficiary, IERC20 token, uint256 amount) external onlyHordCongress nonReentrant {
         require(beneficiary != address(this), "HordTreasury: Can not withdraw to HordTreasury contract");
-        require(IERC20(token).balanceOf(address(this)) >= amount, "HordTreasury: Insufficient balance");
-        require(IERC20(token).transfer(beneficiary, amount));
-        emit WithdrawToken(beneficiary, token, amount);
+        require(token.balanceOf(address(this)) >= amount, "HordTreasury: Insufficient balance");
+        token.safeTransfer(beneficiary, amount);
+        emit WithdrawToken(beneficiary, address(token), amount);
     }
 
     /**
