@@ -285,6 +285,11 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
     }
 
+
+    /**
+     * @notice          Function to withdraw tickets. It can be called whenever after subscription phase.
+     * @param           poolId is the ID of the pool for which user is withdrawing.
+     */
     function withdrawTickets(uint256 poolId) public {
         hPool storage hp = hPools[poolId];
         Subscription storage s = userToPoolIdToSubscription[msg.sender][poolId];
