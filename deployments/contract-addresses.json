@@ -13,7 +13,7 @@
         "HordToken": "0xF0f8D089136c88D99EAB8De4e84cae347B52AA63",
         "MaintainersRegistry": "0xec82693EAd95cA78Bc45c6Dd60F359179B4C650d",
         "HordTicketManager": "0x3e7e0556ccd0c2209783d1cdaf5512dcb3847d8b",
-        "HordTicketFactory": "0x8024160c9ecbfac2cae7faac43ae0930fd13af61"
+        "HordTicketFactory": "0x3c420f178f7b406bed0ec55fc270a85019ecf085"
     },
     "local": {
         "hordCongress": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
