@@ -313,6 +313,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         s.numberOfTickets = 0;
     }
 
+
     /**
      * @notice          Function to get minimal amount of ETH champion needs to
      *                  put in, in order to create hPool.
