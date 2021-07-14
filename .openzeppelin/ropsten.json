@@ -556,6 +556,184 @@
           }
         }
       }
+    },
+    "60aa65cb60d120071f0e6b915c82b50f83e00283c6619ca30c112aab5bab446a": {
+      "address": "0x8024160c9EcbfAc2cae7FAAC43Ae0930fd13aF61",
+      "txHash": "0x1efb5361bd640edd140287e340cba85103778bff75ce733b19ac1fd365197b1f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "HordUpgradable",
+            "label": "hordCongress",
+            "type": "t_address",
+            "src": "contracts/system/HordUpgradable.sol:14"
+          },
+          {
+            "contract": "HordUpgradable",
+            "label": "maintainersRegistry",
+            "type": "t_contract(IMaintainersRegistry)2540",
+            "src": "contracts/system/HordUpgradable.sol:15"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol:59"
+          },
+          {
+            "contract": "ERC1155Upgradeable",
+            "label": "_balances",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:27"
+          },
+          {
+            "contract": "ERC1155Upgradeable",
+            "label": "_operatorApprovals",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:30"
+          },
+          {
+            "contract": "ERC1155Upgradeable",
+            "label": "_uri",
+            "type": "t_string_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:33"
+          },
+          {
+            "contract": "ERC1155Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)47_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:421"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol:28"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol:96"
+          },
+          {
+            "contract": "ERC1155PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155PausableUpgradeable.sol:51"
+          },
+          {
+            "contract": "HordTicketFactory",
+            "label": "lastMintedTokenId",
+            "type": "t_uint256",
+            "src": "contracts/HordTicketFactory.sol:17"
+          },
+          {
+            "contract": "HordTicketFactory",
+            "label": "maxFungibleTicketsPerPool",
+            "type": "t_uint256",
+            "src": "contracts/HordTicketFactory.sol:19"
+          },
+          {
+            "contract": "HordTicketFactory",
+            "label": "tokenIdToMintedSupply",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/HordTicketFactory.sol:21"
+          },
+          {
+            "contract": "HordTicketFactory",
+            "label": "hordTicketManager",
+            "type": "t_contract(IHordTicketManager)2529",
+            "src": "contracts/HordTicketFactory.sol:24"
+          },
+          {
+            "contract": "HordTicketFactory",
+            "label": "contractLevelURI",
+            "type": "t_string_storage",
+            "src": "contracts/HordTicketFactory.sol:27"
+          },
+          {
+            "contract": "HordTicketFactory",
+            "label": "tokenIdToMaxFungibleTicketsPerPool",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/HordTicketFactory.sol:30"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_contract(IHordTicketManager)2529": {
+            "label": "contract IHordTicketManager"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_array(t_uint256)47_storage": {
+            "label": "uint256[47]"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_contract(IMaintainersRegistry)2540": {
+            "label": "contract IMaintainersRegistry"
+          }
+        }
+      }
     }
   },
   "admin": {
