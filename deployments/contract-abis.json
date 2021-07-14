@@ -1395,6 +1395,16 @@
                         "internalType": "uint256",
                         "name": "tokenId",
                         "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "startIndex",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "endIndex",
+                        "type": "uint256"
                     }
                 ],
                 "name": "claimNFTs",
@@ -1473,6 +1483,30 @@
                     }
                 ],
                 "name": "getCurrentAmountStakedForTokenId",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "user",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "getNumberOfStakesForUserAndToken",
                 "outputs": [
                     {
                         "internalType": "uint256",
@@ -2057,6 +2091,19 @@
                 "type": "function"
             },
             {
+                "inputs": [],
+                "name": "contractURI",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
                 "inputs": [
                     {
                         "internalType": "uint256",
@@ -2126,6 +2173,11 @@
                     {
                         "internalType": "string",
                         "name": "_uri",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "_contractLevelURI",
                         "type": "string"
                     }
                 ],
@@ -2346,6 +2398,50 @@
                     }
                 ],
                 "name": "setMaxFungibleTicketsPerPool",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "tokenId",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "_maximalFungibleTicketsPerPoolForTokenId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "setMaxFungibleTicketsPerPoolForTokenId",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "_contractLevelURI",
+                        "type": "string"
+                    }
+                ],
+                "name": "setNewContractLevelUri",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "_newUri",
+                        "type": "string"
+                    }
+                ],
+                "name": "setNewUri",
                 "outputs": [],
                 "stateMutability": "nonpayable",
                 "type": "function"
