@@ -15,11 +15,9 @@ async function main() {
     // Upgrading
     const HordTicketManager = await ethers.getContractFactory("HordTicketManager");
     const upgraded = await upgrades.upgradeProxy(proxies['HordTicketManager'], HordTicketManager);
-    const implementation = upgraded.implementation();
     const admin = await upgrades.admin.getInstance();
     const owner = await admin.owner();
 
-    console.log('New implementation', implementation);
     console.log('Admin', admin.address);
     console.log('Current owner', owner);
 }
