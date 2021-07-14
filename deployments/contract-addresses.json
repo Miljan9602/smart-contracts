@@ -7,20 +7,12 @@
         "HordTicketManager": "0xD9F4f990744b26B2ac315afbBD85f0f345330f84",
         "HordTicketFactory": "0x4DEebb678AB3a6e8dA63309b6DCe368d343C552a"
     },
-    "ropsten": {
-        "HordCongress": "0x4981B3d3CBa6fE660A4DA390a31b83e8dC28e40D",
-        "HordCongressMembersRegistry": "0x9C5539B83Da7e02F965EcFc5df45a85B798D9B0a",
-        "HordToken": "0xF0f8D089136c88D99EAB8De4e84cae347B52AA63",
-        "MaintainersRegistry": "0xec82693EAd95cA78Bc45c6Dd60F359179B4C650d",
-        "HordTicketManager": "0xd5d39d07F0C1462C8A5F9CDEBff7a9d7B913894F",
-        "HordTicketFactory": "0xD3f982FbEeA227E3c60730ABC850c90D2636F96a"
-    },
     "ropstenStaging": {
         "HordCongress": "0x4981B3d3CBa6fE660A4DA390a31b83e8dC28e40D",
         "HordCongressMembersRegistry": "0x9C5539B83Da7e02F965EcFc5df45a85B798D9B0a",
         "HordToken": "0xF0f8D089136c88D99EAB8De4e84cae347B52AA63",
         "MaintainersRegistry": "0xec82693EAd95cA78Bc45c6Dd60F359179B4C650d",
-        "HordTicketManager": "0xd5d39d07F0C1462C8A5F9CDEBff7a9d7B913894F",
+        "HordTicketManager": "0x3e7e0556ccd0c2209783d1cdaf5512dcb3847d8b",
         "HordTicketFactory": "0xD3f982FbEeA227E3c60730ABC850c90D2636F96a"
     },
     "local": {
