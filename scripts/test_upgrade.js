@@ -16,6 +16,7 @@ async function main() {
     const HordTicketFactory = await ethers.getContractFactory("HordTicketFactory");
     const upgraded = await upgrades.upgradeProxy(proxies['HordTicketFactory'], HordTicketFactory);
 
+    console.log(upgraded);
     const admin = await upgrades.admin.getInstance();
     const owner = await admin.owner();
 
