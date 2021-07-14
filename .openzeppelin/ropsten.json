@@ -387,6 +387,175 @@
           }
         }
       }
+    },
+    "46ac659cfa6d9a71e5ff4157cc4cab247282e194649403c4588ad6f8bfbfafd2": {
+      "address": "0x3e7e0556CCd0c2209783d1CdAf5512dCB3847D8B",
+      "txHash": "0xd16c18a52be8b6f4cad55b088da24968dc36fa7bd851b1e6f6217a5e3ac52e4c",
+      "layout": {
+        "storage": [
+          {
+            "contract": "HordUpgradable",
+            "label": "hordCongress",
+            "type": "t_address",
+            "src": "contracts/system/HordUpgradable.sol:14"
+          },
+          {
+            "contract": "HordUpgradable",
+            "label": "maintainersRegistry",
+            "type": "t_contract(IMaintainersRegistry)3936",
+            "src": "contracts/system/HordUpgradable.sol:15"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts/proxy/Initializable.sol:25"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts/proxy/Initializable.sol:30"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "_supportedInterfaces",
+            "type": "t_mapping(t_bytes4,t_bool)",
+            "src": "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol:23"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/introspection/ERC165Upgradeable.sol:59"
+          },
+          {
+            "contract": "ERC1155ReceiverUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155ReceiverUpgradeable.sol:24"
+          },
+          {
+            "contract": "ERC1155HolderUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155HolderUpgradeable.sol:27"
+          },
+          {
+            "contract": "HordTicketManager",
+            "label": "minTimeToStake",
+            "type": "t_uint256",
+            "src": "contracts/HordTicketManager.sol:18"
+          },
+          {
+            "contract": "HordTicketManager",
+            "label": "minAmountToStake",
+            "type": "t_uint256",
+            "src": "contracts/HordTicketManager.sol:20"
+          },
+          {
+            "contract": "HordTicketManager",
+            "label": "stakingToken",
+            "type": "t_contract(IERC20)3895",
+            "src": "contracts/HordTicketManager.sol:22"
+          },
+          {
+            "contract": "HordTicketManager",
+            "label": "hordTicketFactory",
+            "type": "t_contract(IHordTicketFactory)3909",
+            "src": "contracts/HordTicketManager.sol:24"
+          },
+          {
+            "contract": "HordTicketManager",
+            "label": "championIdToMintedTokensIds",
+            "type": "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)",
+            "src": "contracts/HordTicketManager.sol:26"
+          },
+          {
+            "contract": "HordTicketManager",
+            "label": "addressToTokenIdToStakes",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_array(t_struct(UserStake)3179_storage)dyn_storage))",
+            "src": "contracts/HordTicketManager.sol:37"
+          },
+          {
+            "contract": "HordTicketManager",
+            "label": "tokenIdToNumberOfTicketsReserved",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/HordTicketManager.sol:40"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_contract(IERC20)3895": {
+            "label": "contract IERC20"
+          },
+          "t_contract(IHordTicketFactory)3909": {
+            "label": "contract IHordTicketFactory"
+          },
+          "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(uint256 => uint256[])"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_array(t_struct(UserStake)3179_storage)dyn_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct HordTicketManager.UserStake[]))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_array(t_struct(UserStake)3179_storage)dyn_storage)": {
+            "label": "mapping(uint256 => struct HordTicketManager.UserStake[])"
+          },
+          "t_array(t_struct(UserStake)3179_storage)dyn_storage": {
+            "label": "struct HordTicketManager.UserStake[]"
+          },
+          "t_struct(UserStake)3179_storage": {
+            "label": "struct HordTicketManager.UserStake",
+            "members": [
+              {
+                "label": "amountStaked",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amountOfTicketsGetting",
+                "type": "t_uint256"
+              },
+              {
+                "label": "unlockingTime",
+                "type": "t_uint256"
+              },
+              {
+                "label": "isWithdrawn",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_mapping(t_bytes4,t_bool)": {
+            "label": "mapping(bytes4 => bool)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_contract(IMaintainersRegistry)3936": {
+            "label": "contract IMaintainersRegistry"
+          }
+        }
+      }
     }
   },
   "admin": {
