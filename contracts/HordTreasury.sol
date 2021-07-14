@@ -11,7 +11,18 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
  */
 contract HordTreasury is ReentrancyGuardUpgradeable, HordMiddleware {
 
+    using SafeMath for uint256;
     using SafeERC20 for IERC20;
+
+    // Total ETH received
+    uint256 public totalETHReceived;
+    // Total ETH withdrawn from the contract
+    uint256 public totalETHWithdrawn;
+    // Total tokens received
+    mapping (address => uint256) public totalTokenReceived;
+    // Total tokens withdrawn
+    mapping (address => uint256) public totalTokenWithdrawn;
+
 
     event DepositEther(address indexed depositor, uint256 amount);
     event WithdrawEther(address indexed beneficiary, uint256 amount);
@@ -19,6 +30,7 @@ contract HordTreasury is ReentrancyGuardUpgradeable, HordMiddleware {
     event WithdrawToken(address indexed beneficiary, address indexed token, uint256 amount);
 
     receive() external payable {
+        totalETHReceived = totalETHReceived.add(msg.value);
         emit DepositEther(msg.sender, msg.value);
     }
 
@@ -36,6 +48,7 @@ contract HordTreasury is ReentrancyGuardUpgradeable, HordMiddleware {
      */
     function depositToken(IERC20 token, uint256 amount) external {
         token.safeTransferFrom(msg.sender, address(this), amount);
+        totalTokenReceived[address(token)] = totalTokenReceived[address(token)].add(amount);
         emit DepositToken(msg.sender, address(token), amount);
     }
 
@@ -49,6 +62,7 @@ contract HordTreasury is ReentrancyGuardUpgradeable, HordMiddleware {
         require(beneficiary != address(this), "HordTreasury: Can not withdraw to HordTreasury contract");
         require(token.balanceOf(address(this)) >= amount, "HordTreasury: Insufficient balance");
         token.safeTransfer(beneficiary, amount);
+        totalTokenWithdrawn[address(token)] = totalTokenWithdrawn[address(token)].add(amount);
         emit WithdrawToken(beneficiary, address(token), amount);
     }
 
@@ -61,6 +75,7 @@ contract HordTreasury is ReentrancyGuardUpgradeable, HordMiddleware {
         require(beneficiary != address(this), "HordTreasury: Can not withdraw to HordTreasury contract");
         (bool success,) = payable(beneficiary).call{ value: amount }("");
         require(success, "HordTreasury: Failed to send Ether");
+        totalETHWithdrawn = totalETHWithdrawn.add(amount);
         emit WithdrawEther(beneficiary, amount);
     }
 
