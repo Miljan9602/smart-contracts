@@ -1,10 +1,11 @@
 pragma solidity 0.6.12;
 
-import "../system/HordMiddleware.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "../system/HordMiddleware.sol";
 import "../interfaces/AggregatorV3Interface.sol";
 import "../libraries/SafeMath.sol";
 import "../interfaces/IHordTicketFactory.sol";
+import "../interfaces/IHordTreasury.sol";
 
 /**
  * HPoolManager contract.
@@ -51,6 +52,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     AggregatorV3Interface public linkOracle;
     // Instance of hord ticket factory
     IHordTicketFactory public hordTicketFactory;
+    // Instance of Hord treasury contract
+    IHordTreasury public hordTreasury;
     // All hPools
     hPool [] public hPools;
     // Map pool Id to all subscriptions
@@ -82,7 +85,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     function initialize (
         address _hordCongress,
         address _maintainersRegistry,
-        address _hordTicketFactory
+        address _hordTicketFactory,
+        address _hordTreasury
     )
     initializer
     external
@@ -93,6 +97,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
         hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
+        hordTreasury = IHordTreasury(_hordTreasury);
     }
 
 
