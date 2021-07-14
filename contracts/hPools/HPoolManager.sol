@@ -76,6 +76,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     event MaximalUSDAllocationPerTicket(uint256 newMaximalAllocationPerTicket);
     event Subscribed(uint256 poolId, address user, uint256 amountETH, uint256 numberOfTickets);
     event TicketsWithdrawn(uint256 poolId, address user, uint256 numberOfTickets);
+    event ServiceFeePaid(uint256 poolId, uint256 amount);
 
     /**
      * @notice          Initializer function, can be called only once, replacing constructor
