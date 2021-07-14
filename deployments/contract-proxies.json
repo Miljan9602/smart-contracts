@@ -6,8 +6,13 @@
     },
     "ropsten": {
         "MaintainersRegistry": "0xAEE26e9af071a40F8AE83EDF5478810d5F1971a6",
-        "HordTicketManager": "0xACF8D0f8D17725b7E3750951f31C631BC310A90e",
-        "HordTicketFactory": "0xd493Ba925F3260522127D42d95673827B87B8748"
+        "HordTicketManager": "0x9cF8945B671950FE2414f26c6B73cCeE593FcaC4",
+        "HordTicketFactory": "0x23bB7384a3e74AC0D0abe4bB0A5BC9dEeE18dc06"
+    },
+    "ropstenStaging": {
+        "MaintainersRegistry": "0xAEE26e9af071a40F8AE83EDF5478810d5F1971a6",
+        "HordTicketManager": "0x8B13b4d6ed229563f9aB4eB27e9eA94e7b19bc3f",
+        "HordTicketFactory": "0x42fF7689F84033483FDd52d3659C0C9f2627AF8e"
     },
     "mainnet": {
         "MaintainersRegistry": "0x03B93C3bcbc5422A3d9deADAD764ce55A7c4F03b",
