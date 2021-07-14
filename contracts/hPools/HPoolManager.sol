@@ -101,6 +101,22 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hordTreasury = IHordTreasury(_hordTreasury);
     }
 
+    /**
+     * @notice          Internal function to handle safe transferring of ETH.
+     */
+    function safeTransferETH(address to, uint value) internal {
+        (bool success,) = to.call{value:value}(new bytes(0));
+        require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
+    }
+
+
+    /**
+     * @notice          Internal function to pay service to hord treasury contract
+     */
+    function payServiceFeeToTreasury(uint amount) internal {
+        safeTransferETH(address(hordTreasury), amount);
+    }
+
 
     /**
      * @notice          Function to set Chainlink Aggregator address
