@@ -52,8 +52,8 @@ module.exports = {
       // Infura public nodes
       url: 'https://mainnet.tenderly.co',
       accounts: [process.env.PK],
+      gasPrice: 30000000000,
       chainId: 1,
-      gasPrice: 45000000000, // 44 GWEI gas price for deployment.
       timeout: 900000000
     },
     local: {
