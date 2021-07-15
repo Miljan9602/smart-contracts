@@ -7,7 +7,7 @@ async function main() {
     const HordTicketFactory = await hre.ethers.getContractFactory('HordTicketFactory');
     const hordTicketFactory = await HordTicketFactory.deploy();
     await hordTicketFactory.deployed();
-
+    console.log('New HordTicketFactory implementation: ', hordTicketFactory.address);
     saveContractAddress(hre.network.name, 'HordTicketFactory', hordTicketFactory.address);
 }
 
