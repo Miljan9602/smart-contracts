@@ -1,6 +1,7 @@
 package-lock.json
 node_modules
 package.lock
+
 #Hardhat files
 cache
 artifacts
@@ -9,3 +10,7 @@ artifacts
 yarn.lock
 .openzeppelin/unknown-*.json
 .openzeppelin/local-*.json
+
+coverage
+coverage.json
+
