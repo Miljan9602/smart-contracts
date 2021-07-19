@@ -5,6 +5,7 @@ require('@openzeppelin/hardhat-upgrades')
 require("@tenderly/hardhat-tenderly");
 require("solidity-coverage");
 require('dotenv').config();
+
 const { generateTenderlySlug } = require('./scripts/helpers/helpers');
 
 
@@ -16,6 +17,7 @@ task('accounts', 'Prints the list of accounts', async () => {
   }
 })
 
+
 // You have to export an object to set up your config
 // This object can have the following optional entries:
 // defaultNetwork, networks, solc, and paths.
@@ -24,6 +26,7 @@ module.exports = {
   defaultNetwork: 'local',
   networks: {
     ropsten: {
+      // Infura public nodes
       url: 'https://ropsten.infura.io/v3/34ee2e319e7945caa976d4d1e24db07f',
       accounts: [process.env.PK],
       chainId: 3,
@@ -31,18 +34,28 @@ module.exports = {
       timeout: 50000
     },
     ropstenStaging: {
+      // Infura public nodes
       url: 'https://ropsten.infura.io/v3/34ee2e319e7945caa976d4d1e24db07f',
       accounts: [process.env.PK],
       chainId: 3,
       gasPrice: 40000000000,
       timeout: 50000
     },
-    mainnet: {
-      url: 'https://mainnet.infura.io/v3/1692a3b8ad92406189c2c7d2b01660bc',
+    kovan: {
+      // Infura public nodes
+      url: 'https://kovan.infura.io/v3/8632b09b72044f2c9b9ca1f621220e72',
       accounts: [process.env.PK],
+      chainId: 42,
+      gasPrice: 5000000000,
+      timeout: 50000
+    },
+    mainnet: {
+      // Infura public nodes
+      url: 'https://mainnet.tenderly.co',
+      accounts: [process.env.PK],
+      gasPrice: 30000000000,
       chainId: 1,
-      gasPrice: 115000000000, // 44 GWEI gas price for deployment.
-      timeout: 10000000
+      timeout: 900000000
     },
     local: {
       url: 'http://localhost:8545',

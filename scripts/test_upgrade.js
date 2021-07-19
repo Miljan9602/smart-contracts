@@ -11,42 +11,15 @@ async function main() {
     const contracts = getSavedContractAddresses()[hre.network.name];
     const proxies = getSavedContractProxies()[hre.network.name];
 
-    // Deploying
-    const HordTicketFactory= await hre.ethers.getContractFactory("HordTicketFactory");
-    const instance = await upgrades.deployProxy(HordTicketFactory, [
-        contracts["HordCongress"],
-        proxies['MaintainersRegistry'],
-        contracts["HordToken"],
-        config['minTimeToStake'],
-        toHordDenomination(config['minAmountToStake'])
-    ]);
-    await instance.deployed();
 
     // Upgrading
-    const HordTicketFactoryV2 = await ethers.getContractFactory("HordTicketFactoryV2");
-    const upgraded = await upgrades.upgradeProxy(instance.address, HordTicketFactoryV2);
-
-
-    const resp = await upgraded.addTokenSupply();
-    if(resp === 'This was used to add supply in V1') {
-        console.log('Upgrade tested successfully.');
-    } else {
-        console.log('Upgrade has an issue.');
-    }
-
+    const HordTicketManager = await ethers.getContractFactory("HordTicketManager");
+    const upgraded = await upgrades.upgradeProxy(proxies['HordTicketManager'], HordTicketManager);
     const admin = await upgrades.admin.getInstance();
     const owner = await admin.owner();
 
+    console.log('Admin', admin.address);
     console.log('Current owner', owner);
-
-    await admin.transferOwnership(contracts["HordCongress"]);
-    console.log('Transferred ownership to HordCongress contract: ', contracts["HordCongress"]);
-
-    const newOwner = await admin.owner();
-    console.log('New owner is: ', newOwner);
-
-
-
 }
 
 main();

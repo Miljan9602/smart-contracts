@@ -13,20 +13,21 @@ import "./interfaces/IHordTicketManager.sol";
  */
 contract HordTicketFactory is ERC1155PausableUpgradeable, HordMiddleware {
 
-    // Store contract uri
-    string contractLevelURI;
     // Store always last ID minted
     uint256 public lastMintedTokenId;
     // Maximal number of fungible tickets per Pool
     uint256 public maxFungibleTicketsPerPool;
-    // Maximal number of fungible tickets per Pool
-    mapping (uint256 => uint256) tokenIdToMaxFungibleTicketsPerPool;
     // Mapping token ID to minted supply
     mapping (uint256 => uint256) tokenIdToMintedSupply;
 
     // Manager contract handling tickets
     IHordTicketManager public hordTicketManager;
 
+    // Store contract uri
+    string contractLevelURI;
+
+    // Maximal number of fungible tickets per Pool
+    mapping (uint256 => uint256) tokenIdToMaxFungibleTicketsPerPool;
 
     event MintedNewNFT (
         uint256 tokenId,
@@ -168,6 +169,7 @@ contract HordTicketFactory is ERC1155PausableUpgradeable, HordMiddleware {
         require(tokenIdToMintedSupply[tokenId] > 0, "AddTokenSupply: Firstly MINT token, then expand supply.");
         require(tokenIdToMintedSupply[tokenId].add(supplyToAdd) <= tokenIdToMaxFungibleTicketsPerPool[tokenId], "More than allowed.");
 
+        tokenIdToMintedSupply[tokenId] = tokenIdToMintedSupply[tokenId].add(supplyToAdd);
         _mint(address(hordTicketManager), tokenId, supplyToAdd, "0x0");
 
         // Fire an event

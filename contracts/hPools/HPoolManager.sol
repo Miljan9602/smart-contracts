@@ -1,10 +1,11 @@
 pragma solidity 0.6.12;
 
-import "../system/HordMiddleware.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "../system/HordMiddleware.sol";
 import "../interfaces/AggregatorV3Interface.sol";
 import "../libraries/SafeMath.sol";
 import "../interfaces/IHordTicketFactory.sol";
+import "../interfaces/IHordTreasury.sol";
 
 /**
  * HPoolManager contract.
@@ -16,7 +17,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
     using SafeMath for *;
 
-
+    // States of the pool contract
     enum PoolState {PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, LIVE}
 
     // Minimal subscription which should be collected in order to launch HPool.
@@ -51,6 +52,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     AggregatorV3Interface public linkOracle;
     // Instance of hord ticket factory
     IHordTicketFactory public hordTicketFactory;
+    // Instance of Hord treasury contract
+    IHordTreasury public hordTreasury;
     // All hPools
     hPool [] public hPools;
     // Map pool Id to all subscriptions
@@ -73,6 +76,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     event MaximalUSDAllocationPerTicket(uint256 newMaximalAllocationPerTicket);
     event Subscribed(uint256 poolId, address user, uint256 amountETH, uint256 numberOfTickets);
     event TicketsWithdrawn(uint256 poolId, address user, uint256 numberOfTickets);
+    event ServiceFeePaid(uint256 poolId, uint256 amount);
 
     /**
      * @notice          Initializer function, can be called only once, replacing constructor
@@ -82,7 +86,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     function initialize (
         address _hordCongress,
         address _maintainersRegistry,
-        address _hordTicketFactory
+        address _hordTicketFactory,
+        address _hordTreasury
     )
     initializer
     external
@@ -93,6 +98,23 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
         hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
+        hordTreasury = IHordTreasury(_hordTreasury);
+    }
+
+    /**
+     * @notice          Internal function to handle safe transferring of ETH.
+     */
+    function safeTransferETH(address to, uint value) internal {
+        (bool success,) = to.call{value:value}(new bytes(0));
+        require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
+    }
+
+
+    /**
+     * @notice          Internal function to pay service to hord treasury contract
+     */
+    function payServiceFeeToTreasury(uint amount) internal {
+        safeTransferETH(address(hordTreasury), amount);
     }
 
 
@@ -170,7 +192,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hp.createdAt= block.timestamp;
 
         // Compute ID to match position in array
-        uint poolId = hPools.length;
+        uint256 poolId = hPools.length;
         // Push hPool structure
         hPools.push(hp);
 
@@ -189,7 +211,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      */
     function setNftForPool(
         uint poolId,
-        uint _nftTicketId
+        uint256 _nftTicketId
     )
     external
     onlyMaintainer
@@ -218,7 +240,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      * @param           poolId is the ID of the pool contract.
      */
     function startSubscriptionPhase(
-        uint poolId
+        uint256 poolId
     )
     external
     onlyMaintainer
@@ -275,7 +297,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      * @notice          Maintainer should end subscription phase in case all the criteria is reached
      */
     function endSubscriptionPhase(
-        uint poolId
+        uint256 poolId
     )
     public
     onlyMaintainer {
@@ -285,13 +307,18 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
     }
 
-    function withdrawTickets(uint poolId) public {
+
+    /**
+     * @notice          Function to withdraw tickets. It can be called whenever after subscription phase.
+     * @param           poolId is the ID of the pool for which user is withdrawing.
+     */
+    function withdrawTickets(uint256 poolId) public {
         hPool storage hp = hPools[poolId];
         Subscription storage s = userToPoolIdToSubscription[msg.sender][poolId];
 
         require(s.amountEth > 0, "User did not partcipate in this hPool.");
         require(s.numberOfTickets > 0, "User have already withdrawn his tickets.");
-        require(uint (hp.poolState) > 2, "Only after Subscription phase user can withdraw tickets.");
+        require(uint256 (hp.poolState) > 2, "Only after Subscription phase user can withdraw tickets.");
 
         hordTicketFactory.safeTransferFrom(
             address(this),
@@ -307,6 +334,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         // Remove users tickets.
         s.numberOfTickets = 0;
     }
+
 
     /**
      * @notice          Function to get minimal amount of ETH champion needs to
@@ -441,7 +469,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     function getRequiredNumberOfTicketsToUse(uint256 subscriptionAmount) public view returns (uint256) {
 
         uint256 maxParticipationPerTicket = getMaxSubscriptionInETHPerTicket();
-        uint amountOfTicketsToUse = (subscriptionAmount).div(maxParticipationPerTicket);
+        uint256 amountOfTicketsToUse = (subscriptionAmount).div(maxParticipationPerTicket);
 
 
         if(subscriptionAmount.mul(maxParticipationPerTicket) < amountOfTicketsToUse) {

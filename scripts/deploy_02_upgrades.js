@@ -44,15 +44,15 @@ async function main() {
     console.log('HordTicketFactory Proxy deployed to:', hordTicketFactory.address);
     saveContractProxies(hre.network.name, 'HordTicketFactory', hordTicketFactory.address);
 
-    const TicketManagerReserve = await ethers.getContractFactory('TicketManagerReserve')
-    const ticketManagerReserve = await upgrades.deployProxy(TicketManagerReserve, [
+    const HordTreasury = await ethers.getContractFactory('HordTreasury')
+    const hordTreasury = await upgrades.deployProxy(HordTreasury, [
             contracts["HordCongress"],
             maintainersRegistry.address
         ]
     );
-    await ticketManagerReserve.deployed()
-    console.log('TicketManagerReserve Proxy deployed to:', ticketManagerReserve.address);
-    saveContractProxies(hre.network.name, 'TicketManagerReserve', ticketManagerReserve.address);
+    await hordTreasury.deployed()
+    console.log('TicketManagerReserve Proxy deployed to:', hordTreasury.address);
+    saveContractProxies(hre.network.name, 'TicketManagerReserve', hordTreasury.address);
 
     await hordTicketManager.setHordTicketFactory(hordTicketFactory.address);
     console.log('hordTicketManager.setHordTicketFactory(', hordTicketFactory.address, ') successfully set.');
@@ -73,9 +73,9 @@ async function main() {
 
     saveContractProxies(hre.network.name, 'ProxyAdmin', admin.address);
 
-    let ticketManagerReserveImplementation = await admin.getProxyImplementation(ticketManagerReserve.address);
-    console.log('TicketManagerReserve Implementation: ', ticketManagerReserveImplementation);
-    saveContractAddress(hre.network.name, 'TicketManagerReserve', ticketManagerReserveImplementation);
+    let hordTreasuryImplementation = await admin.getProxyImplementation(hordTreasury.address);
+    console.log('HordTreasury Implementation: ', hordTreasuryImplementation);
+    saveContractAddress(hre.network.name, 'HordTreasury', hordTreasuryImplementation);
 
 }
 
