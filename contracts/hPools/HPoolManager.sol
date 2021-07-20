@@ -40,7 +40,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 numberOfTickets;
     }
 
-    // Hpool struct
+    // HPool struct
     struct hPool {
         PoolState poolState;
         uint256 championEthDeposit;
@@ -49,7 +49,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 nftTicketId;
         bool isValidated;
         uint256 followersEthDeposit;
-        address hPoolAddress;
+        address hPoolContractAddress;
     }
 
     // Instance of oracle
@@ -253,7 +253,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         hPool storage hp = hPools[poolId];
 
-        require(hp.poolState == PoolState.TICKET_SALE, "Bad state transition.");
+        require(hp.poolState == PoolState.TICKET_SALE, "startSubscriptionPhase: Bad state transition.");
         hp.poolState = PoolState.SUBSCRIPTION;
 
         emit HPoolStateChanged(poolId, hp.poolState);
@@ -309,8 +309,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in subscription state.");
         require(hp.followersEthDeposit >= getMinSubscriptionToLaunchInETH(), "hPool subscription amount is below threshold.");
 
-        //TODO: Deploy hPool contract
-        
+
+        require(hp.poolState == PoolState.SUBSCRIPTION, "endSubscriptionPhase: Bad state transition.");
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
         // Trigger event that pool state is changed
         emit HPoolStateChanged(poolId, hp.poolState);
