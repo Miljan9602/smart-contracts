@@ -165,6 +165,19 @@ describe('HordTreasury Test', () => {
 
         });
 
+        it('should totalTokenReceived is properly updated', async() => {
+            let tknBalance = await hordTreasuryContract.totalTokenReceived(hordToken.address);
+
+            await hordToken.connect(owner).approve(hordTreasuryContract.address, toHordDenomination(100));
+
+            await expect(hordTreasuryContract.connect(owner).depositToken(hordToken.address, toHordDenomination(10)))
+               .to.emit(hordTreasuryContract,"DepositToken")
+                .withArgs(owner.address, hordToken.address, toHordDenomination(10));
+
+            const resp = await hordTreasuryContract.totalTokenReceived(hordToken.address);
+            expect(new BigNumber.from(tknBalance).add(toHordDenomination(10))).to.be.equal(resp);
+        });
+
     });
 
     describe('Deposit and Withdraw Ether', async() => {
@@ -213,10 +226,11 @@ describe('HordTreasury Test', () => {
 
             let ethBalance = await hordTreasuryContract.totalETHReceived();
 
-            await bob.sendTransaction({
+            await expect(bob.sendTransaction({
                 to: hordTreasuryContract.address,
                 value: ethers.utils.parseEther("0.000005")
-            });
+            })).to.emit(hordTreasuryContract, "DepositEther")
+                .withArgs(bobAddress, ethers.utils.parseEther("0.000005"));
 
             const resp = await hordTreasuryContract.totalETHReceived();
             expect(new BigNumber.from(ethBalance).add(ethers.utils.parseEther("0.000005"))).to.be.equal(resp);
