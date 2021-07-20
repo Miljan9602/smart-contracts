@@ -6,6 +6,7 @@ import "../interfaces/AggregatorV3Interface.sol";
 import "../libraries/SafeMath.sol";
 import "../interfaces/IHordTicketFactory.sol";
 import "../interfaces/IHordTreasury.sol";
+import "./HPool.sol";
 
 /**
  * HPoolManager contract.
@@ -304,6 +305,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hPool storage hp = hPools[poolId];
         require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in subscription state.");
         require(hp.followersEthDeposit >= getMinSubscriptionToLaunchInETH(), "hPool subscription amount is below threshold.");
+
+        //TODO: Deploy hPool contract
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
     }
 
