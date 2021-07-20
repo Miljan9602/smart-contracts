@@ -342,8 +342,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         payServiceFeeToTreasury(poolId, treasuryFeeETH);
 
-        hpContract.depositBudgetFollowers.value(hp.followersEthDeposit.sub(treasuryFeeETH))();
-        hpContract.depositBudgetChampion.value(hp.championEthDeposit)();
+        hpContract.depositBudgetFollowers{value: hp.followersEthDeposit.sub(treasuryFeeETH)}();
+        hpContract.depositBudgetChampion{value: hp.championEthDeposit}();
 
         hp.treasuryFeePaid = treasuryFeeETH;
 
