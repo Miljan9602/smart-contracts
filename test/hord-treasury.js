@@ -27,7 +27,7 @@ async function setupAccounts () {
     alice = accounts[9];
     aliceAddress = await alice.getAddress();
 
-    bob = accounts[10];
+    bob = accounts[5];
     bobAddress = await bob.getAddress();
 }
 
@@ -83,13 +83,13 @@ describe('HordTreasury Test', () => {
             .to.be.revertedWith("HordTreasury: Insufficient balance");
         });
 
-        it('shoud NOT withdraw to the same contract', async() => {
+        it('should NOT withdraw to the same contract', async() => {
             hordTreasuryContract = hordTreasuryContract.connect(hordCongress);
             await expect(hordTreasuryContract.withdrawToken(hordTreasuryContract.address, hordToken.address, toHordDenomination(10)))
             .to.be.revertedWith("HordTreasury: Can not withdraw to HordTreasury contract");
         });
 
-        it('shoud deposit HORD ERC20 token', async() => {
+        it('should deposit HORD ERC20 token', async() => {
             // Transfer HORD ERC20 token to alice and bob
             await hordToken.connect(owner).transfer(aliceAddress, toHordDenomination(100));
             await hordToken.connect(owner).transfer(bobAddress, toHordDenomination(100));
@@ -98,7 +98,7 @@ describe('HordTreasury Test', () => {
             await hordToken.connect(alice).approve(hordTreasuryContract.address, toHordDenomination(10));
             await hordToken.connect(bob).approve(hordTreasuryContract.address, toHordDenomination(10));
 
-            // Deposit HORD ERC20 tokesn
+            // Deposit HORD ERC20 tokens
             await hordTreasuryContract.connect(alice).depositToken(hordToken.address, toHordDenomination(10));
             let tokenBalance = await hordTreasuryContract.getTokenBalance(hordToken.address)
             expect(tokenBalance).to.be.equal(toHordDenomination(10));
@@ -116,7 +116,7 @@ describe('HordTreasury Test', () => {
             await keyToken.connect(alice).approve(hordTreasuryContract.address, toHordDenomination(10));
             await keyToken.connect(bob).approve(hordTreasuryContract.address, toHordDenomination(10));
 
-            // Deposit KEY ERC20 tokesn
+            // Deposit KEY ERC20 tokens
             await hordTreasuryContract.connect(alice).depositToken(keyToken.address, toHordDenomination(10));
             tokenBalance = await hordTreasuryContract.getTokenBalance(keyToken.address)
             expect(tokenBalance).to.be.equal(toHordDenomination(10));
@@ -127,12 +127,12 @@ describe('HordTreasury Test', () => {
 
         });
 
-        it('shoud NOT be withdrawn ERC20 token by non-congress address', async() => {
+        it('should NOT be withdrawn ERC20 token by non-congress address', async() => {
             await expect(hordTreasuryContract.connect(owner).withdrawToken(aliceAddress, hordToken.address, toHordDenomination(1)))
             .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
-        it('shoud withdraw ERC20 token', async() => {
+        it('should withdraw ERC20 token', async() => {
             // Withdraw Hord ERC20 token
             await hordTreasuryContract.connect(hordCongress).withdrawToken(aliceAddress, hordToken.address, toHordDenomination(1));
 
@@ -151,22 +151,37 @@ describe('HordTreasury Test', () => {
             tokenBalance = await keyToken.balanceOf(aliceAddress);
             expect(tokenBalance).to.be.equal(toHordDenomination(100));
         });
+
+        it('should totalTokenWithdrawn is properly updated', async() => {
+
+            let tknBalance = await hordTreasuryContract.totalTokenWithdrawn(hordToken.address);
+
+            expect(await hordTreasuryContract.connect(hordCongress).withdrawToken(aliceAddress, hordToken.address, toHordDenomination(10)))
+                .to.emit(hordTreasuryContract, "WithdrawToken")
+                .withArgs(aliceAddress, hordToken.address, toHordDenomination(10));
+
+            const resp = await hordTreasuryContract.totalTokenWithdrawn(hordToken.address);
+            expect(new BigNumber.from(tknBalance).add(toHordDenomination(10))).to.be.equal(resp);
+
+        });
+
     });
 
     describe('Deposit and Withdraw Ether', async() => {
-        it('shoud NOT withdraw from the contract with zero token amount', async() => {
+
+        it('should NOT withdraw from the contract with zero token amount', async() => {
             hordTreasuryContract = hordTreasuryContract.connect(hordCongress);
             await expect(hordTreasuryContract.withdrawEther(aliceAddress, toHordDenomination(10)))
             .to.be.revertedWith("HordTreasury: Failed to send Ether");
         });
 
-        it('shoud NOT withdraw to the same contract', async() => {
+        it('should NOT withdraw to the same contract', async() => {
             hordTreasuryContract = hordTreasuryContract.connect(hordCongress);
             await expect(hordTreasuryContract.withdrawEther(hordTreasuryContract.address, toHordDenomination(10)))
             .to.be.revertedWith("HordTreasury: Can not withdraw to HordTreasury contract");
         });
 
-        it('shoud deposit Ether', async() => {
+        it('should deposit Ether', async() => {
             const tx = await alice.sendTransaction({
                 to: hordTreasuryContract.address,
                 value: ethers.utils.parseEther("1")
@@ -175,12 +190,45 @@ describe('HordTreasury Test', () => {
             expect(ethBalance).to.be.equal(ethers.utils.parseEther("1"));
         });
 
-        it('shoud NOT withdraw Ether by non-congress address', async() => {
+
+        it('should totalETHWithdrawn is properly updated', async() => {
+
+            await bob.sendTransaction({
+                to: hordTreasuryContract.address,
+                value: ethers.utils.parseEther("5")
+            });
+
+            let ethBalance = await hordTreasuryContract.totalETHWithdrawn();
+
+            expect(await hordTreasuryContract.connect(hordCongress).withdrawEther(aliceAddress, ethers.utils.parseEther("1")))
+                .to.emit(hordTreasuryContract,"WithdrawEther")
+                .withArgs(aliceAddress, ethers.utils.parseEther("1"));
+
+            const resp = await hordTreasuryContract.totalETHWithdrawn();
+            expect(resp).to.be.equal(new BigNumber.from(ethBalance).add(ethers.utils.parseEther("1")));
+
+        });
+
+        it('should totalETHReceived is properly updated', async() => {
+
+            let ethBalance = await hordTreasuryContract.totalETHReceived();
+
+            await bob.sendTransaction({
+                to: hordTreasuryContract.address,
+                value: ethers.utils.parseEther("0.000005")
+            });
+
+            const resp = await hordTreasuryContract.totalETHReceived();
+            expect(new BigNumber.from(ethBalance).add(ethers.utils.parseEther("0.000005"))).to.be.equal(resp);
+
+        });
+
+        it('should NOT withdraw Ether by non-congress address', async() => {
             await expect(hordTreasuryContract.connect(owner).withdrawEther(aliceAddress, ethers.utils.parseEther("0.1")))
             .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
-        it('shoud withdraw Ether', async() => {
+        it('should withdraw Ether', async() => {
             let oldContractEthBalance = await hordTreasuryContract.getEtherBalance();
             let oldBobEthBalance = await bob.getBalance();
 
