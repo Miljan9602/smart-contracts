@@ -54,6 +54,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         bool isValidated;
         uint256 followersEthDeposit;
         address hPoolContractAddress;
+        uint256 treasuryFeePaid;
     }
 
     // Instance of oracle
@@ -121,8 +122,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     /**
      * @notice          Internal function to pay service to hord treasury contract
      */
-    function payServiceFeeToTreasury(uint amount) internal {
+    function payServiceFeeToTreasury(uint256 poolId, uint256 amount) internal {
         safeTransferETH(address(hordTreasury), amount);
+        emit ServiceFeePaid(poolId, amount);
     }
 
 
@@ -291,6 +293,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
         require(s.amountEth == 0, "User can not subscribe more than once.");
 
+
         uint256 numberOfTicketsToUse = getRequiredNumberOfTicketsToUse(msg.value);
         require(numberOfTicketsToUse > 0);
 
@@ -320,14 +323,30 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 poolId
     )
     public
-    onlyMaintainer {
+    onlyMaintainer
+    {
         hPool storage hp = hPools[poolId];
         require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in subscription state.");
         require(hp.followersEthDeposit >= getMinSubscriptionToLaunchInETH(), "hPool subscription amount is below threshold.");
 
-
         require(hp.poolState == PoolState.SUBSCRIPTION, "endSubscriptionPhase: Bad state transition.");
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
+
+        // Deploy the HPool contract
+        HPool hpContract = new HPool(hordCongress, address(maintainersRegistry));
+
+        // Set the deployed address of hPool
+        hp.hPoolContractAddress = address(hpContract);
+
+        uint256 treasuryFeeETH = hp.followersEthDeposit.mul(serviceFeePercent).div(serviceFeePrecision);
+
+        payServiceFeeToTreasury(poolId, treasuryFeeETH);
+
+        hpContract.depositBudgetFollowers.value(hp.followersEthDeposit.sub(treasuryFeeETH))();
+        hpContract.depositBudgetChampion.value(hp.championEthDeposit)();
+
+        hp.treasuryFeePaid = treasuryFeeETH;
+
         // Trigger event that pool state is changed
         emit HPoolStateChanged(poolId, hp.poolState);
     }
