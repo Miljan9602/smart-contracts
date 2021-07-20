@@ -24,6 +24,10 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     // States of the pool contract
     enum PoolState {PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, LIVE}
 
+    // Fee charged for the maintainers work
+    uint256 public serviceFeePercent;
+    // Precision for percent unit
+    uint256 public serviceFeePrecision;
     // Minimal subscription which should be collected in order to launch HPool.
     uint256 public minimalSubscriptionToLaunchPool;
     // Minimal amount of USD to initialize pool (for champions)
@@ -172,6 +176,18 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit MaximalUSDAllocationPerTicket(maxUSDAllocationPerTicket);
     }
 
+    function setServiceFeePercentAndPrecision(
+        uint256 _serviceFeePercent,
+        uint256 _serviceFeePrecision
+    )
+    external
+    onlyMaintainer
+    {
+        require(_serviceFeePercent <= _serviceFeePrecision, "setServiceFeePercentAndPrecision: Bad input.");
+
+        serviceFeePercent = _serviceFeePercent;
+        serviceFeePrecision = _serviceFeePrecision;
+    }
 
     /**
      * @notice          Function where champion can create his pool.
