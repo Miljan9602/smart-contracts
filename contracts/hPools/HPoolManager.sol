@@ -232,7 +232,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      * @param           poolId is the ID of the pool contract.
      */
     function setNftForPool(
-        uint poolId,
+        uint256 poolId,
         uint256 _nftTicketId
     )
     external
