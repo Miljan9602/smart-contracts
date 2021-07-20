@@ -1,11 +1,15 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import "../system/HordMiddleware.sol";
+
 import "../interfaces/AggregatorV3Interface.sol";
-import "../libraries/SafeMath.sol";
 import "../interfaces/IHordTicketFactory.sol";
 import "../interfaces/IHordTreasury.sol";
+
+import "../system/HordMiddleware.sol";
+import "../libraries/SafeMath.sol";
+
+import "./HPool.sol";
 
 /**
  * HPoolManager contract.
@@ -20,6 +24,10 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     // States of the pool contract
     enum PoolState {PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, LIVE}
 
+    // Fee charged for the maintainers work
+    uint256 public serviceFeePercent;
+    // Precision for percent unit
+    uint256 public serviceFeePrecision;
     // Minimal subscription which should be collected in order to launch HPool.
     uint256 public minimalSubscriptionToLaunchPool;
     // Minimal amount of USD to initialize pool (for champions)
@@ -36,7 +44,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 numberOfTickets;
     }
 
-    // Hpool struct
+    // HPool struct
     struct hPool {
         PoolState poolState;
         uint256 championEthDeposit;
@@ -45,7 +53,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 nftTicketId;
         bool isValidated;
         uint256 followersEthDeposit;
-        address hPoolAddress;
+        address hPoolContractAddress;
+        uint256 treasuryFeePaid;
     }
 
     // Instance of oracle
@@ -113,8 +122,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     /**
      * @notice          Internal function to pay service to hord treasury contract
      */
-    function payServiceFeeToTreasury(uint amount) internal {
+    function payServiceFeeToTreasury(uint256 poolId, uint256 amount) internal {
         safeTransferETH(address(hordTreasury), amount);
+        emit ServiceFeePaid(poolId, amount);
     }
 
 
@@ -168,6 +178,18 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit MaximalUSDAllocationPerTicket(maxUSDAllocationPerTicket);
     }
 
+    function setServiceFeePercentAndPrecision(
+        uint256 _serviceFeePercent,
+        uint256 _serviceFeePrecision
+    )
+    external
+    onlyMaintainer
+    {
+        require(_serviceFeePercent <= _serviceFeePrecision, "setServiceFeePercentAndPrecision: Bad input.");
+
+        serviceFeePercent = _serviceFeePercent;
+        serviceFeePrecision = _serviceFeePrecision;
+    }
 
     /**
      * @notice          Function where champion can create his pool.
@@ -249,7 +271,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         hPool storage hp = hPools[poolId];
 
-        require(hp.poolState == PoolState.TICKET_SALE, "Bad state transition.");
+        require(hp.poolState == PoolState.TICKET_SALE, "startSubscriptionPhase: Bad state transition.");
         hp.poolState = PoolState.SUBSCRIPTION;
 
         emit HPoolStateChanged(poolId, hp.poolState);
@@ -270,6 +292,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
         require(s.amountEth == 0, "User can not subscribe more than once.");
+
 
         uint256 numberOfTicketsToUse = getRequiredNumberOfTicketsToUse(msg.value);
         require(numberOfTicketsToUse > 0);
@@ -300,11 +323,32 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 poolId
     )
     public
-    onlyMaintainer {
+    onlyMaintainer
+    {
         hPool storage hp = hPools[poolId];
         require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in subscription state.");
         require(hp.followersEthDeposit >= getMinSubscriptionToLaunchInETH(), "hPool subscription amount is below threshold.");
+
+        require(hp.poolState == PoolState.SUBSCRIPTION, "endSubscriptionPhase: Bad state transition.");
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
+
+        // Deploy the HPool contract
+        HPool hpContract = new HPool(hordCongress, address(maintainersRegistry));
+
+        // Set the deployed address of hPool
+        hp.hPoolContractAddress = address(hpContract);
+
+        uint256 treasuryFeeETH = hp.followersEthDeposit.mul(serviceFeePercent).div(serviceFeePrecision);
+
+        payServiceFeeToTreasury(poolId, treasuryFeeETH);
+
+        hpContract.depositBudgetFollowers{value: hp.followersEthDeposit.sub(treasuryFeeETH)}();
+        hpContract.depositBudgetChampion{value: hp.championEthDeposit}();
+
+        hp.treasuryFeePaid = treasuryFeeETH;
+
+        // Trigger event that pool state is changed
+        emit HPoolStateChanged(poolId, hp.poolState);
     }
 
 
@@ -501,4 +545,28 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
             subscription.numberOfTickets
         );
     }
+
+
+    /**
+     * @notice          Function to get information for specific pool
+     * @param           poolId is the ID of the pool
+     */
+    function getPoolInfo(
+        uint256 poolId
+    )
+    external
+    view
+    returns (
+        uint256, uint256, address, uint256, uint256, bool, uint256, address, uint256
+    )
+    {
+        // Load pool into memory
+        hPool memory hp = hPools[poolId];
+
+        return (
+            uint256(hp.poolState), hp.championEthDeposit, hp.championAddress, hp.createdAt, hp.nftTicketId,
+            hp.isValidated, hp.followersEthDeposit, hp.hPoolContractAddress, hp.treasuryFeePaid
+        );
+    }
+
 }
