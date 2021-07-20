@@ -1,6 +1,7 @@
 pragma solidity 0.6.12;
 
 import "../system/HordMiddleware.sol";
+import "../interfaces/IHPoolManager.sol";
 
 /**
  * HPool contract.
@@ -10,13 +11,13 @@ import "../system/HordMiddleware.sol";
  */
 contract HPool is HordMiddleware {
 
-    address public hPoolManager;
+    IHPoolManager public hPoolManager;
 
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
 
     modifier onlyHPoolManager {
-        require(msg.sender == hPoolManager);
+        require(msg.sender == address(hPoolManager));
         _;
     }
 
@@ -27,7 +28,7 @@ contract HPool is HordMiddleware {
     public
     {
         setCongressAndMaintainers(_hordCongress, _hordMaintainersRegistry);
-        hPoolManager = msg.sender;
+        hPoolManager = IHPoolManager(msg.sender);
     }
 
 
