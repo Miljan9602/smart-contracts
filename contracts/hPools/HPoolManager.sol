@@ -545,4 +545,26 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
             subscription.numberOfTickets
         );
     }
+
+
+    /**
+     * @notice          Function to get information for specific pool
+     * @param           poolId is the ID of the pool
+     */
+    function getPoolInfo(uint256 poolId)
+    external
+    view
+    returns (
+        PoolState, uint256, address, uint256, uint256, bool, uint256, address, uint256
+    )
+    {
+        // Load pool into memory
+        hPool memory hp = hPools[poolId];
+
+        return (
+            hp.poolState, hp.championEthDeposit, hp.championAddress, hp.createdAt, hp.nftTicketId,
+            hp.isValidated, hp.followersEthDeposit, hp.hPoolContractAddress, hp.treasuryFeePaid
+        );
+    }
+
 }
