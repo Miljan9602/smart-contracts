@@ -1,11 +1,14 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import "../system/HordMiddleware.sol";
+
 import "../interfaces/AggregatorV3Interface.sol";
-import "../libraries/SafeMath.sol";
 import "../interfaces/IHordTicketFactory.sol";
 import "../interfaces/IHordTreasury.sol";
+
+import "../system/HordMiddleware.sol";
+import "../libraries/SafeMath.sol";
+
 import "./HPool.sol";
 
 /**
@@ -307,7 +310,10 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         require(hp.followersEthDeposit >= getMinSubscriptionToLaunchInETH(), "hPool subscription amount is below threshold.");
 
         //TODO: Deploy hPool contract
+        
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
+        // Trigger event that pool state is changed
+        emit HPoolStateChanged(poolId, hp.poolState);
     }
 
 
