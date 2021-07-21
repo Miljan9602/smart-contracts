@@ -86,7 +86,9 @@ describe('HordTicketFactory & HordTicketManager Test', () => {
         await setupAccounts();
         await setupContracts()
     });
+    describe('Test initial values are properly set', async () => {
 
+    });
     describe('Pause and Unpause contract', async() => {
         it('should NOT be able to pause contract from NON-congress address', async() => {
            ticketFactoryContract = ticketFactoryContract.connect(user);
