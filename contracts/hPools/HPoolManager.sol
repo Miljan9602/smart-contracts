@@ -22,7 +22,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     using SafeMath for *;
 
     // States of the pool contract
-    enum PoolState {PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, LIVE}
+    enum PoolState{
+        PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, ACTIVE, FINISHING, ENDED
+    }
 
     // Fee charged for the maintainers work
     uint256 public serviceFeePercent;
@@ -113,7 +115,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     /**
      * @notice          Internal function to handle safe transferring of ETH.
      */
-    function safeTransferETH(address to, uint value) internal {
+    function safeTransferETH(address to, uint256 value) internal {
         (bool success,) = to.call{value:value}(new bytes(0));
         require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
     }
@@ -261,7 +263,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      *                  state of the hPool was TICKET_SALE.
      * @param           poolId is the ID of the pool contract.
      */
-    function startSubscriptionPhase(
+    function startSubscriptionPhase( //TODO rename startPrivateSubscriptionPhase
         uint256 poolId
     )
     external
@@ -273,7 +275,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         require(hp.poolState == PoolState.TICKET_SALE, "startSubscriptionPhase: Bad state transition.");
         hp.poolState = PoolState.SUBSCRIPTION;
-
+        //TODO ideally this should block further tickets sales (pause them)
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
@@ -281,7 +283,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     /**
      * @notice          Function for users to subscribe for the hPool.
      */
-    function subscribeForHPool(
+    function subscribeForHPool(//TODO rename privateSubscribeForHpool
         uint256 poolId
     )
     external
@@ -319,7 +321,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     /**
      * @notice          Maintainer should end subscription phase in case all the criteria is reached
      */
-    function endSubscriptionPhase(
+    function endSubscriptionPhase( //TODO rename to endSubscriptionPhaseAndInitHPool
         uint256 poolId
     )
     public
