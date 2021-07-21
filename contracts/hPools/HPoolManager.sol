@@ -22,7 +22,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     using SafeMath for *;
 
     // States of the pool contract
-    enum PoolState {PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, LIVE}
+    enum PoolState{
+        PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, ACTIVE, FINISHING, ENDED
+    }
 
     // Fee charged for the maintainers work
     uint256 public serviceFeePercent;
