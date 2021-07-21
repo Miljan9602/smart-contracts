@@ -261,7 +261,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      *                  state of the hPool was TICKET_SALE.
      * @param           poolId is the ID of the pool contract.
      */
-    function startSubscriptionPhase(
+    function startSubscriptionPhase( //TODO rename startPrivateSubscriptionPhase
         uint256 poolId
     )
     external
@@ -273,7 +273,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         require(hp.poolState == PoolState.TICKET_SALE, "startSubscriptionPhase: Bad state transition.");
         hp.poolState = PoolState.SUBSCRIPTION;
-
+        //TODO ideally this should block further tickets sales (pause them)
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
@@ -281,7 +281,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     /**
      * @notice          Function for users to subscribe for the hPool.
      */
-    function subscribeForHPool(
+    function subscribeForHPool(//TODO rename privateSubscribeForHpool
         uint256 poolId
     )
     external
@@ -319,7 +319,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     /**
      * @notice          Maintainer should end subscription phase in case all the criteria is reached
      */
-    function endSubscriptionPhase(
+    function endSubscriptionPhase( //TODO rename to endSubscriptionPhaseAndInitHPool
         uint256 poolId
     )
     public
