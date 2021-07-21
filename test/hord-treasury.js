@@ -9,7 +9,12 @@ const hre = require("hardhat");
 
 let hordCongress, hordCongressAddress, accounts, owner, ownerAddr, alice, aliceAddress, bob, bobAddress, maintainer, maintainerAddr,
     config,
-    hordToken, keyToken, maintainersRegistryContract, hordTreasuryContract;
+    hordToken, keyToken, maintainersRegistryContract, hordTreasuryContract, tokenBalanceBefore, tokenBalanceAfter,
+    etherBalanceBefore, etherBalanceAfter;
+
+const tokenTransferAmount = 100;
+const tokenCheckAmount = 10;
+const depositCheckAmount = 20;
 
 async function setupAccounts () {
     config = configuration[hre.network.name];
@@ -79,7 +84,7 @@ describe('HordTreasury Test', () => {
     describe('Deposit and Withdraw ERC20 tokens', async() => {
         it('shoud NOT withdraw from the contract with zero token amount', async() => {
             hordTreasuryContract = hordTreasuryContract.connect(hordCongress);
-            await expect(hordTreasuryContract.withdrawToken(ownerAddr, hordToken.address, toHordDenomination(10)))
+            await expect(hordTreasuryContract.withdrawToken(ownerAddr, hordToken.address, toHordDenomination(tokenCheckAmount)))
             .to.be.revertedWith("HordTreasury: Insufficient balance");
         });
 
@@ -91,39 +96,39 @@ describe('HordTreasury Test', () => {
 
         it('should deposit HORD ERC20 token', async() => {
             // Transfer HORD ERC20 token to alice and bob
-            await hordToken.connect(owner).transfer(aliceAddress, toHordDenomination(100));
-            await hordToken.connect(owner).transfer(bobAddress, toHordDenomination(100));
+            await hordToken.connect(owner).transfer(aliceAddress, toHordDenomination(tokenTransferAmount));
+            await hordToken.connect(owner).transfer(bobAddress, toHordDenomination(tokenTransferAmount));
 
             // Approve HORD ERC20 token
-            await hordToken.connect(alice).approve(hordTreasuryContract.address, toHordDenomination(10));
-            await hordToken.connect(bob).approve(hordTreasuryContract.address, toHordDenomination(10));
+            await hordToken.connect(alice).approve(hordTreasuryContract.address, toHordDenomination(tokenCheckAmount));
+            await hordToken.connect(bob).approve(hordTreasuryContract.address, toHordDenomination(tokenCheckAmount));
 
             // Deposit HORD ERC20 tokens
-            await hordTreasuryContract.connect(alice).depositToken(hordToken.address, toHordDenomination(10));
+            await hordTreasuryContract.connect(alice).depositToken(hordToken.address, toHordDenomination(tokenCheckAmount));
             let tokenBalance = await hordTreasuryContract.getTokenBalance(hordToken.address)
-            expect(tokenBalance).to.be.equal(toHordDenomination(10));
+            expect(tokenBalance).to.be.equal(toHordDenomination(tokenCheckAmount));
 
-            await hordTreasuryContract.connect(bob).depositToken(hordToken.address, toHordDenomination(10));
+            await hordTreasuryContract.connect(bob).depositToken(hordToken.address, toHordDenomination(tokenCheckAmount));
             tokenBalance = await hordTreasuryContract.getTokenBalance(hordToken.address)
-            expect(tokenBalance).to.be.equal(toHordDenomination(20));
+            expect(tokenBalance).to.be.equal(toHordDenomination(depositCheckAmount));
 
 
             // Transfer KEY ERC20 token to alice and bob
-            await keyToken.connect(owner).transfer(aliceAddress, toHordDenomination(100));
-            await keyToken.connect(owner).transfer(bobAddress, toHordDenomination(100));
+            await keyToken.connect(owner).transfer(aliceAddress, toHordDenomination(tokenTransferAmount));
+            await keyToken.connect(owner).transfer(bobAddress, toHordDenomination(tokenTransferAmount));
 
             // Approve KEY ERC20 token
-            await keyToken.connect(alice).approve(hordTreasuryContract.address, toHordDenomination(10));
-            await keyToken.connect(bob).approve(hordTreasuryContract.address, toHordDenomination(10));
+            await keyToken.connect(alice).approve(hordTreasuryContract.address, toHordDenomination(tokenCheckAmount));
+            await keyToken.connect(bob).approve(hordTreasuryContract.address, toHordDenomination(tokenCheckAmount));
 
             // Deposit KEY ERC20 tokens
-            await hordTreasuryContract.connect(alice).depositToken(keyToken.address, toHordDenomination(10));
+            await hordTreasuryContract.connect(alice).depositToken(keyToken.address, toHordDenomination(tokenCheckAmount));
             tokenBalance = await hordTreasuryContract.getTokenBalance(keyToken.address)
-            expect(tokenBalance).to.be.equal(toHordDenomination(10));
+            expect(tokenBalance).to.be.equal(toHordDenomination(tokenCheckAmount));
 
-            await hordTreasuryContract.connect(bob).depositToken(keyToken.address, toHordDenomination(10));
+            await hordTreasuryContract.connect(bob).depositToken(keyToken.address, toHordDenomination(tokenCheckAmount));
             tokenBalance = await hordTreasuryContract.getTokenBalance(keyToken.address)
-            expect(tokenBalance).to.be.equal(toHordDenomination(20));
+            expect(tokenBalance).to.be.equal(toHordDenomination(depositCheckAmount));
 
         });
 
@@ -143,88 +148,92 @@ describe('HordTreasury Test', () => {
             expect(tokenBalance).to.be.equal(toHordDenomination(91));
 
             // Withdraw KEY ERC20 token
-            await hordTreasuryContract.connect(hordCongress).withdrawToken(aliceAddress, keyToken.address, toHordDenomination(10));
+            await hordTreasuryContract.connect(hordCongress).withdrawToken(aliceAddress, keyToken.address, toHordDenomination(tokenCheckAmount));
 
             tokenBalance = await hordTreasuryContract.getTokenBalance(keyToken.address)
-            expect(tokenBalance).to.be.equal(toHordDenomination(10));
+            expect(tokenBalance).to.be.equal(toHordDenomination(tokenCheckAmount));
 
             tokenBalance = await keyToken.balanceOf(aliceAddress);
-            expect(tokenBalance).to.be.equal(toHordDenomination(100));
+            expect(tokenBalance).to.be.equal(toHordDenomination(tokenTransferAmount));
         });
 
-        it('should totalTokenWithdrawn is properly updated', async() => {
+        it('should check that totalTokenWithdrawn is properly updated', async() => {
 
-            let tknBalance = await hordTreasuryContract.totalTokenWithdrawn(hordToken.address);
+            tokenBalanceBefore = await hordTreasuryContract.totalTokenWithdrawn(hordToken.address);
 
-            expect(await hordTreasuryContract.connect(hordCongress).withdrawToken(aliceAddress, hordToken.address, toHordDenomination(10)))
+            expect(await hordTreasuryContract.connect(hordCongress).withdrawToken(aliceAddress, hordToken.address, toHordDenomination(tokenCheckAmount)))
                 .to.emit(hordTreasuryContract, "WithdrawToken")
-                .withArgs(aliceAddress, hordToken.address, toHordDenomination(10));
+                .withArgs(aliceAddress, hordToken.address, toHordDenomination(tokenCheckAmount));
 
-            const resp = await hordTreasuryContract.totalTokenWithdrawn(hordToken.address);
-            expect(new BigNumber.from(tknBalance).add(toHordDenomination(10))).to.be.equal(resp);
+            tokenBalanceAfter = await hordTreasuryContract.totalTokenWithdrawn(hordToken.address);
+            expect(new BigNumber.from(tokenBalanceBefore).add(toHordDenomination(tokenCheckAmount))).to.be.equal(tokenBalanceAfter);
 
         });
 
-        it('should totalTokenReceived is properly updated', async() => {
-            let tknBalance = await hordTreasuryContract.totalTokenReceived(hordToken.address);
+        it('should check that totalTokenReceived is properly updated', async() => {
 
-            await hordToken.connect(owner).approve(hordTreasuryContract.address, toHordDenomination(100));
+            tokenBalanceBefore = await hordTreasuryContract.totalTokenReceived(hordToken.address);
 
-            await expect(hordTreasuryContract.connect(owner).depositToken(hordToken.address, toHordDenomination(10)))
+            await hordToken.connect(owner).approve(hordTreasuryContract.address, toHordDenomination(tokenTransferAmount));
+
+            await expect(hordTreasuryContract.connect(owner).depositToken(hordToken.address, toHordDenomination(tokenCheckAmount)))
                .to.emit(hordTreasuryContract,"DepositToken")
-                .withArgs(owner.address, hordToken.address, toHordDenomination(10));
+                .withArgs(owner.address, hordToken.address, toHordDenomination(tokenCheckAmount));
 
-            const resp = await hordTreasuryContract.totalTokenReceived(hordToken.address);
-            expect(new BigNumber.from(tknBalance).add(toHordDenomination(10))).to.be.equal(resp);
+            tokenBalanceAfter = await hordTreasuryContract.totalTokenReceived(hordToken.address);
+            expect(new BigNumber.from(tokenBalanceBefore).add(toHordDenomination(tokenCheckAmount))).to.be.equal(tokenBalanceAfter);
         });
 
     });
 
     describe('Deposit and Withdraw Ether', async() => {
 
+        const withdrawEtherAmount = 10;
+        const checkEtherValue = "1";
+
         it('should NOT withdraw from the contract with zero token amount', async() => {
             hordTreasuryContract = hordTreasuryContract.connect(hordCongress);
-            await expect(hordTreasuryContract.withdrawEther(aliceAddress, toHordDenomination(10)))
+            await expect(hordTreasuryContract.withdrawEther(aliceAddress, toHordDenomination(withdrawEtherAmount)))
             .to.be.revertedWith("HordTreasury: Failed to send Ether");
         });
 
         it('should NOT withdraw to the same contract', async() => {
             hordTreasuryContract = hordTreasuryContract.connect(hordCongress);
-            await expect(hordTreasuryContract.withdrawEther(hordTreasuryContract.address, toHordDenomination(10)))
+            await expect(hordTreasuryContract.withdrawEther(hordTreasuryContract.address, toHordDenomination(withdrawEtherAmount)))
             .to.be.revertedWith("HordTreasury: Can not withdraw to HordTreasury contract");
         });
 
         it('should deposit Ether', async() => {
             const tx = await alice.sendTransaction({
                 to: hordTreasuryContract.address,
-                value: ethers.utils.parseEther("1")
+                value: ethers.utils.parseEther(checkEtherValue)
             });
             let ethBalance = await hordTreasuryContract.getEtherBalance();
-            expect(ethBalance).to.be.equal(ethers.utils.parseEther("1"));
+            expect(ethBalance).to.be.equal(ethers.utils.parseEther(checkEtherValue));
         });
 
 
-        it('should totalETHWithdrawn is properly updated', async() => {
+        it('should check that totalETHWithdrawn is properly updated', async() => {
 
             await bob.sendTransaction({
                 to: hordTreasuryContract.address,
                 value: ethers.utils.parseEther("5")
             });
 
-            let ethBalance = await hordTreasuryContract.totalETHWithdrawn();
+            etherBalanceBefore = await hordTreasuryContract.totalETHWithdrawn();
 
-            expect(await hordTreasuryContract.connect(hordCongress).withdrawEther(aliceAddress, ethers.utils.parseEther("1")))
+            expect(await hordTreasuryContract.connect(hordCongress).withdrawEther(aliceAddress, ethers.utils.parseEther(checkEtherValue)))
                 .to.emit(hordTreasuryContract,"WithdrawEther")
-                .withArgs(aliceAddress, ethers.utils.parseEther("1"));
+                .withArgs(aliceAddress, ethers.utils.parseEther(checkEtherValue));
 
-            const resp = await hordTreasuryContract.totalETHWithdrawn();
-            expect(resp).to.be.equal(new BigNumber.from(ethBalance).add(ethers.utils.parseEther("1")));
+            etherBalanceAfter = await hordTreasuryContract.totalETHWithdrawn();
+            expect(etherBalanceAfter).to.be.equal(new BigNumber.from(etherBalanceBefore).add(ethers.utils.parseEther(checkEtherValue)));
 
         });
 
-        it('should totalETHReceived is properly updated', async() => {
+        it('should check that totalETHReceived is properly updated', async() => {
 
-            let ethBalance = await hordTreasuryContract.totalETHReceived();
+            etherBalanceBefore = await hordTreasuryContract.totalETHReceived();
 
             await expect(bob.sendTransaction({
                 to: hordTreasuryContract.address,
@@ -232,8 +241,8 @@ describe('HordTreasury Test', () => {
             })).to.emit(hordTreasuryContract, "DepositEther")
                 .withArgs(bobAddress, ethers.utils.parseEther("0.000005"));
 
-            const resp = await hordTreasuryContract.totalETHReceived();
-            expect(new BigNumber.from(ethBalance).add(ethers.utils.parseEther("0.000005"))).to.be.equal(resp);
+            etherBalanceAfter = await hordTreasuryContract.totalETHReceived();
+            expect(new BigNumber.from(etherBalanceBefore).add(ethers.utils.parseEther("0.000005"))).to.be.equal(etherBalanceAfter);
 
         });
 
