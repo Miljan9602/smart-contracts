@@ -92,14 +92,16 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
 
         const minTimeToStake = 100;
         const minAmountToStake = 100;
+        const falseAdress = "0x000000000000000000000000000000000000000000";
 
-        xit('should not let initialize twice.', async() => {
-            await ticketManagerContract.initialize(hordCongressAddress, maintainersRegistryContract.address, hordToken.address, config['minTimeToStake'],
-                toHordDenomination(config['minAmountToStake']));
+        it('should not let initialize twice.', async() => {
+            await expect(ticketManagerContract.initialize(hordCongressAddress, maintainersRegistryContract.address, hordToken.address, config['minTimeToStake'],
+                toHordDenomination(config['minAmountToStake']))).to.be.reverted;
+        });
 
-            await ticketManagerContract.initialize(hordCongressAddress, maintainersRegistryContract.address, hordToken.address, 100, 100).to.be.reverted;
-            await expect(ticketManagerContract.initialize(hordCongressAddress, maintainersRegistryContract.address, hordToken.address, 100, 100))
-                .to.be.reverted;
+        it('should not let initialize with false args', async() => {
+            await expect(ticketManagerContract.initialize(falseAdress, falseAdress, falseAdress, config['minTimeToStake'],
+                toHordDenomination(config['minAmountToStake']))).to.be.reverted;
         });
 
         it('should let hordCongress to call setHordTicketFactory function', async() => {
@@ -112,10 +114,10 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
                 .to.be.reverted;
         });
 
-        /*xit('should not let hordCongress to call setHordTicketFactory function with worng args', async() => {
-            await expect(ticketManagerContract.connect(hordCongress).setHordTicketFactory(user.address))
+        it('should not let hordCongress to call setHordTicketFactory function with worng args', async() => {
+            await expect(ticketManagerContract.connect(hordCongress).setHordTicketFactory(falseAdress))
                 .to.be.reverted;
-        });*/
+        });
 
         it('should let hordCongress to call setMinTimeToStake function', async() => {
             await ticketManagerContract.connect(hordCongress).setMinTimeToStake(minTimeToStake);
@@ -124,26 +126,18 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
 
         it('should not let user to call setMinTimeToStake function', async() => {
             await expect(ticketManagerContract.connect(user).setMinTimeToStake(minTimeToStake))
-                .to.be.reverted;
+                .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
-        /*xit('should not let hordCongress to call setMinTimeToStake function with worng args', async() => {
-            await ticketManagerContract.connect(user).setHordTicketFactory(ticketFactoryContract.address).to.be.reverted;
-        });*/
-
-        it('should let hordCongress to call setMinAmountToStake function', async() => {
+        xit('should let hordCongress to call setMinAmountToStake function', async() => {
             await ticketManagerContract.connect(hordCongress).setMinAmountToStake(minAmountToStake);
             expect(await ticketManagerContract.minAmountToStake()).to.equal(minAmountToStake);
         });
 
         it('should not let user to call setMinAmountToStake function', async() => {
             await expect(ticketManagerContract.connect(user).setMinAmountToStake(minAmountToStake))
-                .to.be.reverted;
+                .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
-
-        /*xit('should not let hordCongress to call setMinAmountToStake function with worng args', async() => {
-            await ticketManagerContract.connect(user).setHordTicketFactory(ticketFactoryContract.address).to.be.reverted;
-        });*/
 
     });
 
