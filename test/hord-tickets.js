@@ -51,7 +51,7 @@ async function setupContracts () {
 
 
     const HordTicketManager = await ethers.getContractFactory('HordTicketManager');
-    const hordTicketManager = await upgrades.deployProxy(HordTicketManager, [
+    hordTicketManager = await upgrades.deployProxy(HordTicketManager, [
             hordCongressAddress,
             maintainersRegistry.address,
             hordToken.address,
@@ -81,14 +81,72 @@ async function setupContracts () {
     await hordTicketManager.setHordTicketFactory(hordTicketFactory.address);
 }
 
-describe('HordTicketFactory & HordTicketManager Test', () => {
+describe('HordTicketFactory & HordTicketManager Test', async () => {
+
     before('setup contracts', async () => {
         await setupAccounts();
         await setupContracts()
     });
+
     describe('Test initial values are properly set', async () => {
 
+        const minTimeToStake = 100;
+        const minAmountToStake = 100;
+
+        xit('should not let initialize twice.', async() => {
+            await ticketManagerContract.initialize(hordCongressAddress, maintainersRegistryContract.address, hordToken.address, config['minTimeToStake'],
+                toHordDenomination(config['minAmountToStake']));
+
+            await ticketManagerContract.initialize(hordCongressAddress, maintainersRegistryContract.address, hordToken.address, 100, 100).to.be.reverted;
+            await expect(ticketManagerContract.initialize(hordCongressAddress, maintainersRegistryContract.address, hordToken.address, 100, 100))
+                .to.be.reverted;
+        });
+
+        it('should let hordCongress to call setHordTicketFactory function', async() => {
+            await ticketManagerContract.connect(hordCongress).setHordTicketFactory(ticketFactoryContract.address);
+            expect(await ticketManagerContract.hordTicketFactory()).to.equal(ticketFactoryContract.address);
+        });
+
+        it('should not let user to call setHordTicketFactory function', async() => {
+            await expect(ticketManagerContract.connect(user).setHordTicketFactory(ticketFactoryContract.address))
+                .to.be.reverted;
+        });
+
+        /*xit('should not let hordCongress to call setHordTicketFactory function with worng args', async() => {
+            await expect(ticketManagerContract.connect(hordCongress).setHordTicketFactory(user.address))
+                .to.be.reverted;
+        });*/
+
+        it('should let hordCongress to call setMinTimeToStake function', async() => {
+            await ticketManagerContract.connect(hordCongress).setMinTimeToStake(minTimeToStake);
+            expect(await ticketManagerContract.minTimeToStake()).to.equal(minTimeToStake);
+        });
+
+        it('should not let user to call setMinTimeToStake function', async() => {
+            await expect(ticketManagerContract.connect(user).setMinTimeToStake(minTimeToStake))
+                .to.be.reverted;
+        });
+
+        /*xit('should not let hordCongress to call setMinTimeToStake function with worng args', async() => {
+            await ticketManagerContract.connect(user).setHordTicketFactory(ticketFactoryContract.address).to.be.reverted;
+        });*/
+
+        it('should let hordCongress to call setMinAmountToStake function', async() => {
+            await ticketManagerContract.connect(hordCongress).setMinAmountToStake(minAmountToStake);
+            expect(await ticketManagerContract.minAmountToStake()).to.equal(minAmountToStake);
+        });
+
+        it('should not let user to call setMinAmountToStake function', async() => {
+            await expect(ticketManagerContract.connect(user).setMinAmountToStake(minAmountToStake))
+                .to.be.reverted;
+        });
+
+        /*xit('should not let hordCongress to call setMinAmountToStake function with worng args', async() => {
+            await ticketManagerContract.connect(user).setHordTicketFactory(ticketFactoryContract.address).to.be.reverted;
+        });*/
+
     });
+
     describe('Pause and Unpause contract', async() => {
         it('should NOT be able to pause contract from NON-congress address', async() => {
            ticketFactoryContract = ticketFactoryContract.connect(user);
