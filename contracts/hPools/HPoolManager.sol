@@ -103,9 +103,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     initializer
     external
     {
-        require(_hordCongress != address(0), "HordCongress address can not be 0x0.");
-        require(_maintainersRegistry != address(0), "MaintainersRegistry address can not be 0x0.");
-        require(_hordTicketFactory != address(0), "HordTicketFactory address can not be 0x0.");
+        require(_hordCongress != address(0));
+        require(_maintainersRegistry != address(0));
+        require(_hordTicketFactory != address(0));
 
         setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
         hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
@@ -140,7 +140,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     external
     onlyMaintainer
     {
-        require(linkOracleAddress != address(0), "Link oracle address can not be 0x0.");
+        require(linkOracleAddress != address(0));
         linkOracle = AggregatorV3Interface(linkOracleAddress);
 
         emit AggregatorInterfaceSet(linkOracleAddress);
@@ -157,7 +157,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     external
     onlyMaintainer
     {
-        require(_minUSDToInitPool != 0 , "Minimal USD to init pool must be > 0");
+        require(_minUSDToInitPool > 0);
         minUSDToInitPool = _minUSDToInitPool;
 
         emit MinimalUSDToInitPoolSet(minUSDToInitPool);
@@ -174,7 +174,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     external
     onlyMaintainer
     {
-        require(_maxUSDAllocationPerTicket != 0 , "Maximal USD allocation per ticket can not be 0.");
+        require(_maxUSDAllocationPerTicket > 0);
         maxUSDAllocationPerTicket = _maxUSDAllocationPerTicket;
 
         emit MaximalUSDAllocationPerTicket(maxUSDAllocationPerTicket);
@@ -187,7 +187,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     external
     onlyMaintainer
     {
-        require(_serviceFeePercent <= _serviceFeePrecision, "setServiceFeePercentAndPrecision: Bad input.");
+        require(_serviceFeePercent <= _serviceFeePrecision);
 
         serviceFeePercent = _serviceFeePercent;
         serviceFeePrecision = _serviceFeePrecision;
