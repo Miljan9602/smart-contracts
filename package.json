@@ -33,5 +33,8 @@
     "isomorphic-fetch": "^3.0.0",
     "stochasm": "^0.5.0",
     "zos-lib": "^2.4.3"
+  },
+  "scripts": {
+    "test": "npx hardhat coverage --network local --testfiles test/"
   }
 }
