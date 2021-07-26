@@ -13,6 +13,7 @@ import "./libraries/SafeMath.sol";
  * Github: madjarevicn
  */
 contract HordTicketManager is ERC1155HolderUpgradeable, HordMiddleware {
+
     using SafeMath for *;
     // Minimal time to stake in order to be eligible for claiming NFT
     uint256 public minTimeToStake;
