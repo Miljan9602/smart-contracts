@@ -1,7 +1,9 @@
 ## Hord.app Smart Contracts
 
 <img src="./favicon.png" width="100" style="float: left;">
+
 [![codecov](https://codecov.io/gh/hord/smart-contracts/branch/develop/graph/badge.svg?token=8f1gfxIpRK)](https://codecov.io/gh/hord/smart-contracts)
+
 _HORD enables crypto champions to tokenize and monetize their influence, and empowers crypto lovers to evolve from following news and tips to capitalizing on information flow._
 
 - Website: [https://hord.app][Official website]
