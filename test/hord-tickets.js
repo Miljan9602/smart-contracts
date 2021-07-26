@@ -268,10 +268,14 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         });
 
         it('should let to call getNumberOfStakesForUserAndToken function with right address', async() => {
-            let numberOfStakes = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId).length;
-            let resp = await hordTicketManager.connect(hordCongress).addressToTokenIdToStakes(userAddress, tokenId).length;
+            const numberOfStakes = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId);
+            console.log(parseInt(numberOfStakes,10));
 
-            expect(numberOfStakes).to.be.equal(resp);
+            console.log(userAddress, tokenId);
+            const resp = await hordTicketManager.addressToTokenIdToStakes(userAddress, tokenId, );
+
+            console.log(numberOfStakes);
+            expect(numberOfStakes).to.be.equal(resp.length);
         });
 
     });
