@@ -7,13 +7,13 @@ const { ethers, expect, isEthException, awaitTx, toHordDenomination, waitForSome
 const hre = require("hardhat");
 
 
-const falseAdress = "0x000000000000000000000000000000000000000000";
+const zeroAddress = "0x000000000000000000000000000000000000000000";
 
 let hordCongress, hordCongressAddress, accounts, owner, ownerAddr, maintainer, maintainerAddr,
     user, userAddress, config,
     hordToken, maintainersRegistryContract, ticketFactoryContract, ticketManagerContract,
     championId, supplyToMint, tx, tokenId, lastAddedId, ticketsToBuy, reservedTickets,
-    hordBalance, ticketsBalance, amountStaked, hordTicketManager, ticketFactory, factoryAdrdress
+    hordBalance, ticketsBalance, amountStaked, ticketFactory, factoryAddress
 
 async function setupAccounts () {
     config = configuration[hre.network.name];
@@ -32,7 +32,7 @@ async function setupAccounts () {
     userAddress = await user.getAddress()
 
     ticketFactory = accounts[4]
-    factoryAdrdress = await ticketFactory.getAddress()
+    factoryAddress = await ticketFactory.getAddress()
 
 }
 
@@ -105,52 +105,52 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         });
 
         it('should not let initialize with false args', async() => {
-            await expect(ticketManagerContract.initialize(falseAdress, falseAdress, falseAdress, config['minTimeToStake'],
+            await expect(ticketManagerContract.initialize(zeroAddress, zeroAddress, zeroAddress, config['minTimeToStake'],
                 toHordDenomination(config['minAmountToStake']))).to.be.reverted;
         });
 
         it('should let hordCongress to call setHordTicketFactory function', async() => {
-            await hordTicketManager.connect(hordCongress).setHordTicketFactory(ticketFactoryContract.address);
-            expect(await hordTicketManager.hordTicketFactory()).to.equal(ticketFactoryContract.address);
+            await ticketManagerContract.connect(hordCongress).setHordTicketFactory(ticketFactoryContract.address);
+            expect(await ticketManagerContract.hordTicketFactory()).to.equal(ticketFactoryContract.address);
         });
 
         it('should not let maintainer to call setHordTicketFactory function', async() => {
-            await expect(hordTicketManager.connect(maintainer).setHordTicketFactory(ticketFactoryContract.address))
+            await expect(ticketManagerContract.connect(maintainer).setHordTicketFactory(ticketFactoryContract.address))
                 .to.be.reverted;
         });
 
         it('should not let user to call setHordTicketFactory function', async() => {
-            await expect(hordTicketManager.connect(user).setHordTicketFactory(ticketFactoryContract.address))
+            await expect(ticketManagerContract.connect(user).setHordTicketFactory(ticketFactoryContract.address))
                 .to.be.reverted;
         });
 
         it('should not let hordCongress to call setHordTicketFactory function with worng args', async() => {
-            await expect(hordTicketManager.connect(hordCongress).setHordTicketFactory(falseAdress))
+            await expect(ticketManagerContract.connect(hordCongress).setHordTicketFactory(zeroAddress))
                 .to.be.reverted;
         });
 
         it('should let hordCongress to call setMinTimeToStake function', async() => {
-            await hordTicketManager.connect(hordCongress).setMinTimeToStake(minTimeToStake);
+            await ticketManagerContract.connect(hordCongress).setMinTimeToStake(minTimeToStake);
             expect(await ticketManagerContract.minTimeToStake()).to.equal(minTimeToStake);
         });
 
         it('should not let user to call setMinTimeToStake function', async() => {
-            await expect(hordTicketManager.connect(user).setMinTimeToStake(minTimeToStake))
+            await expect(ticketManagerContract.connect(user).setMinTimeToStake(minTimeToStake))
                 .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
         it('should not let maintainer to call setMinTimeToStake function', async() => {
-            await expect(hordTicketManager.connect(maintainer).setMinTimeToStake(minTimeToStake))
+            await expect(ticketManagerContract.connect(maintainer).setMinTimeToStake(minTimeToStake))
                 .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
         it('should not let user to call setMinAmountToStake function', async() => {
-            await expect(hordTicketManager.connect(user).setMinAmountToStake(minAmountToStake))
+            await expect(ticketManagerContract.connect(user).setMinAmountToStake(minAmountToStake))
                 .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
         it('should not let maintainer to call setMinAmountToStake function', async() => {
-            await expect(hordTicketManager.connect(maintainer).setMinAmountToStake(minAmountToStake))
+            await expect(ticketManagerContract.connect(maintainer).setMinAmountToStake(minAmountToStake))
                 .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
@@ -163,12 +163,12 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         tokenId = 10;
 
         it('should not let initialize twice.', async() => {
-            await expect(ticketFactoryContract.initialize(hordCongressAddress, maintainersRegistryContract.address, hordTicketManager.address,
+            await expect(ticketFactoryContract.initialize(hordCongressAddress, maintainersRegistryContract.address, ticketFactoryContract.address,
                 config["maxFungibleTicketsPerPool"], config["uri"], config["contractMetadataUri"])).to.be.reverted;
         });
 
         it('should not let initialize with false args', async() => {
-            await expect(ticketManagerContract.initialize(falseAdress, falseAdress, falseAdress, config['minTimeToStake'],
+            await expect(ticketManagerContract.initialize(zeroAddress, zeroAddress, zeroAddress, config['minTimeToStake'],
                 config["maxFungibleTicketsPerPool"], config["uri"], config["contractMetadataUri"])).to.be.reverted;
         });
 
@@ -221,57 +221,50 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         tokenId = 10;
 
         it('should not let user to call addNewTokenIdForChampion function', async() => {
-            await expect(hordTicketManager.connect(user).addNewTokenIdForChampion(tokenId, championId))
+            await expect(ticketManagerContract.connect(user).addNewTokenIdForChampion(tokenId, championId))
                 .to.be.revertedWith('Only Hord Ticket factory can issue a call to this function');
         });
 
         it('should not let maintainer to call addNewTokenIdForChampion function', async() => {
-            await expect(hordTicketManager.connect(maintainer).addNewTokenIdForChampion(tokenId, championId))
+            await expect(ticketManagerContract.connect(maintainer).addNewTokenIdForChampion(tokenId, championId))
                 .to.be.revertedWith('Only Hord Ticket factory can issue a call to this function');
         });
 
         it('should not let hordCongress to call addNewTokenIdForChampion function', async() => {
-            await expect(hordTicketManager.connect(hordCongress).addNewTokenIdForChampion(tokenId, championId))
+            await expect(ticketManagerContract.connect(hordCongress).addNewTokenIdForChampion(tokenId, championId))
                 .to.be.revertedWith('Only Hord Ticket factory can issue a call to this function');
         });
 
         it('should not let to user to buy more tickets than exists', async() => {
-            await expect(hordTicketManager.connect(user).stakeAndReserveNFTs(tokenId, numberOfTickets))
+            await expect(ticketManagerContract.connect(user).stakeAndReserveNFTs(tokenId, numberOfTickets))
                 .to.be.revertedWith('Not enough tickets to sell.');
         });
 
         it('should let ticketFactoryContract to call addNewTokenIdForChampion function', async() => {
-            await hordTicketManager.connect(hordCongress).setHordTicketFactory(factoryAdrdress);
-            await hordTicketManager.connect(ticketFactory).addNewTokenIdForChampion(tokenId, championId);
-            let tokenIds = await hordTicketManager.connect(hordCongress).getChampionTokenIds(championId)
+            await ticketManagerContract.connect(hordCongress).setHordTicketFactory(factoryAddress);
+            await ticketManagerContract.connect(ticketFactory).addNewTokenIdForChampion(tokenId, championId);
+            let tokenIds = await ticketManagerContract.connect(hordCongress).getChampionTokenIds(championId)
 
             for(let i = 0; i < tokenIds.length; i++){
                 expect(tokenIds[i]).to.be.equal(tokenId);
             }
 
-            await hordTicketManager.connect(hordCongress).setHordTicketFactory(ticketFactoryContract.address);
+            await ticketManagerContract.connect(hordCongress).setHordTicketFactory(ticketFactoryContract.address);
         });
 
         it('should not let to call getNumberOfStakesForUserAndToken function with 0x0 address', async() => {
-            await expect(hordTicketManager.connect(user).getNumberOfStakesForUserAndToken(falseAdress, tokenId))
+            await expect(ticketManagerContract.connect(user).getNumberOfStakesForUserAndToken(zeroAddress, tokenId))
                 .to.be.reverted;
         });
 
         it('should not let to call getCurrentAmountStakedForTokenId function with 0x0 address', async() => {
-            await expect(hordTicketManager.connect(user).getCurrentAmountStakedForTokenId(falseAdress, tokenId))
+            await expect(ticketManagerContract.connect(user).getCurrentAmountStakedForTokenId(zeroAddress, tokenId))
                 .to.be.reverted;
         });
 
         it('should not let to call getUserStakesForTokenId function with 0x0 address', async() => {
-            await expect(hordTicketManager.connect(user).getUserStakesForTokenId(falseAdress, tokenId))
+            await expect(ticketManagerContract.connect(user).getUserStakesForTokenId(zeroAddress, tokenId))
                 .to.be.reverted;
-        });
-
-        it('should let to call getNumberOfStakesForUserAndToken function with right address', async() => {
-            let numberOfStakes = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId).length;
-            let resp = await hordTicketManager.connect(hordCongress).addressToTokenIdToStakes(userAddress, tokenId).length;
-
-            expect(numberOfStakes).to.be.equal(resp);
         });
 
     });
@@ -467,6 +460,13 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         it('should check that user received NFTs', async() => {
            let balanceNFT = await ticketFactoryContract.balanceOf(userAddress, tokenId);
            expect(balanceNFT).to.equal(ticketsBalance + ticketsToBuy);
+        });
+
+        it('should let to call getNumberOfStakesForUserAndToken function with right address', async() => {
+            const numberOfStakes = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId);
+            const userStake = await ticketManagerContract.connect(hordCongress).addressToTokenIdToStakes(userAddress, tokenId, 0);
+            
+            expect(numberOfStakes.length).to.be.equal(userStake[0].length);
         });
     })
 
