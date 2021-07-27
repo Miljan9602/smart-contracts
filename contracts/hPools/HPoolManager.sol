@@ -1,11 +1,12 @@
+//"SPDX-License-Identifier: UNLICENSED"
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IHordTicketFactory.sol";
 import "../interfaces/IHordTreasury.sol";
-
 import "../system/HordMiddleware.sol";
 import "../libraries/SafeMath.sol";
 
@@ -61,12 +62,14 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 treasuryFeePaid;
     }
 
+    // Uniswap router
+    IUniswapV2Router02 uniswapRouter;
     // Instance of oracle
-    AggregatorV3Interface public linkOracle;
+    AggregatorV3Interface linkOracle;
     // Instance of hord ticket factory
-    IHordTicketFactory public hordTicketFactory;
+    IHordTicketFactory hordTicketFactory;
     // Instance of Hord treasury contract
-    IHordTreasury public hordTreasury;
+    IHordTreasury hordTreasury;
     // All hPools
     hPool [] public hPools;
     // Map pool Id to all subscriptions
@@ -82,7 +85,6 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      * Events
      */
     event PoolInitRequested(uint256 poolId, address champion, uint256 championEthDeposit, uint256 timestamp);
-    event AggregatorInterfaceSet(address oracleAddress);
     event TicketIdSetForPool(uint256 poolId, uint256 nftTicketId);
     event HPoolStateChanged(uint256 poolId, PoolState newState);
     event MinimalUSDToInitPoolSet(uint256 newMinimalAmountToInitPool);
@@ -101,7 +103,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         address _maintainersRegistry,
         address _hordTicketFactory,
         address _hordTreasury,
-        address _hordToken
+        address _hordToken,
+        address _chainlinkOracle,
+        address _uniswapRouter
     )
     initializer
     external
@@ -114,6 +118,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
         hordTreasury = IHordTreasury(_hordTreasury);
         hordToken = _hordToken;
+
+        linkOracle = AggregatorV3Interface(_chainlinkOracle);
+        uniswapRouter = IUniswapV2Router02(_uniswapRouter);
     }
 
     /**
@@ -132,24 +139,6 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         safeTransferETH(address(hordTreasury), amount);
         emit ServiceFeePaid(poolId, amount);
     }
-
-
-    /**
-     * @notice          Function to set Chainlink Aggregator address
-     * @param           linkOracleAddress is the address of the oracle we're using.
-     */
-    function setAggregatorInterface(
-        address linkOracleAddress
-    )
-    external
-    onlyMaintainer
-    {
-        require(linkOracleAddress != address(0));
-        linkOracle = AggregatorV3Interface(linkOracleAddress);
-
-        emit AggregatorInterfaceSet(linkOracleAddress);
-    }
-
 
     /**
      * @notice          Function to set minimal usd required for initializing pool
@@ -184,6 +173,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit MaximalUSDAllocationPerTicket(maxUSDAllocationPerTicket);
     }
 
+    /**
+     * @notice          Function to set service (gas) fee and precision
+     */
     function setServiceFeePercentAndPrecision(
         uint256 _serviceFeePercent,
         uint256 _serviceFeePrecision
