@@ -368,12 +368,15 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
     });
 
     describe('Staking HORD in order to get tickets', async() => {
+
+        const tokensToStake = 3500;
+
         it('should have some hord tokens in order to stake', async() => {
             hordToken = hordToken.connect(owner);
-            await hordToken.transfer(userAddress, toHordDenomination(3500));
+            await hordToken.transfer(userAddress, toHordDenomination(tokensToStake));
 
             let balance = await hordToken.balanceOf(userAddress);
-            expect(balance.toString()).to.be.equal(toHordDenomination(3500));
+            expect(balance.toString()).to.be.equal(toHordDenomination(tokensToStake));
         });
 
         it('should approve HordTicketManager to take HORD', async () => {
@@ -406,7 +409,7 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         it('should check event TokensStaked', async() => {
             expect(tx.events.length).to.equal(3)
             expect(tx.events[2].event).to.equal('TokensStaked');
-            expect(tx.events[2].args.user).to.equal(userAddress, "User address us not matching")
+            expect(tx.events[2].args.user).to.equal(userAddress, "User address is not matching")
             expect(tx.events[2].args.amountStaked).to.equal(toHordDenomination(ticketsToBuy * config['minAmountToStake']));
             expect(parseInt(tx.events[2].args.inFavorOfTokenId)).to.equal(tokenId);
             expect(parseInt(tx.events[2].args.numberOfTicketsReserved)).to.equal(ticketsToBuy);
@@ -420,6 +423,13 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         it('should check number of reserved tickets', async() => {
             reservedTickets = await ticketManagerContract.getAmountOfTicketsReserved(tokenId);
             expect(parseInt(reservedTickets, 10)).to.equal(ticketsToBuy);
+        });
+
+        it('should check number of user stakes', async() => {
+            const numberOfStakes = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId);
+            const userStake = await ticketManagerContract.connect(hordCongress).addressToTokenIdToStakes(userAddress, tokenId, 0);
+
+            expect(numberOfStakes.length).to.be.equal(userStake[0].length);
         });
     });
 
@@ -462,12 +472,10 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
            expect(balanceNFT).to.equal(ticketsBalance + ticketsToBuy);
         });
 
-        it('should let to call getNumberOfStakesForUserAndToken function with right address', async() => {
-            const numberOfStakes = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId);
-            const userStake = await ticketManagerContract.connect(hordCongress).addressToTokenIdToStakes(userAddress, tokenId, 0);
+        it('should check NFTsClaimed event', async() => {
 
-            expect(numberOfStakes.length).to.be.equal(userStake[0].length);
         });
+
     })
 
 
