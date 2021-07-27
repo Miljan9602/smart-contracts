@@ -76,7 +76,15 @@ function saveDeploymentBlockchain(blockchain) {
     fs.writeFileSync(path.join(__dirname, `../tenderly/deployNetwork.json`), JSON.stringify(current, null, '    '))
 }
 
-
+function getSavedContractProxyAbis() {
+    let json
+    try {
+        json = fs.readFileSync(path.join(__dirname, `../deployments/contract-proxy-abis.json`))
+    } catch (err) {
+        json = '{}'
+    }
+    return JSON.parse(json)
+}
 
 module.exports = {
     getSavedContractAddresses,
@@ -87,5 +95,6 @@ module.exports = {
     saveContractProxies,
     getSavedContractABI,
     saveContractAbi,
-    saveContractAbiTest
+    saveContractAbiTest,
+    getSavedContractProxyAbis
 }
