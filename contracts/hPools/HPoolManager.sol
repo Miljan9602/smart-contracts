@@ -24,7 +24,14 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
     // States of the pool contract
     enum PoolState{
-        PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, ACTIVE, FINISHING, ENDED
+        PENDING_INIT,
+        TICKET_SALE,
+        PRIVATE_SUBSCRIPTION,
+        PUBLIC_SUBSCRIPTION,
+        ASSET_STATE_TRANSITION_IN_PROGRESS,
+        ACTIVE,
+        FINISHING,
+        ENDED
     }
 
     // Address for HORD token
@@ -148,7 +155,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 _minUSDToInitPool
     )
     external
-    onlyMaintainer
+    onlyHordCongress
     {
         require(_minUSDToInitPool > 0);
         minUSDToInitPool = _minUSDToInitPool;
@@ -165,7 +172,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 _maxUSDAllocationPerTicket
     )
     external
-    onlyMaintainer
+    onlyHordCongress
     {
         require(_maxUSDAllocationPerTicket > 0);
         maxUSDAllocationPerTicket = _maxUSDAllocationPerTicket;
@@ -181,7 +188,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 _serviceFeePrecision
     )
     external
-    onlyMaintainer
+    onlyHordCongress
     {
         require(_serviceFeePercent <= _serviceFeePrecision);
 
