@@ -26,6 +26,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, ACTIVE, FINISHING, ENDED
     }
 
+    // Address for HORD token
+    address public hordToken;
     // Fee charged for the maintainers work
     uint256 public serviceFeePercent;
     // Precision for percent unit
@@ -98,7 +100,8 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         address _hordCongress,
         address _maintainersRegistry,
         address _hordTicketFactory,
-        address _hordTreasury
+        address _hordTreasury,
+        address _hordToken
     )
     initializer
     external
@@ -110,6 +113,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
         hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
         hordTreasury = IHordTreasury(_hordTreasury);
+        hordToken = _hordToken;
     }
 
     /**
