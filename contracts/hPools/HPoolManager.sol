@@ -1,11 +1,12 @@
+//"SPDX-License-Identifier: UNLICENSED"
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IHordTicketFactory.sol";
 import "../interfaces/IHordTreasury.sol";
-
 import "../system/HordMiddleware.sol";
 import "../libraries/SafeMath.sol";
 
@@ -23,9 +24,18 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
     // States of the pool contract
     enum PoolState{
-        PENDING_INIT, TICKET_SALE, SUBSCRIPTION, ASSET_STATE_TRANSITION_IN_PROGRESS, ACTIVE, FINISHING, ENDED
+        PENDING_INIT,
+        TICKET_SALE,
+        PRIVATE_SUBSCRIPTION,
+        PUBLIC_SUBSCRIPTION,
+        ASSET_STATE_TRANSITION_IN_PROGRESS,
+        ACTIVE,
+        FINISHING,
+        ENDED
     }
 
+    // Address for HORD token
+    address public hordToken;
     // Fee charged for the maintainers work
     uint256 public serviceFeePercent;
     // Precision for percent unit
@@ -59,12 +69,14 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 treasuryFeePaid;
     }
 
+    // Uniswap router
+    IUniswapV2Router02 uniswapRouter;
     // Instance of oracle
-    AggregatorV3Interface public linkOracle;
+    AggregatorV3Interface linkOracle;
     // Instance of hord ticket factory
-    IHordTicketFactory public hordTicketFactory;
+    IHordTicketFactory hordTicketFactory;
     // Instance of Hord treasury contract
-    IHordTreasury public hordTreasury;
+    IHordTreasury hordTreasury;
     // All hPools
     hPool [] public hPools;
     // Map pool Id to all subscriptions
@@ -80,7 +92,6 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      * Events
      */
     event PoolInitRequested(uint256 poolId, address champion, uint256 championEthDeposit, uint256 timestamp);
-    event AggregatorInterfaceSet(address oracleAddress);
     event TicketIdSetForPool(uint256 poolId, uint256 nftTicketId);
     event HPoolStateChanged(uint256 poolId, PoolState newState);
     event MinimalUSDToInitPoolSet(uint256 newMinimalAmountToInitPool);
@@ -98,7 +109,10 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         address _hordCongress,
         address _maintainersRegistry,
         address _hordTicketFactory,
-        address _hordTreasury
+        address _hordTreasury,
+        address _hordToken,
+        address _chainlinkOracle,
+        address _uniswapRouter
     )
     initializer
     external
@@ -110,6 +124,10 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
         hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
         hordTreasury = IHordTreasury(_hordTreasury);
+        hordToken = _hordToken;
+
+        linkOracle = AggregatorV3Interface(_chainlinkOracle);
+        uniswapRouter = IUniswapV2Router02(_uniswapRouter);
     }
 
     /**
@@ -129,24 +147,6 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit ServiceFeePaid(poolId, amount);
     }
 
-
-    /**
-     * @notice          Function to set Chainlink Aggregator address
-     * @param           linkOracleAddress is the address of the oracle we're using.
-     */
-    function setAggregatorInterface(
-        address linkOracleAddress
-    )
-    external
-    onlyMaintainer
-    {
-        require(linkOracleAddress != address(0));
-        linkOracle = AggregatorV3Interface(linkOracleAddress);
-
-        emit AggregatorInterfaceSet(linkOracleAddress);
-    }
-
-
     /**
      * @notice          Function to set minimal usd required for initializing pool
      * @param           _minUSDToInitPool represents minimal amount of USD which is required to init pool, in WEI
@@ -155,7 +155,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 _minUSDToInitPool
     )
     external
-    onlyMaintainer
+    onlyHordCongress
     {
         require(_minUSDToInitPool > 0);
         minUSDToInitPool = _minUSDToInitPool;
@@ -172,7 +172,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         uint256 _maxUSDAllocationPerTicket
     )
     external
-    onlyMaintainer
+    onlyHordCongress
     {
         require(_maxUSDAllocationPerTicket > 0);
         maxUSDAllocationPerTicket = _maxUSDAllocationPerTicket;
@@ -180,12 +180,15 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit MaximalUSDAllocationPerTicket(maxUSDAllocationPerTicket);
     }
 
+    /**
+     * @notice          Function to set service (gas) fee and precision
+     */
     function setServiceFeePercentAndPrecision(
         uint256 _serviceFeePercent,
         uint256 _serviceFeePrecision
     )
     external
-    onlyMaintainer
+    onlyHordCongress
     {
         require(_serviceFeePercent <= _serviceFeePrecision);
 
@@ -259,11 +262,11 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
 
     /**
-     * @notice          Function to start subscription phase. Can be started only if previous
+     * @notice          Function to start private subscription phase. Can be started only if previous
      *                  state of the hPool was TICKET_SALE.
      * @param           poolId is the ID of the pool contract.
      */
-    function startSubscriptionPhase( //TODO rename startPrivateSubscriptionPhase
+    function startPrivateSubscriptionPhase(
         uint256 poolId
     )
     external
@@ -273,9 +276,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         hPool storage hp = hPools[poolId];
 
-        require(hp.poolState == PoolState.TICKET_SALE, "startSubscriptionPhase: Bad state transition.");
-        hp.poolState = PoolState.SUBSCRIPTION;
-        //TODO ideally this should block further tickets sales (pause them)
+        require(hp.poolState == PoolState.TICKET_SALE);
+        hp.poolState = PoolState.PRIVATE_SUBSCRIPTION;
+
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
@@ -283,14 +286,14 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     /**
      * @notice          Function for users to subscribe for the hPool.
      */
-    function subscribeForHPool(//TODO rename privateSubscribeForHpool
+    function privateSubscribeForHPool(
         uint256 poolId
     )
     external
     payable
     {
         hPool storage hp = hPools[poolId];
-        require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in SUBSCRIPTION state.");
+        require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION, "hPool is not in SUBSCRIPTION state.");
 
         Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
         require(s.amountEth == 0, "User can not subscribe more than once.");
@@ -318,20 +321,36 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit Subscribed(poolId, msg.sender, msg.value, numberOfTicketsToUse);
     }
 
+    function startPublicSubscriptionPhase(
+        uint256 poolId
+    )
+    public
+    onlyMaintainer
+    {
+        require(poolId < hPools.length, "hPool with poolId does not exist.");
+
+        hPool storage hp = hPools[poolId];
+
+        require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION);
+        hp.poolState = PoolState.PUBLIC_SUBSCRIPTION;
+
+        emit HPoolStateChanged(poolId, hp.poolState);
+    }
+
     /**
      * @notice          Maintainer should end subscription phase in case all the criteria is reached
      */
-    function endSubscriptionPhase( //TODO rename to endSubscriptionPhaseAndInitHPool
+    function endSubscriptionPhaseAndInitHPool(
         uint256 poolId
     )
     public
     onlyMaintainer
     {
         hPool storage hp = hPools[poolId];
-        require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in subscription state.");
+        require(hp.poolState == PoolState.PUBLIC_SUBSCRIPTION, "hPool is not in subscription state.");
         require(hp.followersEthDeposit >= getMinSubscriptionToLaunchInETH(), "hPool subscription amount is below threshold.");
 
-        require(hp.poolState == PoolState.SUBSCRIPTION, "endSubscriptionPhase: Bad state transition.");
+
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
 
         // Deploy the HPool contract
