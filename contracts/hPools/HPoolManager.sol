@@ -262,11 +262,11 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
 
     /**
-     * @notice          Function to start subscription phase. Can be started only if previous
+     * @notice          Function to start private subscription phase. Can be started only if previous
      *                  state of the hPool was TICKET_SALE.
      * @param           poolId is the ID of the pool contract.
      */
-    function startSubscriptionPhase( //TODO rename startPrivateSubscriptionPhase
+    function startPrivateSubscriptionPhase(
         uint256 poolId
     )
     external
@@ -276,9 +276,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         hPool storage hp = hPools[poolId];
 
-        require(hp.poolState == PoolState.TICKET_SALE, "startSubscriptionPhase: Bad state transition.");
-        hp.poolState = PoolState.SUBSCRIPTION;
-        //TODO ideally this should block further tickets sales (pause them)
+        require(hp.poolState == PoolState.TICKET_SALE);
+        hp.poolState = PoolState.PRIVATE_SUBSCRIPTION;
+
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
@@ -286,14 +286,14 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     /**
      * @notice          Function for users to subscribe for the hPool.
      */
-    function subscribeForHPool(//TODO rename privateSubscribeForHpool
+    function privateSubscribeForHPool(
         uint256 poolId
     )
     external
     payable
     {
         hPool storage hp = hPools[poolId];
-        require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in SUBSCRIPTION state.");
+        require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION, "hPool is not in SUBSCRIPTION state.");
 
         Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
         require(s.amountEth == 0, "User can not subscribe more than once.");
@@ -321,20 +321,36 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         emit Subscribed(poolId, msg.sender, msg.value, numberOfTicketsToUse);
     }
 
+    function startPublicSubscriptionPhase(
+        uint256 poolId
+    )
+    public
+    onlyMaintainer
+    {
+        require(poolId < hPools.length, "hPool with poolId does not exist.");
+
+        hPool storage hp = hPools[poolId];
+
+        require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION);
+        hp.poolState = PoolState.PUBLIC_SUBSCRIPTION;
+
+        emit HPoolStateChanged(poolId, hp.poolState);
+    }
+
     /**
      * @notice          Maintainer should end subscription phase in case all the criteria is reached
      */
-    function endSubscriptionPhase( //TODO rename to endSubscriptionPhaseAndInitHPool
+    function endSubscriptionPhaseAndInitHPool(
         uint256 poolId
     )
     public
     onlyMaintainer
     {
         hPool storage hp = hPools[poolId];
-        require(hp.poolState == PoolState.SUBSCRIPTION, "hPool is not in subscription state.");
+        require(hp.poolState == PoolState.PUBLIC_SUBSCRIPTION, "hPool is not in subscription state.");
         require(hp.followersEthDeposit >= getMinSubscriptionToLaunchInETH(), "hPool subscription amount is below threshold.");
 
-        require(hp.poolState == PoolState.SUBSCRIPTION, "endSubscriptionPhase: Bad state transition.");
+
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
 
         // Deploy the HPool contract
