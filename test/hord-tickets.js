@@ -9,12 +9,14 @@ const hre = require("hardhat");
 
 const zeroAddress = "0x000000000000000000000000000000000000000000";
 const minAmountToStake = 100;
+const maxTickets = 100;
+const minTickets = 0;
 
 let hordCongress, hordCongressAddress, accounts, owner, ownerAddr, maintainer, maintainerAddr,
     user, userAddress, config,
     hordToken, maintainersRegistryContract, ticketFactoryContract, ticketManagerContract,
     championId, supplyToMint, tx, tokenId, lastAddedId, ticketsToBuy, reservedTickets,
-    hordBalance, ticketsBalance, amountStaked, ticketFactory, factoryAddress
+    hordBalance, ticketsBalance, amountStaked, ticketFactory, factoryAddress, supplyToAdd
 
 async function setupAccounts () {
     config = configuration[hre.network.name];
@@ -84,6 +86,7 @@ async function setupContracts () {
     ticketFactoryContract = hordTicketFactory.connect(maintainer);
 
     supplyToMint = 20;
+    supplyToAdd = 10;
 
     await hordTicketManager.setHordTicketFactory(hordTicketFactory.address);
 }
@@ -158,8 +161,6 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
 
     describe('Test initial values are properly set in HordTicketFactory contract', async() => {
 
-        const maxTickets = 100;
-        const minTickets = 0;
         tokenId = 10;
 
         it('should not let initialize twice.', async() => {
@@ -172,7 +173,7 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
                 config["maxFungibleTicketsPerPool"], config["uri"], config["contractMetadataUri"])).to.be.reverted;
         });
 
-        xit('should let hordCongress to call setNewUri function', async() => {
+        it('should let hordCongress to call setNewUri function', async() => {
             await expect(ticketFactoryContract.connect(hordCongress).setNewUri(config["uri"]));
         });
 
@@ -223,14 +224,8 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
                 .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
-        xit('should let maintainer to call setMaxFungibleTicketsPerPoolForTokenId function', async() => {
+        it('should let maintainer to call setMaxFungibleTicketsPerPoolForTokenId function', async() => {
            await ticketFactoryContract.connect(maintainer).setMaxFungibleTicketsPerPoolForTokenId(tokenId, maxTickets);
-        });
-
-        xit('should not let maintainer to call setMaxFungibleTicketsPerPoolForTokenId with fewer tickets', async() => {
-            const a = await ticketFactoryContract.connect(maintainer).getTokenSupply(tokenId);
-            await expect(ticketFactoryContract.connect(maintainer).setMaxFungibleTicketsPerPoolForTokenId(tokenId, a - 100))
-                .to.be.reverted;
         });
 
         it('should not let user to call setMaxFungibleTicketsPerPoolForTokenId function', async() => {
@@ -241,6 +236,11 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         it('should not let hordcongress to call setMaxFungibleTicketsPerPoolForTokenId function', async() => {
             await expect(ticketFactoryContract.connect(hordCongress).setMaxFungibleTicketsPerPoolForTokenId(tokenId, maxTickets))
                 .to.be.revertedWith( "HordUpgradable: Restricted only to Maintainer");
+        });
+
+        it('should not let to call addTokenSupply function before mint token', async() => {
+            await expect(ticketFactoryContract.connect(maintainer).addTokenSupply(tokenId, supplyToAdd))
+                .to.be.revertedWith("AddTokenSupply: Firstly MINT token, then expand supply.");
         });
 
     });
@@ -359,8 +359,6 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
 
     describe('Adding token supply', async() => {
 
-        const supplyToAdd = 10;
-
         it('should not let user to call addTokenSupply function', async() => {
             await expect(ticketFactoryContract.connect(user).addTokenSupply(tokenId, supplyToAdd))
                 .to.be.revertedWith( "HordUpgradable: Restricted only to Maintainer");
@@ -371,9 +369,25 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
                 .to.be.revertedWith( "HordUpgradable: Restricted only to Maintainer");
         });
 
-        xit('should add token supply within allowed range', async () => {
-            await ticketFactoryContract.connect(maintainer).addTokenSupply(tokenId, supplyToAdd);
-       });
+        it('should add token supply within allowed range', async () => {
+            await ticketFactoryContract.addTokenSupply(tokenId, supplyToAdd);
+            expect(await ticketFactoryContract.getTokenSupply(tokenId))
+                .to.be.equal(supplyToAdd * 3);
+        });
+
+        xit('should not let to call addTokenSupply function with more supply than allowed', async() => {
+            const a = await ticketFactoryContract.connect(maintainer).getTokenSupply(tokenId);
+            console.log(a);
+            await ticketFactoryContract.connect(maintainer).setMaxFungibleTicketsPerPoolForTokenId(tokenId, maxTickets);
+            await expect(ticketFactoryContract.connect(maintainer).addTokenSupply(tokenId, supplyToAdd))
+                .to.be.revertedWith("More than allowed.");
+        });
+
+        it('should not let maintainer to call setMaxFungibleTicketsPerPoolForTokenId with fewer tickets', async() => {
+            const tokenSupply = await ticketFactoryContract.getTokenSupply(tokenId) - 1;
+            await expect(ticketFactoryContract.connect(maintainer).setMaxFungibleTicketsPerPoolForTokenId(tokenId, tokenSupply))
+                .to.be.reverted;
+        });
     });
 
     describe('Minting from address which is not maintainer', async() => {
@@ -474,9 +488,14 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         });
 
 
-        xit('should getAmountOfTokensClaimed', async() => {
+        xit('should check return value in getAmountOfTokensClaimed', async() => {
             //await ticketFactoryContract.connect(maintainer).addTokenSupply(tokenId, supplyToMint);
-            const a = await ticketManagerContract.connect(maintainer).getAmountOfTokensClaimed(tokenId);
+            const k = await ticketFactoryContract.connect(maintainer).getTokenSupply(tokenId);
+            const num = await ticketManagerContract.connect(maintainer).getAmountOfTokensClaimed(tokenId);
+            const kk = await ticketFactoryContract.connect(maintainer).balanceOf(maintainerAddr, tokenId);
+            //expect(k)
+              //  .to.be.equal(supplyToMint);
+            console.log(kk)
             //console.log(await ticketFactoryContract.connect(maintainer).getTokenSupply(tokenId));
            // console.log(a);
             /*await ticketFactoryContract.connect(maintainer).addTokenSupply(tokenId, 10);
@@ -527,9 +546,8 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
 
         //must to rename variables
         it('should check return value in getCurrentAmountStakedForTokenId function', async() => {
-            let num = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId);
-            //check for arguments
-            let userStakes = await ticketManagerContract.addressToTokenIdToStakes(userAddress, tokenId, [0, num - 1]);
+            let lenOfUserStakes = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId);
+            let userStakes = await ticketManagerContract.addressToTokenIdToStakes(userAddress, tokenId, [0, lenOfUserStakes - 1]);
 
             let numberOfStakes = userStakes.length;
             let amountCurrentlyStaking = 0;
