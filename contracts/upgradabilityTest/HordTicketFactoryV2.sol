@@ -1,9 +1,9 @@
 //"SPDX-License-Identifier: UNLICENSED"
-pragma solidity 0.6.12;
+pragma solidity ^0.6.12;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155PausableUpgradeable.sol";
 import "../interfaces/IHordTicketManager.sol";
-import "../system/HordMiddleware.sol";
+import "../system/HordUpgradable.sol";
 
 /**
  * HordTicketManager contract.
@@ -11,7 +11,7 @@ import "../system/HordMiddleware.sol";
  * Date created: 8.5.21.
  * Github: madjarevicn
  */
-contract HordTicketFactoryV2 is HordMiddleware, ERC1155PausableUpgradeable {
+contract HordTicketFactoryV2 is HordUpgradable, ERC1155PausableUpgradeable {
 
     // Store always last ID minted
     uint256 public lastMintedTokenId;

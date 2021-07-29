@@ -9,7 +9,7 @@ import "../interfaces/IHordTicketFactory.sol";
 import "../interfaces/IHordTreasury.sol";
 import "../interfaces/IHPoolFactory.sol";
 import "../interfaces/IHPool.sol";
-import "../system/HordMiddleware.sol";
+import "../system/HordUpgradable.sol";
 import "../libraries/SafeMath.sol";
 
 

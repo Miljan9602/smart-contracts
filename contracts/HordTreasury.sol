@@ -1,6 +1,6 @@
 pragma solidity 0.6.12;
 
-import "./system/HordMiddleware.sol";
+import "./system/HordUpgradable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 /**

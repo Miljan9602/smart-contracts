@@ -1,5 +1,5 @@
 // "SPDX-License-Identifier: UNLICENSED"
-pragma solidity 0.6.12;
+pragma solidity ^0.6.12;
 
 import "../interfaces/IMaintainersRegistry.sol";
 
@@ -9,7 +9,7 @@ import "../interfaces/IMaintainersRegistry.sol";
  * Date created: 8.5.21.
  * Github: madjarevicn
  */
-contract HordMiddleware {
+contract HordUpgradable {
 
     address public hordCongress;
     IMaintainersRegistry public maintainersRegistry;

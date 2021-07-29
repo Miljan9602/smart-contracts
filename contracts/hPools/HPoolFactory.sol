@@ -1,7 +1,7 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import "../system/HordMiddleware.sol";
+import "../system/HordUpgradable.sol";
 
 import "./HPool.sol";
 

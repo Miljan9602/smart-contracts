@@ -1,6 +1,6 @@
 pragma solidity 0.6.12;
 
-import "../system/HordMiddleware.sol";
+import "../system/HordUpgradable.sol";
 import "../interfaces/IHPoolManager.sol";
 import "./HPoolToken.sol";
 
