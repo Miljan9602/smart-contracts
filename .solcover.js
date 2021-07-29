@@ -3,6 +3,7 @@ module.exports = {
         'interfaces/',
         'libraries/',
         'token/Context.sol',
-        'upgradabilityTest/'
+        'upgradabilityTest/',
+        'hPools/'
     ]
 };
