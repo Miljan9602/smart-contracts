@@ -482,15 +482,11 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         });
 
 
-        xit('should check return value in getAmountOfTokensClaimed function', async() => {
-            //await ticketFactoryContract.connect(maintainer).addTokenSupply(tokenId, supplyToMint);
-            const k = await ticketFactoryContract.connect(maintainer).getTokenSupply(tokenId);
-            const num = await ticketManagerContract.connect(maintainer).getAmountOfTokensClaimed(tokenId);
-            const kk = await ticketFactoryContract.connect(maintainer).balanceOf(maintainerAddr, tokenId);
-            //expect()
-              //  .to.be.equal(supplyToMint);
-            console.log(num)
-
+        it('should check return value in getAmountOfTokensClaimed function', async() => {
+            const tokenSupply = await ticketFactoryContract.connect(maintainer).getTokenSupply(tokenId);
+            const balanceOfTicketManager = await hordTicketFactory.balanceOf(ticketManagerContract.address, tokenId);
+            expect(await ticketManagerContract.connect(user).getAmountOfTokensClaimed(tokenId))
+                .to.be.equal(tokenSupply.sub(balanceOfTicketManager));
         });
 
         it('should check return values in getUserStakesForTokenId function', async() => {
