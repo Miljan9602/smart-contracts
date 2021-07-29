@@ -224,8 +224,10 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
                 .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
         });
 
-        it('should let maintainer to call setMaxFungibleTicketsPerPoolForTokenId function', async() => {
-           await ticketFactoryContract.connect(maintainer).setMaxFungibleTicketsPerPoolForTokenId(tokenId, maxTickets);
+        it('should check return value in getMaxFungibleTicketsPerPoolForTokenId function', async() => {
+            await ticketFactoryContract.connect(maintainer).setMaxFungibleTicketsPerPoolForTokenId(tokenId, maxTickets);
+            expect(await ticketFactoryContract.connect(user).getMaxFungibleTicketsPerPoolForTokenId(tokenId))
+                .to.be.equal(maxTickets);
         });
 
         it('should not let user to call setMaxFungibleTicketsPerPoolForTokenId function', async() => {
