@@ -18,6 +18,7 @@ task('accounts', 'Prints the list of accounts', async () => {
   }
 })
 
+
 // You have to export an object to set up your config
 // This object can have the following optional entries:
 // defaultNetwork, networks, solc, and paths.
