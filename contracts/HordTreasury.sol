@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
  * Date created: 18.5.21.
  * Github: 0xKey
  */
-contract HordTreasury is ReentrancyGuardUpgradeable, HordMiddleware {
+contract HordTreasury is ReentrancyGuardUpgradeable, HordUpgradable {
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;

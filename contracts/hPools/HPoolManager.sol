@@ -19,7 +19,7 @@ import "../libraries/SafeMath.sol";
  * Date created: 7.7.21.
  * Github: madjarevicn
  */
-contract HPoolManager is PausableUpgradeable, HordMiddleware {
+contract HPoolManager is PausableUpgradeable, HordUpgradable {
 
     using SafeMath for *;
 

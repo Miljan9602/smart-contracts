@@ -11,7 +11,7 @@ import "./HPool.sol";
  * Date created: 29.7.21.
  * Github: madjarevicn
  */
-contract HPoolFactory is PausableUpgradeable, HordMiddleware {
+contract HPoolFactory is PausableUpgradeable, HordUpgradable {
 
     address public hPoolManager;
     address [] deployedHPools;

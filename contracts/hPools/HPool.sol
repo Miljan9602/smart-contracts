@@ -10,7 +10,7 @@ import "./HPoolToken.sol";
  * Date created: 20.7.21.
  * Github: madjarevicn
  */
-contract HPool is HordMiddleware, HPoolToken {
+contract HPool is HordUpgradable, HPoolToken {
 
     IHPoolManager public hPoolManager;
 
