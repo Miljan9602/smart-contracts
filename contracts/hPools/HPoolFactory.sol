@@ -48,7 +48,7 @@ contract HPoolFactory is PausableUpgradeable, HordMiddleware {
     function getDeployedHPools(uint startIndex, uint endIndex)
     external
     view
-    returns (address[])
+    returns (address[] memory)
     {
         address [] memory hPools = new address[](startIndex - endIndex);
         uint counter;
