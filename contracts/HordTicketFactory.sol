@@ -212,4 +212,17 @@ contract HordTicketFactory is HordUpgradable, ERC1155PausableUpgradeable {
     {
         return tokenIdToMintedSupply[tokenId];
     }
+
+    /**
+     * @notice          Function to get max fungible tickets per pool for token ID
+     */
+    function getMaxFungibleTicketsPerPoolForTokenId(
+        uint tokenId
+    )
+    external
+    view
+    returns (uint256)
+    {
+        return tokenIdToMaxFungibleTicketsPerPool[tokenId];
+    }
 }
