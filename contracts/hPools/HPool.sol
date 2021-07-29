@@ -27,12 +27,13 @@ contract HPool is HordMiddleware, HPoolToken {
 
     constructor(
         address _hordCongress,
-        address _hordMaintainersRegistry
+        address _hordMaintainersRegistry,
+        address _hordPoolManager
     )
     public
     {
         setCongressAndMaintainers(_hordCongress, _hordMaintainersRegistry);
-        hPoolManager = IHPoolManager(msg.sender);
+        hPoolManager = IHPoolManager(_hordPoolManager);
     }
 
 

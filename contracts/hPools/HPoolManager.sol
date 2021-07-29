@@ -7,10 +7,11 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IHordTicketFactory.sol";
 import "../interfaces/IHordTreasury.sol";
+import "../interfaces/IHPoolFactory.sol";
+import "../interfaces/IHPool.sol";
 import "../system/HordMiddleware.sol";
 import "../libraries/SafeMath.sol";
 
-import "./HPool.sol";
 
 /**
  * HPoolManager contract.
@@ -34,26 +35,34 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         ENDED
     }
 
+    enum SubscriptionRound {
+        PRIVATE,
+        PUBLIC
+    }
+
     // Address for HORD token
     address public hordToken;
     // Fee charged for the maintainers work
     uint256 public serviceFeePercent;
-    // Precision for percent unit
-    uint256 public serviceFeePrecision;
     // Minimal subscription which should be collected in order to launch HPool.
     uint256 public minimalSubscriptionToLaunchPool;
     // Minimal amount of USD to initialize pool (for champions)
     uint256 public minUSDToInitPool;
     // Maximal USD allocation per Ticket
     uint256 public maxUSDAllocationPerTicket;
+    //Public round subscription FEE %
+    uint256 public publicRoundSubscriptionFeePercent;
     // Constant, representing 1ETH in WEI units.
     uint256 public constant one = 10e18;
+    // Precision for percent unit
+    uint256 public constant serviceFeePrecision = 10e6;
 
     // Subscription struct, represents subscription of user
     struct Subscription {
         address user;
         uint256 amountEth;
         uint256 numberOfTickets;
+        SubscriptionRound sr;
     }
 
     // HPool struct
@@ -77,6 +86,9 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     IHordTicketFactory hordTicketFactory;
     // Instance of Hord treasury contract
     IHordTreasury hordTreasury;
+    // Instance of HPool Factory contract
+    IHPoolFactory hPoolFactory;
+
     // All hPools
     hPool [] public hPools;
     // Map pool Id to all subscriptions
@@ -96,7 +108,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     event HPoolStateChanged(uint256 poolId, PoolState newState);
     event MinimalUSDToInitPoolSet(uint256 newMinimalAmountToInitPool);
     event MaximalUSDAllocationPerTicket(uint256 newMaximalAllocationPerTicket);
-    event Subscribed(uint256 poolId, address user, uint256 amountETH, uint256 numberOfTickets);
+    event Subscribed(uint256 poolId, address user, uint256 amountETH, uint256 numberOfTickets, SubscriptionRound sr);
     event TicketsWithdrawn(uint256 poolId, address user, uint256 numberOfTickets);
     event ServiceFeePaid(uint256 poolId, uint256 amount);
 
@@ -111,6 +123,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         address _hordTicketFactory,
         address _hordTreasury,
         address _hordToken,
+        address _hPoolFactory,
         address _chainlinkOracle,
         address _uniswapRouter
     )
@@ -124,10 +137,12 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
         hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
         hordTreasury = IHordTreasury(_hordTreasury);
+        hPoolFactory = IHPoolFactory(_hPoolFactory);
         hordToken = _hordToken;
 
         linkOracle = AggregatorV3Interface(_chainlinkOracle);
         uniswapRouter = IUniswapV2Router02(_uniswapRouter);
+
     }
 
     /**
@@ -184,16 +199,12 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
      * @notice          Function to set service (gas) fee and precision
      */
     function setServiceFeePercentAndPrecision(
-        uint256 _serviceFeePercent,
-        uint256 _serviceFeePrecision
+        uint256 _serviceFeePercent
     )
     external
     onlyHordCongress
     {
-        require(_serviceFeePercent <= _serviceFeePrecision);
-
         serviceFeePercent = _serviceFeePercent;
-        serviceFeePrecision = _serviceFeePrecision;
     }
 
     /**
@@ -293,7 +304,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     payable
     {
         hPool storage hp = hPools[poolId];
-        require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION, "hPool is not in SUBSCRIPTION state.");
+        require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION, "hPool is not in PRIVATE_SUBSCRIPTION state.");
 
         Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
         require(s.amountEth == 0, "User can not subscribe more than once.");
@@ -313,12 +324,13 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         s.amountEth = msg.value;
         s.numberOfTickets = numberOfTicketsToUse;
         s.user = msg.sender;
+        s.sr = SubscriptionRound.PRIVATE;
 
         // Store subscription
         poolIdToSubscriptions[poolId].push(s);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
 
-        emit Subscribed(poolId, msg.sender, msg.value, numberOfTicketsToUse);
+        emit Subscribed(poolId, msg.sender, msg.value, numberOfTicketsToUse, s.sr);
     }
 
     function startPublicSubscriptionPhase(
@@ -338,6 +350,33 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
     }
 
     /**
+     * @notice          Function for users to subscribe for the hPool.
+     */
+    function publicSubscribeForHPool(
+        uint256 poolId
+    )
+    external
+    payable
+    {
+        hPool storage hp = hPools[poolId];
+        require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION, "hPool is not in PUBLIC_SUBSCRIPTION state.");
+
+        Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
+        require(s.amountEth == 0, "User can not subscribe more than once.");
+
+        s.amountEth = msg.value;
+        s.numberOfTickets = 0;
+        s.user = msg.sender;
+        s.sr = SubscriptionRound.PUBLIC;
+
+        // Store subscription
+        poolIdToSubscriptions[poolId].push(s);
+        userToPoolIdToSubscription[msg.sender][poolId] = s;
+
+        emit Subscribed(poolId, msg.sender, msg.value, 0, s.sr);
+    }
+
+    /**
      * @notice          Maintainer should end subscription phase in case all the criteria is reached
      */
     function endSubscriptionPhaseAndInitHPool(
@@ -354,7 +393,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
 
         // Deploy the HPool contract
-        HPool hpContract = new HPool(hordCongress, address(maintainersRegistry));
+        IHPool hpContract = IHPool(hPoolFactory.deployHPool());
 
         // Set the deployed address of hPool
         hp.hPoolContractAddress = address(hpContract);
@@ -383,7 +422,7 @@ contract HPoolManager is PausableUpgradeable, HordMiddleware {
 
         require(s.amountEth > 0, "User did not partcipate in this hPool.");
         require(s.numberOfTickets > 0, "User have already withdrawn his tickets.");
-        require(uint256 (hp.poolState) > 2, "Only after Subscription phase user can withdraw tickets.");
+        require(uint256 (hp.poolState) > 3, "Only after Subscription phase user can withdraw tickets.");
 
         hordTicketFactory.safeTransferFrom(
             address(this),
