@@ -132,6 +132,27 @@ describe('Governance', () => {
                 numberOfProposals = await hordCongress.proposalCount();
                 expect(proposalId).to.be.equal(numberOfProposals);
             });
+
+            it('should check length of arguments in proposal function', async() => {
+                values = ["0", "1"];
+                signatures = ["transfer(address,uint256)", "transfer(address,uint256)"];
+                calldatas = [encodeParameters(['address','uint256'], [anotherAccountAddr, toHordDenomination(tokensToTransfer)]),
+                    encodeParameters(['address','uint256'], [nonCongressAccAddr, toHordDenomination(tokensToTransfer)])];
+
+                await expect(hordCongress.propose(targets, values, signatures, calldatas, description))
+                    .to.be.revertedWith("HordCongress::propose: proposal function information arity mismatch");
+            });
+
+            it('should check if targets[] is empty', async() => {
+                targets = [];
+                values = [];
+                signatures = [];
+                calldatas = [];
+
+                await expect(hordCongress.propose(targets, values, signatures, calldatas, description))
+                    .to.be.revertedWith("HordCongress::propose: must provide actions");
+            });
+
         });
 
         describe('Should BE able to vote on submitted proposal', async() => {
@@ -143,30 +164,67 @@ describe('Governance', () => {
                 r = await awaitTx(hordCongress.connect(anotherAccount).castVote(proposalId, true));
             });
 
+            it('should not let voter to vote more times', async () => {
+               await expect(hordCongress.connect(anotherAccount).castVote(proposalId, true))
+                   .to.be.revertedWith("HordCongress::_castVote: voter already voted");
+            });
+
             it('should execute proposal', async() => {
                 r = await awaitTx(hordCongress.execute(proposalId));
                 expect(r.events.length).to.equal(3);
                 expect(r.events[2].event).to.equal('ProposalExecuted');
+            });
+
+            it('sholud check if proposal is previously executed', async() => {
+               await expect(hordCongress.execute(proposalId))
+                   .to.be.reverted;
+            });
+
+            it('sholud check if proposal is previously canceled', async() => {
+                await expect(hordCongress.cancel(proposalId))
+                    .to.be.reverted;
+            });
+
+            it('should check before/after values after changeMinimumQuorum function', async () => {
+                await hordCongressMembersRegistry.connect(congressAcc).changeMinimumQuorum(minimumQuorum);
+                expect(await hordCongressMembersRegistry.connect(congressAcc).getMinimalQuorum())
+                    .to.be.equal(minimumQuorum);
+            });
+
+            xit('should check if proposal are greater or equal to minimalQuorum in execute function', async() => {
+                let a = await hordCongress.connect(congressAcc).receipts(0);
+                console.log(a);
+                //await expect(hordCongress.execute(proposalId))
+                  //  .to.be.reverted;
             });
         });
 
     });
 
     describe('HordCongress functions', async () => {
-        xit('should not let to pass zeroAddress in setMembersRegistry function', async () => {
-            await expect(hordCongress.connect(congressAcc).setMembersRegistry(zeroAddress))
+        it('should not let to call setMembersRegistry function twice', async () => {
+            await expect(hordCongress.setMembersRegistry(hordCongressMembersRegistry.address))
                 .to.be.reverted;
-            //await expect(hordCongress.connect(congressAcc).setMembersRegistry(zeroAddress))
-              //  .to.be.reverted;
         });
 
-        xit('should check before/after values after getActions function', async() => {
+        it('should check return values in getActions function', async() => {
+            targets = [hordToken.address];
+            values = ["0"];
+            signatures = ["transfer(address,uint256)"];
+            calldatas = [encodeParameters(['address','uint256'], [anotherAccountAddr, toHordDenomination(tokensToTransfer)])];
+
+            let actions = await hordCongress.getActions(proposalId);
+            expect(actions[0][0])
+                .to.equal(targets[0]);
+            expect(actions[1][0])
+                .to.equal(values[0]);
+            expect(actions[2][0])
+                .to.equal(signatures[0]);
+            expect(actions[3][0])
+                .to.equal(calldatas[0]);
 
         });
 
-        it('should ', async() => {
-
-        });
     });
 
     describe('HordCongressMembersRegistry functions', async() => {
@@ -180,27 +238,20 @@ describe('Governance', () => {
                 .to.be.reverted;
         });
 
-        it('should check before/after values after changeMinimumQuorum function', async () => {
-            await hordCongressMembersRegistry.connect(congressAcc).changeMinimumQuorum(minimumQuorum);
-            expect(await hordCongressMembersRegistry.connect(congressAcc).getMinimalQuorum())
-                .to.be.equal(minimumQuorum);
-        });
-
         it('should not let nonCongressAcc to call addMember function', async () => {
             await expect(hordCongressMembersRegistry.connect(nonCongressAcc)
                 .addMember(targetMemberAcc, targetMemberName))
                 .to.be.reverted;
         });
 
-        // must to rename variables
         it('should let CongressAcc to call addMember function', async () => {
             await hordCongressMembersRegistry.connect(congressAcc)
                 .addMember(targetMemberAddr, targetMemberName);
-            const arr = await hordCongressMembersRegistry.connect(congressAcc).getAllMemberAddresses();
-            const len = await hordCongressMembersRegistry.connect(congressAcc).getNumberOfMembers();
-            const a = arr[len - 1];
+            const allMemberAddresses = await hordCongressMembersRegistry.connect(congressAcc).getAllMemberAddresses();
+            const length = await hordCongressMembersRegistry.connect(congressAcc).getNumberOfMembers();
+            const lastMember = allMemberAddresses[length - 1];
             expect(targetMemberAddr)
-                .to.equal(a);
+                .to.equal(lastMember);
         });
 
         it('should not let to add member who is already a member of congress in addMemberInternal function', async () => {
@@ -220,7 +271,6 @@ describe('Governance', () => {
                 .to.be.reverted;
         });
 
-        // check more values
         it('should check before/after values after removeMember function', async() => {
             await hordCongressMembersRegistry.connect(congressAcc)
                 .addMember(nonCongressAccAddr, "0x2555737400000000000000000000000000000000000000000000000000000000");
@@ -234,7 +284,6 @@ describe('Governance', () => {
                 .to.be.reverted;
         });
 
-        //check for time
         it('should check before/after values after getMemberInfo function', async() => {
             const resp = await hordCongressMembersRegistry.connect(congressAcc).getMemberInfo(targetMemberAddr);
             expect(resp[0])
