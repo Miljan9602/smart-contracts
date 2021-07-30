@@ -212,7 +212,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
      *                  In case champion is not approved, maintainer can cancel his pool creation,
      *                  and return him back the funds.
      */
-    function createHPool()
+    function createHPool() //TODO: add param be_pool_id
     external
     payable
     whenNotPaused
@@ -238,7 +238,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         championAddressToHPoolIds[msg.sender].push(poolId);
 
         // Trigger events
-        emit PoolInitRequested(poolId, msg.sender, msg.value, block.timestamp);
+        emit PoolInitRequested(poolId, msg.sender, msg.value, block.timestamp); //TODO add to emit the be_hpool_id
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
