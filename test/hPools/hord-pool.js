@@ -172,9 +172,7 @@ describe('hPools', async () => {
     });
 
     describe('HPoolManager functions', async() => {
-        it('ss', async() => {
-            await hPoolManager.createHPool({ value: ethers.utils.parseEther("0.1") });
-        });
+
     });
 
 
