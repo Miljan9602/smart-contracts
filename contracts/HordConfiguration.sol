@@ -12,25 +12,25 @@ import "@openzeppelin/contracts/proxy/Initializable.sol";
 contract HordConfiguration is HordUpgradable, Initializable {
 
     // Stating minimal champion stake in USD in order to launch pool
-    uint256 minChampStake;
+    uint256 _minChampStake;
     // Maximal warmup period
-    uint256 maxWarmupPeriod;
+    uint256 _maxWarmupPeriod;
     // Time for followers to stake and reach MIN/MAX follower etf stake
-    uint256 maxFollowerOnboardPeriod;
+    uint256 _maxFollowerOnboardPeriod;
     // Minimal ETH stake followers should reach together
-    uint256 minFollowerEthStake;
+    uint256 _minFollowerEthStake;
     // Maximal ETH stake followers should reach together
-    uint256 maxFollowerEthStake;
+    uint256 _maxFollowerEthStake;
     // Minimal Stake per pool ticket
-    uint256 minStakePerPoolTicket;
+    uint256 _minStakePerPoolTicket;
     // Percent used for purchasing underlying assets
-    uint256 assetUtilizationRatio;
+    uint256 _assetUtilizationRatio;
     // Percent for covering gas fees for hPool operations
-    uint256 gasUtilizationRatio;
+    uint256 _gasUtilizationRatio;
     // Representing % of HORD necessary in every pool
-    uint256 platformStakeRatio;
+    uint256 _platformStakeRatio;
     //
-    uint256 maxSupplyHPoolToken;
+    uint256 _maxSupplyHPoolToken;
 
 
     event ConfigurationChanged(string parameter, uint256 newValue);
@@ -39,17 +39,17 @@ contract HordConfiguration is HordUpgradable, Initializable {
      * @notice          Initializer function
      */
     function initialize(
-        address _hordCongress,
-        address _maintainersRegistry,
-        uint256 _minChampStake,
-        uint256 _maxWarmupPeriod,
-        uint256 _maxFollowerOnboardPeriod,
-        uint256 _minFollowerEthStake,
-        uint256 _minStakePerPoolTicket,
-        uint256 _assetUtilizationRatio,
-        uint256 _gasUtilizationRatio,
-        uint256 _platformStakeRatio,
-        uint256 _maxSupplyHPoolToken
+        address hordCongress_,
+        address maintainersRegistry_,
+        uint256 minChampStake_,
+        uint256 maxWarmupPeriod_,
+        uint256 maxFollowerOnboardPeriod_,
+        uint256 minFollowerEthStake_,
+        uint256 minStakePerPoolTicket_,
+        uint256 assetUtilizationRatio_,
+        uint256 gasUtilizationRatio_,
+        uint256 platformStakeRatio_,
+        uint256 maxSupplyHPoolToken_
     )
     initializer
     external
@@ -57,15 +57,15 @@ contract HordConfiguration is HordUpgradable, Initializable {
         // Set hord congress and maintainers registry
         setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
 
-        minChampStake = _minChampStake;
-        maxWarmupPeriod = _maxWarmupPeriod;
-        maxFollowerOnboardPeriod = _maxFollowerOnboardPeriod;
-        minFollowerEthStake = _minFollowerEthStake;
-        minStakePerPoolTicket = _minStakePerPoolTicket;
-        assetUtilizationRatio = _assetUtilizationRatio;
-        gasUtilizationRatio = _gasUtilizationRatio;
-        platformStakeRatio = _platformStakeRatio;
-        maxSupplyHPoolToken = _maxSupplyHPoolToken;
+        _minChampStake = minChampStake_;
+        _maxWarmupPeriod = maxWarmupPeriod_;
+        _maxFollowerOnboardPeriod = maxFollowerOnboardPeriod_;
+        _minFollowerEthStake = minFollowerEthStake_;
+        _minStakePerPoolTicket = minStakePerPoolTicket_;
+        _assetUtilizationRatio = assetUtilizationRatio_;
+        _gasUtilizationRatio = gasUtilizationRatio_;
+        _platformStakeRatio = platformStakeRatio_;
+        _maxSupplyHPoolToken = maxSupplyHPoolToken_;
     }
 
 }
