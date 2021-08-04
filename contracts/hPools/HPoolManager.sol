@@ -488,7 +488,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         address user,
         uint256 poolId
     )
-    public
+    external
     view
     returns (uint256)
     {
