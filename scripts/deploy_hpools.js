@@ -65,10 +65,6 @@ async function main() {
     console.log('Hord Factory Proxy is deployed to:', hPoolManager.address);
     saveContractProxies(hre.network.name, 'HordFactoryProxy', hordFactory.address);
 
-
-
-
-
 }
 
 // We recommend this pattern to be able to use async/await everywhere
