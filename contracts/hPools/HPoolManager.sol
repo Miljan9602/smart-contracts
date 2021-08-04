@@ -2,7 +2,6 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IHordTicketFactory.sol";
@@ -78,8 +77,6 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         uint256 treasuryFeePaid;
     }
 
-    // Uniswap router
-    IUniswapV2Router02 uniswapRouter;
     // Instance of oracle
     AggregatorV3Interface linkOracle;
     // Instance of hord ticket factory
@@ -124,8 +121,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         address _hordTreasury,
         address _hordToken,
         address _hPoolFactory,
-        address _chainlinkOracle,
-        address _uniswapRouter
+        address _chainlinkOracle
     )
     initializer
     external
@@ -141,8 +137,6 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         hordToken = _hordToken;
 
         linkOracle = AggregatorV3Interface(_chainlinkOracle);
-        uniswapRouter = IUniswapV2Router02(_uniswapRouter);
-
     }
 
     /**
