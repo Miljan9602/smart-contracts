@@ -55,7 +55,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     external
     {
         // Set hord congress and maintainers registry
-        setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
+        setCongressAndMaintainers(hordCongress_, maintainersRegistry_);
 
         _minChampStake = minChampStake_;
         _maxWarmupPeriod = maxWarmupPeriod_;
@@ -68,4 +68,166 @@ contract HordConfiguration is HordUpgradable, Initializable {
         _maxSupplyHPoolToken = maxSupplyHPoolToken_;
     }
 
+    // Setter Functions
+    // _minChampStake setter function
+    function setMinChampStake(
+        uint256 minChampStake_
+    )
+    public
+    onlyHordCongress
+    {
+        _minChampStake = minChampStake_;
+        emit ConfigurationChanged("_minChampStake", _minChampStake);
+    }
+
+    // _maxWarmupPeriod setter function
+    function setMaxWarmupPeriod(
+        uint256 maxWarmupPeriod_
+    )
+    public
+    onlyHordCongress
+    {
+        _maxWarmupPeriod = maxWarmupPeriod_;
+        emit ConfigurationChanged("_maxWarmupPeriod", _maxWarmupPeriod);
+    }
+
+    // _maxFollowerOnboardPeriod setter function
+    function setMaxFollowerOnboardPeriod(
+        uint256 maxFollowerOnboardPeriod_
+    )
+    public
+    onlyHordCongress
+    {
+        _maxFollowerOnboardPeriod = maxFollowerOnboardPeriod_;
+        emit ConfigurationChanged("_maxFollowerOnboardPeriod", _maxFollowerOnboardPeriod);
+    }
+
+    // _minFollowerEthStake setter function
+    function setMinFollowerEthStake(
+        uint256 minFollowerEthStake_
+    )
+    public
+    onlyHordCongress
+    {
+        _minFollowerEthStake = minFollowerEthStake_;
+        emit ConfigurationChanged("_minFollowerEthStake", _minFollowerEthStake);
+    }
+
+    // _maxFollowerEthStake setter function
+    function setMaxFollowerEthStake(
+        uint256 maxFollowerEthStake_
+    )
+    public
+    onlyHordCongress
+    {
+        _maxFollowerEthStake = maxFollowerEthStake_;
+        emit ConfigurationChanged("_maxFollowerEthStake", _maxFollowerEthStake);
+    }
+
+    // _minStakePerPoolTicket setter function
+    function setMinStakePerPoolTicket(
+        uint256 minStakePerPoolTicket_
+    )
+    public
+    onlyHordCongress
+    {
+        _minStakePerPoolTicket = minStakePerPoolTicket_;
+        emit ConfigurationChanged("_minStakePerPoolTicket", _minStakePerPoolTicket);
+    }
+
+    // _assetUtilizationRatio setter function
+    function setAssetUtilizationRatio(
+        uint256 assetUtilizationRatio_
+    )
+    public
+    onlyHordCongress
+    {
+        _assetUtilizationRatio = assetUtilizationRatio_;
+        emit ConfigurationChanged("_assetUtilizationRatio", _assetUtilizationRatio);
+    }
+
+    // _gasUtilizationRatio setter function
+    function setGasUtilizationRatio(
+        uint256 gasUtilizationRatio_
+    )
+    public
+    onlyHordCongress
+    {
+        _gasUtilizationRatio = gasUtilizationRatio_;
+        emit ConfigurationChanged("_gasUtilizationRatio", _gasUtilizationRatio);
+    }
+
+    // _platformStakeRatio setter function
+    function setPlatformStakeRatio(
+        uint256 platformStakeRatio_
+    )
+    public
+    onlyHordCongress
+    {
+        _platformStakeRatio = platformStakeRatio_;
+        emit ConfigurationChanged("_platformStakeRatio", _platformStakeRatio);
+    }
+
+    // _maxSupplyHPoolToken setter function
+    function setMaxSupplyHPoolToken(
+        uint256 maxSupplyHPoolToken_
+    )
+    public
+    onlyHordCongress
+    {
+        _maxSupplyHPoolToken = maxSupplyHPoolToken_;
+        emit ConfigurationChanged("_maxSupplyHPoolToken", _maxSupplyHPoolToken);
+    }
+
+
+    // Getter Functions
+    // _minChampStake getter function
+    function minChampStake() public view returns(uint256) {
+        return _minChampStake;
+    }
+
+    // _maxWarmupPeriod getter function
+    function maxWarmupPeriod() public view returns(uint256) {
+        return _maxWarmupPeriod;
+    }
+
+    // _maxFollowerOnboardPeriod getter function
+    function maxFollowerOnboardPeriod() public view returns(uint256) {
+        return _maxFollowerOnboardPeriod;
+    }
+
+    // _minFollowerEthStake getter function
+    function minFollowerEthStake() public view returns(uint256) {
+        return _minFollowerEthStake;
+    }
+
+    // _maxFollowerEthStake getter function
+    function maxFollowerEthStake() public view returns(uint256) {
+        return _maxFollowerEthStake;
+    }
+
+    // _minStakePerPoolTicket getter function
+    function minStakePerPoolTicket() public view returns(uint256) {
+        return _minStakePerPoolTicket;
+    }
+
+    // _assetUtilizationRatio getter function
+    function assetUtilizationRatio() public view returns(uint256) {
+        return _assetUtilizationRatio;
+    }
+
+    // _gasUtilizationRatio getter function
+    function gasUtilizationRatio() public view returns(uint256) {
+        return _gasUtilizationRatio;
+    }
+
+    // _platformStakeRatio getter function
+    function platformStakeRatio() public view returns(uint256) {
+        return _platformStakeRatio;
+    }
+
+    // _maxSupplyHPoolToken getter function
+    function maxSupplyHPoolToken() public view returns(uint256) {
+        return _maxSupplyHPoolToken;
+    }
 }
