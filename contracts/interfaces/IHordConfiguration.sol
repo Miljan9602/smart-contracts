@@ -10,8 +10,8 @@ interface IHordConfiguration {
     function minChampStake() external view returns(uint256);
     function maxWarmupPeriod() external view returns(uint256);
     function maxFollowerOnboardPeriod() external view returns(uint256);
-    function minFollowerEthStake() external view returns(uint256);
-    function maxFollowerEthStake() external view returns(uint256);
+    function minFollowerUSDStake() external view returns(uint256);
+    function maxFollowerUSDStake() external view returns(uint256);
     function minStakePerPoolTicket() external view returns(uint256);
     function assetUtilizationRatio() external view returns(uint256);
     function gasUtilizationRatio() external view returns(uint256);

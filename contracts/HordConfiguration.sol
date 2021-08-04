@@ -18,9 +18,9 @@ contract HordConfiguration is HordUpgradable, Initializable {
     // Time for followers to stake and reach MIN/MAX follower etf stake
     uint256 _maxFollowerOnboardPeriod;
     // Minimal ETH stake followers should reach together, in USD
-    uint256 _minFollowerEthStake;
+    uint256 _minFollowerUSDStake;
     // Maximal ETH stake followers should reach together, in USD
-    uint256 _maxFollowerEthStake;
+    uint256 _maxFollowerUSDStake;
     // Minimal Stake per pool ticket
     uint256 _minStakePerPoolTicket;
     // Percent used for purchasing underlying assets
@@ -46,7 +46,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
         uint256 minChampStake_,
         uint256 maxWarmupPeriod_,
         uint256 maxFollowerOnboardPeriod_,
-        uint256 minFollowerEthStake_,
+        uint256 minFollowerUSDStake_,
+        uint256 maxFollowerUSDStake_,
         uint256 minStakePerPoolTicket_,
         uint256 assetUtilizationRatio_,
         uint256 gasUtilizationRatio_,
@@ -62,7 +63,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
         _minChampStake = minChampStake_;
         _maxWarmupPeriod = maxWarmupPeriod_;
         _maxFollowerOnboardPeriod = maxFollowerOnboardPeriod_;
-        _minFollowerEthStake = minFollowerEthStake_;
+        _minFollowerUSDStake = minFollowerUSDStake_;
+        _maxFollowerUSDStake = maxFollowerUSDStake_;
         _minStakePerPoolTicket = minStakePerPoolTicket_;
         _assetUtilizationRatio = assetUtilizationRatio_;
         _gasUtilizationRatio = gasUtilizationRatio_;
@@ -106,26 +108,26 @@ contract HordConfiguration is HordUpgradable, Initializable {
         emit ConfigurationChanged("_maxFollowerOnboardPeriod", _maxFollowerOnboardPeriod);
     }
 
-    // _minFollowerEthStake setter function
-    function setMinFollowerEthStake(
-        uint256 minFollowerEthStake_
+    // _minFollowerUSDStake setter function
+    function setMinFollowerUSDStake(
+        uint256 minFollowerUSDStake_
     )
     external
     onlyHordCongress
     {
-        _minFollowerEthStake = minFollowerEthStake_;
-        emit ConfigurationChanged("_minFollowerEthStake", _minFollowerEthStake);
+        _minFollowerUSDStake = minFollowerUSDStake_;
+        emit ConfigurationChanged("_minFollowerUSDStake", _minFollowerUSDStake);
     }
 
-    // _maxFollowerEthStake setter function
-    function setMaxFollowerEthStake(
-        uint256 maxFollowerEthStake_
+    // _maxFollowerUSDStake setter function
+    function setMaxFollowerUSDStake(
+        uint256 maxFollowerUSDStake_
     )
     external
     onlyHordCongress
     {
-        _maxFollowerEthStake = maxFollowerEthStake_;
-        emit ConfigurationChanged("_maxFollowerEthStake", _maxFollowerEthStake);
+        _maxFollowerUSDStake = maxFollowerUSDStake_;
+        emit ConfigurationChanged("_maxFollowerUSDStake", _maxFollowerUSDStake);
     }
 
     // _minStakePerPoolTicket setter function
@@ -211,14 +213,14 @@ contract HordConfiguration is HordUpgradable, Initializable {
         return _maxFollowerOnboardPeriod;
     }
 
-    // _minFollowerEthStake getter function
-    function minFollowerEthStake() external view returns(uint256) {
-        return _minFollowerEthStake;
+    // _minFollowerUSDStake getter function
+    function minFollowerUSDStake() external view returns(uint256) {
+        return _minFollowerUSDStake;
     }
 
-    // _maxFollowerEthStake getter function
-    function maxFollowerEthStake() external view returns(uint256) {
-        return _maxFollowerEthStake;
+    // _maxFollowerUSDStake getter function
+    function maxFollowerUSDStake() external view returns(uint256) {
+        return _maxFollowerUSDStake;
     }
 
     // _minStakePerPoolTicket getter function
