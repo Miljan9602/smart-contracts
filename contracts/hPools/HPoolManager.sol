@@ -7,6 +7,7 @@ import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IHordTicketFactory.sol";
 import "../interfaces/IHordTreasury.sol";
 import "../interfaces/IHPoolFactory.sol";
+import "../interfaces/IHordConfiguration.sol";
 import "../interfaces/IHPool.sol";
 import "../system/HordUpgradable.sol";
 import "../libraries/SafeMath.sol";
@@ -77,6 +78,9 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         uint256 treasuryFeePaid;
     }
 
+
+    // Instance of Hord Configuration contract
+    IHordConfiguration hordConfiguration;
     // Instance of oracle
     AggregatorV3Interface linkOracle;
     // Instance of hord ticket factory
@@ -121,7 +125,8 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         address _hordTreasury,
         address _hordToken,
         address _hPoolFactory,
-        address _chainlinkOracle
+        address _chainlinkOracle,
+        address _hordConfiguration
     )
     initializer
     external
@@ -129,6 +134,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         require(_hordCongress != address(0));
         require(_maintainersRegistry != address(0));
         require(_hordTicketFactory != address(0));
+        require(_hordConfiguration != address(0));
 
         setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
         hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
@@ -137,6 +143,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         hordToken = _hordToken;
 
         linkOracle = AggregatorV3Interface(_chainlinkOracle);
+        hordConfiguration = IHordConfiguration(_hordConfiguration);
     }
 
     /**
