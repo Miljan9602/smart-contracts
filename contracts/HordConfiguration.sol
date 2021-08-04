@@ -182,52 +182,52 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // Getter Functions
     // _minChampStake getter function
-    function minChampStake() public view returns(uint256) {
+    function minChampStake() external view returns(uint256) {
         return _minChampStake;
     }
 
     // _maxWarmupPeriod getter function
-    function maxWarmupPeriod() public view returns(uint256) {
+    function maxWarmupPeriod() external view returns(uint256) {
         return _maxWarmupPeriod;
     }
 
     // _maxFollowerOnboardPeriod getter function
-    function maxFollowerOnboardPeriod() public view returns(uint256) {
+    function maxFollowerOnboardPeriod() external view returns(uint256) {
         return _maxFollowerOnboardPeriod;
     }
 
     // _minFollowerEthStake getter function
-    function minFollowerEthStake() public view returns(uint256) {
+    function minFollowerEthStake() external view returns(uint256) {
         return _minFollowerEthStake;
     }
 
     // _maxFollowerEthStake getter function
-    function maxFollowerEthStake() public view returns(uint256) {
+    function maxFollowerEthStake() external view returns(uint256) {
         return _maxFollowerEthStake;
     }
 
     // _minStakePerPoolTicket getter function
-    function minStakePerPoolTicket() public view returns(uint256) {
+    function minStakePerPoolTicket() external view returns(uint256) {
         return _minStakePerPoolTicket;
     }
 
     // _assetUtilizationRatio getter function
-    function assetUtilizationRatio() public view returns(uint256) {
+    function assetUtilizationRatio() external view returns(uint256) {
         return _assetUtilizationRatio;
     }
 
     // _gasUtilizationRatio getter function
-    function gasUtilizationRatio() public view returns(uint256) {
+    function gasUtilizationRatio() external view returns(uint256) {
         return _gasUtilizationRatio;
     }
 
     // _platformStakeRatio getter function
-    function platformStakeRatio() public view returns(uint256) {
+    function platformStakeRatio() external view returns(uint256) {
         return _platformStakeRatio;
     }
 
     // _maxSupplyHPoolToken getter function
-    function maxSupplyHPoolToken() public view returns(uint256) {
+    function maxSupplyHPoolToken() external view returns(uint256) {
         return _maxSupplyHPoolToken;
     }
 }
