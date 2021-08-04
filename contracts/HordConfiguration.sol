@@ -17,9 +17,9 @@ contract HordConfiguration is HordUpgradable, Initializable {
     uint256 _maxWarmupPeriod;
     // Time for followers to stake and reach MIN/MAX follower etf stake
     uint256 _maxFollowerOnboardPeriod;
-    // Minimal ETH stake followers should reach together
+    // Minimal ETH stake followers should reach together, in USD
     uint256 _minFollowerEthStake;
-    // Maximal ETH stake followers should reach together
+    // Maximal ETH stake followers should reach together, in USD
     uint256 _maxFollowerEthStake;
     // Minimal Stake per pool ticket
     uint256 _minStakePerPoolTicket;
