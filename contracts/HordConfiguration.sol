@@ -34,6 +34,9 @@ contract HordConfiguration is HordUpgradable, Initializable {
     //
     uint256 _maxSupplyHPoolToken;
 
+    // Representing maximal USD allocation per ticket
+    uint256 _maxUSDAllocationPerTicket;
+
 
     event ConfigurationChanged(string parameter, uint256 newValue);
 
@@ -52,7 +55,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
         uint256 assetUtilizationRatio_,
         uint256 gasUtilizationRatio_,
         uint256 platformStakeRatio_,
-        uint256 maxSupplyHPoolToken_
+        uint256 maxSupplyHPoolToken_,
+        uint256 maxUSDAllocationPerTicket_
     )
     initializer
     external
@@ -70,6 +74,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
         _gasUtilizationRatio = gasUtilizationRatio_;
         _platformStakeRatio = platformStakeRatio_;
         _maxSupplyHPoolToken = maxSupplyHPoolToken_;
+        _maxUSDAllocationPerTicket = maxUSDAllocationPerTicket_;
 
         _percentPrecision = 100;
     }
@@ -196,6 +201,17 @@ contract HordConfiguration is HordUpgradable, Initializable {
         emit ConfigurationChanged("_maxSupplyHPoolToken", _maxSupplyHPoolToken);
     }
 
+    // set max usd allocation per ticket
+    function setMaxUSDAllocationPerTicket(
+        uint256 maxUSDAllocationPerTicket_
+    )
+    external
+    onlyHordCongress
+    {
+        _maxUSDAllocationPerTicket = maxUSDAllocationPerTicket_;
+        emit ConfigurationChanged("_maxUSDAllocationPerTicket", _maxUSDAllocationPerTicket);
+    }
+
 
     // Getter Functions
     // _minChampStake getter function
@@ -253,4 +269,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
         return _maxSupplyHPoolToken;
     }
 
+    // _maxUSDAllocationPerTicket getter function
+    function maxUSDAllocationPerTicket() external view returns (uint256) {
+        return _maxUSDAllocationPerTicket;
+    }
 }
