@@ -22,6 +22,34 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
     }
 
     /**
+     * @notice          Initializer function, can be called only once, replacing constructor
+     */
+    function initialize (
+        address _hordCongress,
+        address _maintainersRegistry
+    )
+    initializer
+    external
+    {
+        setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
+    }
+
+    /**
+     * @notice          Function to set HPoolManager contract address during the deployment.
+     * @param           _hPoolManager is the address of HPoolManager smart-contract.
+     */
+    function setHPoolManager(
+        address _hPoolManager
+    )
+    external
+    {
+        require(hPoolManager == address(0));
+        require(_hPoolManager != address(0));
+
+        hPoolManager = _hPoolManager;
+    }
+
+    /**
      * @notice          Function to deploy hPool, only callable by HPoolManager
      */
     function deployHPool()
