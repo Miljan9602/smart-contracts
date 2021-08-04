@@ -12,34 +12,25 @@ import "@openzeppelin/contracts/proxy/Initializable.sol";
 contract HordConfiguration is HordUpgradable, Initializable {
 
     // Stating minimal champion stake in USD in order to launch pool
-    uint256 public minChampStake;
-
+    uint256 minChampStake;
     // Maximal warmup period
-    uint256 public maxWarmupPeriod;
-
+    uint256 maxWarmupPeriod;
     // Time for followers to stake and reach MIN/MAX follower etf stake
-    uint256 public maxFollowerOnboardPeriod;
-
+    uint256 maxFollowerOnboardPeriod;
     // Minimal ETH stake followers should reach together
-    uint256 public minFollowerEthStake;
-
+    uint256 minFollowerEthStake;
     // Maximal ETH stake followers should reach together
-    uint256 public maxFollowerEthStake;
-
+    uint256 maxFollowerEthStake;
     // Minimal Stake per pool ticket
-    uint256 public minStakePerPoolTicket;
-
+    uint256 minStakePerPoolTicket;
     // Percent used for purchasing underlying assets
-    uint256 public assetUtilizationRatio;
-
+    uint256 assetUtilizationRatio;
     // Percent for covering gas fees for hPool operations
-    uint256 public gasUtilizationRatio;
-
+    uint256 gasUtilizationRatio;
     // Representing % of HORD necessary in every pool
-    uint256 public platformStakeRatio;
-
-    // TODO:
-    uint256 public maxSupplyHPoolToken;
+    uint256 platformStakeRatio;
+    //
+    uint256 maxSupplyHPoolToken;
 
 
     event ConfigurationChanged(string parameter, uint256 newValue);
@@ -76,7 +67,5 @@ contract HordConfiguration is HordUpgradable, Initializable {
         platformStakeRatio = _platformStakeRatio;
         maxSupplyHPoolToken = _maxSupplyHPoolToken;
     }
-
-    //TODO: Create setters @Srdjan, all params settable only by congress.
 
 }
