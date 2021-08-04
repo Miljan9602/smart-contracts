@@ -29,6 +29,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
     uint256 _gasUtilizationRatio;
     // Representing % of HORD necessary in every pool
     uint256 _platformStakeRatio;
+    // Representing decimals precision for %, defaults to 100
+    uint256 _percentPrecision;
     //
     uint256 _maxSupplyHPoolToken;
 
@@ -66,6 +68,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
         _gasUtilizationRatio = gasUtilizationRatio_;
         _platformStakeRatio = platformStakeRatio_;
         _maxSupplyHPoolToken = maxSupplyHPoolToken_;
+
+        _percentPrecision = 100;
     }
 
     // Setter Functions
@@ -73,7 +77,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function setMinChampStake(
         uint256 minChampStake_
     )
-    public
+    external
     onlyHordCongress
     {
         _minChampStake = minChampStake_;
@@ -84,7 +88,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function setMaxWarmupPeriod(
         uint256 maxWarmupPeriod_
     )
-    public
+    external
     onlyHordCongress
     {
         _maxWarmupPeriod = maxWarmupPeriod_;
@@ -95,7 +99,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function setMaxFollowerOnboardPeriod(
         uint256 maxFollowerOnboardPeriod_
     )
-    public
+    external
     onlyHordCongress
     {
         _maxFollowerOnboardPeriod = maxFollowerOnboardPeriod_;
@@ -106,7 +110,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function setMinFollowerEthStake(
         uint256 minFollowerEthStake_
     )
-    public
+    external
     onlyHordCongress
     {
         _minFollowerEthStake = minFollowerEthStake_;
@@ -117,7 +121,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function setMaxFollowerEthStake(
         uint256 maxFollowerEthStake_
     )
-    public
+    external
     onlyHordCongress
     {
         _maxFollowerEthStake = maxFollowerEthStake_;
@@ -128,7 +132,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function setMinStakePerPoolTicket(
         uint256 minStakePerPoolTicket_
     )
-    public
+    external
     onlyHordCongress
     {
         _minStakePerPoolTicket = minStakePerPoolTicket_;
@@ -139,7 +143,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function setAssetUtilizationRatio(
         uint256 assetUtilizationRatio_
     )
-    public
+    external
     onlyHordCongress
     {
         _assetUtilizationRatio = assetUtilizationRatio_;
@@ -150,7 +154,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function setGasUtilizationRatio(
         uint256 gasUtilizationRatio_
     )
-    public
+    external
     onlyHordCongress
     {
         _gasUtilizationRatio = gasUtilizationRatio_;
@@ -161,18 +165,29 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function setPlatformStakeRatio(
         uint256 platformStakeRatio_
     )
-    public
+    external
     onlyHordCongress
     {
         _platformStakeRatio = platformStakeRatio_;
         emit ConfigurationChanged("_platformStakeRatio", _platformStakeRatio);
     }
 
+    // Set percent precision
+    function setPercentPrecision(
+        uint256 percentPrecision_
+    )
+    external
+    onlyHordCongress
+    {
+        _percentPrecision = percentPrecision_;
+        emit ConfigurationChanged("_percentPrecision", _percentPrecision);
+    }
+
     // _maxSupplyHPoolToken setter function
     function setMaxSupplyHPoolToken(
         uint256 maxSupplyHPoolToken_
     )
-    public
+    external
     onlyHordCongress
     {
         _maxSupplyHPoolToken = maxSupplyHPoolToken_;
@@ -226,8 +241,14 @@ contract HordConfiguration is HordUpgradable, Initializable {
         return _platformStakeRatio;
     }
 
+    // _percentPrecision getter function
+    function percentPrecision() external view returns (uint256) {
+        return _percentPrecision;
+    }
+
     // _maxSupplyHPoolToken getter function
     function maxSupplyHPoolToken() external view returns(uint256) {
         return _maxSupplyHPoolToken;
     }
+
 }

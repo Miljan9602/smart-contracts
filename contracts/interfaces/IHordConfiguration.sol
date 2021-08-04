@@ -16,5 +16,6 @@ interface IHordConfiguration {
     function assetUtilizationRatio() external view returns(uint256);
     function gasUtilizationRatio() external view returns(uint256);
     function platformStakeRatio() external view returns(uint256);
+    function percentPrecision() external view returns(uint256);
     function maxSupplyHPoolToken() external view returns(uint256);
-    }
+}

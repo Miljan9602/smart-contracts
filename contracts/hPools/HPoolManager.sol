@@ -42,8 +42,6 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
 
     // Address for HORD token
     address public hordToken;
-    // Fee charged for the maintainers work
-    uint256 public serviceFeePercent;
     // Minimal subscription which should be collected in order to launch HPool.
     uint256 public minimalSubscriptionToLaunchPool;
     // Minimal amount of USD to initialize pool (for champions)
@@ -54,8 +52,6 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     uint256 public publicRoundSubscriptionFeePercent;
     // Constant, representing 1ETH in WEI units.
     uint256 public constant one = 10e18;
-    // Precision for percent unit
-    uint256 public constant serviceFeePrecision = 10e6;
 
     // Subscription struct, represents subscription of user
     struct Subscription {
@@ -196,17 +192,6 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         emit MaximalUSDAllocationPerTicket(maxUSDAllocationPerTicket);
     }
 
-    /**
-     * @notice          Function to set service (gas) fee and precision
-     */
-    function setServiceFeePercentAndPrecision(
-        uint256 _serviceFeePercent
-    )
-    external
-    onlyHordCongress
-    {
-        serviceFeePercent = _serviceFeePercent;
-    }
 
     /**
      * @notice          Function where champion can create his pool.
@@ -399,7 +384,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         // Set the deployed address of hPool
         hp.hPoolContractAddress = address(hpContract);
 
-        uint256 treasuryFeeETH = hp.followersEthDeposit.mul(serviceFeePercent).div(serviceFeePrecision);
+        uint256 treasuryFeeETH = hp.followersEthDeposit.mul(hordConfiguration.gasUtilizationRatio()).div(hordConfiguration.percentPrecision());
 
         payServiceFeeToTreasury(poolId, treasuryFeeETH);
 
