@@ -24,46 +24,47 @@ async function main() {
         config.gasUtilizationRatio,
         config.platformStakeRatio,
         toHordDenomination(config.maxSupplyHPoolToken),
+        toHordDenomination(config.maxUSDAllocationPerTicket)
     ]);
     await hordConfiguration.deployed();
-    console.log('Hord Configuration Proxy is deployed to: ', hordConfiguration.address);
+    console.log('HordConfiguration Proxy is deployed to: ', hordConfiguration.address);
     saveContractProxies(hre.network.name, 'HordConfigurationProxy', hordConfiguration.address);
 
 
     const HordTreasury = await hre.ethers.getContractFactory('HordTreasury');
     const hordTreasury = await upgrades.deployProxy(HordTreasury, [
         contracts["HordCongress"],
-        config.maintainers
+        contractProxies["MaintainersRegistry"]
     ]);
     await hordTreasury.deployed();
-    console.log('Hord Treasury Proxy is deployed to:', hordTreasury.address);
+    console.log('HordTreasury Proxy is deployed to:', hordTreasury.address);
     saveContractProxies(hre.network.name, 'HordTreasuryProxy', hordTreasury.address);
 
 
     const HPoolFactory = await hre.ethers.getContractFactory('HPoolFactory');
     const hPoolFactory = await upgrades.deployProxy(HPoolFactory, [
         contracts["HordCongress"],
-        config.maintainers
+        contractProxies["MaintainersRegistry"]
     ]);
     await hPoolFactory.deployed();
-    console.log('HPool Factory Proxy is deployed to:', hPoolFactory.address);
+    console.log('HPoolFactory Proxy is deployed to:', hPoolFactory.address);
     saveContractProxies(hre.network.name, 'HPoolFactoryProxy', hPoolFactory.address);
 
 
     const HPoolManager = await hre.ethers.getContractFactory('HPoolManager');
     const hPoolManager = await upgrades.deployProxy(HPoolManager, [
-            config.maintainers,
             contracts["HordCongress"],
+            contractProxies["MaintainersRegistry"],
             contractProxies["HordTicketFactory"],
             hordTreasury.address,
             contracts["HordToken"],
-            hordFactory.address,
+            hPoolFactory.address,
             contracts["AggregatorV3Interface"],
             hordConfiguration.address,
     ]);
     await hPoolManager.deployed();
-    console.log('Hord Factory Proxy is deployed to:', hPoolManager.address);
-    saveContractProxies(hre.network.name, 'HordFactoryProxy', hordFactory.address);
+    console.log('HPoolManager is deployed to:', hPoolManager.address);
+    saveContractProxies(hre.network.name, 'HordFactoryProxy', hPoolFactory.address);
 
     // Setters
     await hPoolFactory.setHPoolManager(hPoolManager.address);
