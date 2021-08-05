@@ -31,16 +31,6 @@ async function main() {
     saveContractProxies(hre.network.name, 'HordConfigurationProxy', hordConfiguration.address);
 
 
-    const HordTreasury = await hre.ethers.getContractFactory('HordTreasury');
-    const hordTreasury = await upgrades.deployProxy(HordTreasury, [
-        contracts["HordCongress"],
-        contractProxies["MaintainersRegistry"]
-    ]);
-    await hordTreasury.deployed();
-    console.log('HordTreasury Proxy is deployed to:', hordTreasury.address);
-    saveContractProxies(hre.network.name, 'HordTreasuryProxy', hordTreasury.address);
-
-
     const HPoolFactory = await hre.ethers.getContractFactory('HPoolFactory');
     const hPoolFactory = await upgrades.deployProxy(HPoolFactory, [
         contracts["HordCongress"],
@@ -56,7 +46,7 @@ async function main() {
             contracts["HordCongress"],
             contractProxies["MaintainersRegistry"],
             contractProxies["HordTicketFactory"],
-            hordTreasury.address,
+            contractProxies["HordTreasury"],
             contracts["HordToken"],
             hPoolFactory.address,
             contracts["AggregatorV3Interface"],
@@ -70,6 +60,21 @@ async function main() {
     await hPoolFactory.setHPoolManager(hPoolManager.address);
     console.log('hPoolFactory.setHPoolManager(', hPoolManager.address, ') is set successfully.');
 
+    let admin = await upgrades.admin.getInstance();
+
+    let hordConfigurationImplementation = await admin.getProxyImplementation(hordConfiguration.address);
+    console.log('Hord Configuration Implementation: ', hordConfigurationImplementation);
+    saveContractAddress(hre.network.name, 'HordConfiguration', hordConfigurationImplementation);
+
+
+    let hPoolFactoryImplementation = await admin.getProxyImplementation(hPoolFactory.address);
+    console.log('HPoolFactory Implementation: ', hPoolFactoryImplementation);
+    saveContractAddress(hre.network.name, 'HPoolFactory', hPoolFactoryImplementation);
+
+
+    let hPoolManagerImplementation = await admin.getProxyImplementation(hPoolManager.address);
+    console.log('HPoolManager Implementation: ', hPoolManagerImplementation);
+    saveContractAddress(hre.network.name, 'HPoolManager', hPoolManagerImplementation);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
