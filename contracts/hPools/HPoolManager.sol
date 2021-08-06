@@ -2,12 +2,12 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IHordTicketFactory.sol";
 import "../interfaces/IHordTreasury.sol";
 import "../interfaces/IHPoolFactory.sol";
+import "../interfaces/IHordConfiguration.sol";
 import "../interfaces/IHPool.sol";
 import "../system/HordUpgradable.sol";
 import "../libraries/SafeMath.sol";
@@ -42,20 +42,8 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
 
     // Address for HORD token
     address public hordToken;
-    // Fee charged for the maintainers work
-    uint256 public serviceFeePercent;
-    // Minimal subscription which should be collected in order to launch HPool.
-    uint256 public minimalSubscriptionToLaunchPool;
-    // Minimal amount of USD to initialize pool (for champions)
-    uint256 public minUSDToInitPool;
-    // Maximal USD allocation per Ticket
-    uint256 public maxUSDAllocationPerTicket;
-    //Public round subscription FEE %
-    uint256 public publicRoundSubscriptionFeePercent;
     // Constant, representing 1ETH in WEI units.
     uint256 public constant one = 10e18;
-    // Precision for percent unit
-    uint256 public constant serviceFeePrecision = 10e6;
 
     // Subscription struct, represents subscription of user
     struct Subscription {
@@ -78,8 +66,9 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         uint256 treasuryFeePaid;
     }
 
-    // Uniswap router
-    IUniswapV2Router02 uniswapRouter;
+
+    // Instance of Hord Configuration contract
+    IHordConfiguration hordConfiguration;
     // Instance of oracle
     AggregatorV3Interface linkOracle;
     // Instance of hord ticket factory
@@ -106,8 +95,6 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     event PoolInitRequested(uint256 poolId, address champion, uint256 championEthDeposit, uint256 timestamp);
     event TicketIdSetForPool(uint256 poolId, uint256 nftTicketId);
     event HPoolStateChanged(uint256 poolId, PoolState newState);
-    event MinimalUSDToInitPoolSet(uint256 newMinimalAmountToInitPool);
-    event MaximalUSDAllocationPerTicket(uint256 newMaximalAllocationPerTicket);
     event Subscribed(uint256 poolId, address user, uint256 amountETH, uint256 numberOfTickets, SubscriptionRound sr);
     event TicketsWithdrawn(uint256 poolId, address user, uint256 numberOfTickets);
     event ServiceFeePaid(uint256 poolId, uint256 amount);
@@ -125,7 +112,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         address _hordToken,
         address _hPoolFactory,
         address _chainlinkOracle,
-        address _uniswapRouter
+        address _hordConfiguration
     )
     initializer
     external
@@ -133,6 +120,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         require(_hordCongress != address(0));
         require(_maintainersRegistry != address(0));
         require(_hordTicketFactory != address(0));
+        require(_hordConfiguration != address(0));
 
         setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
         hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
@@ -141,8 +129,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         hordToken = _hordToken;
 
         linkOracle = AggregatorV3Interface(_chainlinkOracle);
-        uniswapRouter = IUniswapV2Router02(_uniswapRouter);
-
+        hordConfiguration = IHordConfiguration(_hordConfiguration);
     }
 
     /**
@@ -162,50 +149,6 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         emit ServiceFeePaid(poolId, amount);
     }
 
-    /**
-     * @notice          Function to set minimal usd required for initializing pool
-     * @param           _minUSDToInitPool represents minimal amount of USD which is required to init pool, in WEI
-     */
-    function setMinimalUSDToInitPool(
-        uint256 _minUSDToInitPool
-    )
-    external
-    onlyHordCongress
-    {
-        require(_minUSDToInitPool > 0);
-        minUSDToInitPool = _minUSDToInitPool;
-
-        emit MinimalUSDToInitPoolSet(minUSDToInitPool);
-    }
-
-
-    /**
-     * @notice          Function to set maximal USD allocation per NFT ticket holding
-     * @param           _maxUSDAllocationPerTicket is the maximal allocation in USD user can subscribe per ticket.
-     */
-    function setMaxUSDAllocationPerTicket(
-        uint256 _maxUSDAllocationPerTicket
-    )
-    external
-    onlyHordCongress
-    {
-        require(_maxUSDAllocationPerTicket > 0);
-        maxUSDAllocationPerTicket = _maxUSDAllocationPerTicket;
-
-        emit MaximalUSDAllocationPerTicket(maxUSDAllocationPerTicket);
-    }
-
-    /**
-     * @notice          Function to set service (gas) fee and precision
-     */
-    function setServiceFeePercentAndPrecision(
-        uint256 _serviceFeePercent
-    )
-    external
-    onlyHordCongress
-    {
-        serviceFeePercent = _serviceFeePercent;
-    }
 
     /**
      * @notice          Function where champion can create his pool.
@@ -398,7 +341,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         // Set the deployed address of hPool
         hp.hPoolContractAddress = address(hpContract);
 
-        uint256 treasuryFeeETH = hp.followersEthDeposit.mul(serviceFeePercent).div(serviceFeePrecision);
+        uint256 treasuryFeeETH = hp.followersEthDeposit.mul(hordConfiguration.gasUtilizationRatio()).div(hordConfiguration.percentPrecision());
 
         payServiceFeeToTreasury(poolId, treasuryFeeETH);
 
@@ -452,7 +395,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     {
         uint256 latestPrice = uint256(getLatestPrice());
         uint256 usdEThRate = one.mul(one).div(latestPrice);
-        return usdEThRate.mul(minUSDToInitPool).div(one);
+        return usdEThRate.mul(hordConfiguration.minChampStake()).div(one);
     }
 
 
@@ -468,7 +411,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     {
         uint256 latestPrice = uint256(getLatestPrice());
         uint256 usdEThRate = one.mul(one).div(latestPrice);
-        return usdEThRate.mul(maxUSDAllocationPerTicket).div(one);
+        return usdEThRate.mul(hordConfiguration.maxUSDAllocationPerTicket()).div(one);
     }
 
     /**
@@ -481,7 +424,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     {
         uint256 latestPrice = uint256(getLatestPrice());
         uint256 usdEThRate = one.mul(one).div(latestPrice);
-        return usdEThRate.mul(minimalSubscriptionToLaunchPool).div(one);
+        return usdEThRate.mul(hordConfiguration.minFollowerUSDStake()).div(one);
     }
 
 
@@ -545,7 +488,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         address user,
         uint256 poolId
     )
-    public
+    external
     view
     returns (uint256)
     {

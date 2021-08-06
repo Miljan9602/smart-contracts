@@ -8,9 +8,7 @@ artifacts
 .idea
 .env
 yarn.lock
-.openzeppelin/unknown-*.json
-.openzeppelin/local-*.json
-
+.openzeppelin/
 coverage
 coverage.json
 

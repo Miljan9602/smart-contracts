@@ -52,7 +52,8 @@ async function main() {
     );
     await hordTreasury.deployed()
     console.log('TicketManagerReserve Proxy deployed to:', hordTreasury.address);
-    saveContractProxies(hre.network.name, 'TicketManagerReserve', hordTreasury.address);
+    saveContractProxies(hre.network.name, 'HordTreasury', hordTreasury.address);
+
 
     await hordTicketManager.setHordTicketFactory(hordTicketFactory.address);
     console.log('hordTicketManager.setHordTicketFactory(', hordTicketFactory.address, ') successfully set.');

@@ -11,6 +11,8 @@ async function main() {
     saveContractAbi(hre.network.name, 'HordTicketFactory', (await hre.artifacts.readArtifact("HordTicketFactory")).abi)
     saveContractAbi(hre.network.name, 'HPool', (await hre.artifacts.readArtifact("HPool")).abi)
     saveContractAbi(hre.network.name, 'HPoolManager', (await hre.artifacts.readArtifact("HPoolManager")).abi)
+    saveContractAbi(hre.network.name, 'HordConfiguration', (await hre.artifacts.readArtifact("HordConfiguration")).abi)
+    saveContractAbi(hre.network.name, 'HPoolFactory', (await hre.artifacts.readArtifact("HPoolFactory")).abi)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
