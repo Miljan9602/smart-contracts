@@ -13,7 +13,7 @@
         "HordConfigurationProxy": "0x2A22290c9Af4d245568C8eCC41668C5D70448536",
         "HPoolFactoryProxy": "0xE1a5d69BAAe079293B0A6F4A0149D3C7f7726869",
         "HordTreasury": "0x33553D65C8eD8e1Ca62beaA8aC22C4296989EDAA",
-        "HordFactoryProxy": "0xE1a5d69BAAe079293B0A6F4A0149D3C7f7726869"
+        "HPoolManagerProxy": "0xE1a5d69BAAe079293B0A6F4A0149D3C7f7726869"
     },
     "ropstenStaging": {
         "MaintainersRegistry": "0xAEE26e9af071a40F8AE83EDF5478810d5F1971a6",
