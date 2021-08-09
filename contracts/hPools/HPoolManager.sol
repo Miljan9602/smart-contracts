@@ -92,7 +92,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     /**
      * Events
      */
-    event PoolInitRequested(uint256 poolId, address champion, uint256 championEthDeposit, uint256 timestamp);
+    event PoolInitRequested(uint256 poolId, address champion, uint256 championEthDeposit, uint256 timestamp, uint256 bePoolId);
     event TicketIdSetForPool(uint256 poolId, uint256 nftTicketId);
     event HPoolStateChanged(uint256 poolId, PoolState newState);
     event Subscribed(uint256 poolId, address user, uint256 amountETH, uint256 numberOfTickets, SubscriptionRound sr);
@@ -155,7 +155,9 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
      *                  In case champion is not approved, maintainer can cancel his pool creation,
      *                  and return him back the funds.
      */
-    function createHPool() //TODO: add param be_pool_id
+    function createHPool(
+        uint256 bePoolId
+    )
     external
     payable
     whenNotPaused
@@ -181,7 +183,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         championAddressToHPoolIds[msg.sender].push(poolId);
 
         // Trigger events
-        emit PoolInitRequested(poolId, msg.sender, msg.value, block.timestamp); //TODO add to emit the be_hpool_id
+        emit PoolInitRequested(poolId, msg.sender, msg.value, block.timestamp, bePoolId);
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
