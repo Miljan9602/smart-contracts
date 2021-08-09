@@ -11,5 +11,5 @@ yarn.lock
 .openzeppelin/
 coverage
 coverage.json
-.bin/
+bin/
 
