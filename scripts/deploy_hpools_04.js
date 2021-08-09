@@ -28,7 +28,7 @@ async function main() {
     ]);
     await hordConfiguration.deployed();
     console.log('HordConfiguration Proxy is deployed to: ', hordConfiguration.address);
-    saveContractProxies(hre.network.name, 'HordConfigurationProxy', hordConfiguration.address);
+    saveContractProxies(hre.network.name, 'HordConfiguration', hordConfiguration.address);
 
 
     const HPoolFactory = await hre.ethers.getContractFactory('HPoolFactory');
@@ -38,7 +38,7 @@ async function main() {
     ]);
     await hPoolFactory.deployed();
     console.log('HPoolFactory Proxy is deployed to:', hPoolFactory.address);
-    saveContractProxies(hre.network.name, 'HPoolFactoryProxy', hPoolFactory.address);
+    saveContractProxies(hre.network.name, 'HPoolFactory', hPoolFactory.address);
 
 
     const HPoolManager = await hre.ethers.getContractFactory('HPoolManager');
@@ -54,7 +54,7 @@ async function main() {
     ]);
     await hPoolManager.deployed();
     console.log('HPoolManager is deployed to:', hPoolManager.address);
-    saveContractProxies(hre.network.name, 'HPoolManagerProxy', hPoolFactory.address);
+    saveContractProxies(hre.network.name, 'HPoolManager', hPoolFactory.address);
 
     // Setters
     await hPoolFactory.setHPoolManager(hPoolManager.address);
