@@ -10,33 +10,30 @@ import "@openzeppelin/contracts/proxy/Initializable.sol";
  * Github: madjarevicn
  */
 contract HordConfiguration is HordUpgradable, Initializable {
-
     // Stating minimal champion stake in USD in order to launch pool
-    uint256 _minChampStake;
+    uint256 private _minChampStake;
     // Maximal warmup period
-    uint256 _maxWarmupPeriod;
+    uint256 private _maxWarmupPeriod;
     // Time for followers to stake and reach MIN/MAX follower etf stake
-    uint256 _maxFollowerOnboardPeriod;
+    uint256 private _maxFollowerOnboardPeriod;
     // Minimal ETH stake followers should reach together, in USD
-    uint256 _minFollowerUSDStake;
+    uint256 private _minFollowerUSDStake;
     // Maximal ETH stake followers should reach together, in USD
-    uint256 _maxFollowerUSDStake;
+    uint256 private _maxFollowerUSDStake;
     // Minimal Stake per pool ticket
-    uint256 _minStakePerPoolTicket;
+    uint256 private _minStakePerPoolTicket;
     // Percent used for purchasing underlying assets
-    uint256 _assetUtilizationRatio;
+    uint256 private _assetUtilizationRatio;
     // Percent for covering gas fees for hPool operations
-    uint256 _gasUtilizationRatio;
+    uint256 private _gasUtilizationRatio;
     // Representing % of HORD necessary in every pool
-    uint256 _platformStakeRatio;
+    uint256 private _platformStakeRatio;
     // Representing decimals precision for %, defaults to 100
-    uint256 _percentPrecision;
+    uint256 private _percentPrecision;
     //
-    uint256 _maxSupplyHPoolToken;
-
+    uint256 private _maxSupplyHPoolToken;
     // Representing maximal USD allocation per ticket
-    uint256 _maxUSDAllocationPerTicket;
-
+    uint256 private _maxUSDAllocationPerTicket;
 
     event ConfigurationChanged(string parameter, uint256 newValue);
 
@@ -57,10 +54,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
         uint256 platformStakeRatio_,
         uint256 maxSupplyHPoolToken_,
         uint256 maxUSDAllocationPerTicket_
-    )
-    initializer
-    external
-    {
+    ) external initializer {
         // Set hord congress and maintainers registry
         setCongressAndMaintainers(hordCongress_, maintainersRegistry_);
 
@@ -81,181 +75,168 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // Setter Functions
     // _minChampStake setter function
-    function setMinChampStake(
-        uint256 minChampStake_
-    )
-    external
-    onlyHordCongress
+    function setMinChampStake(uint256 minChampStake_)
+        external
+        onlyHordCongress
     {
         _minChampStake = minChampStake_;
         emit ConfigurationChanged("_minChampStake", _minChampStake);
     }
 
     // _maxWarmupPeriod setter function
-    function setMaxWarmupPeriod(
-        uint256 maxWarmupPeriod_
-    )
-    external
-    onlyHordCongress
+    function setMaxWarmupPeriod(uint256 maxWarmupPeriod_)
+        external
+        onlyHordCongress
     {
         _maxWarmupPeriod = maxWarmupPeriod_;
         emit ConfigurationChanged("_maxWarmupPeriod", _maxWarmupPeriod);
     }
 
     // _maxFollowerOnboardPeriod setter function
-    function setMaxFollowerOnboardPeriod(
-        uint256 maxFollowerOnboardPeriod_
-    )
-    external
-    onlyHordCongress
+    function setMaxFollowerOnboardPeriod(uint256 maxFollowerOnboardPeriod_)
+        external
+        onlyHordCongress
     {
         _maxFollowerOnboardPeriod = maxFollowerOnboardPeriod_;
-        emit ConfigurationChanged("_maxFollowerOnboardPeriod", _maxFollowerOnboardPeriod);
+        emit ConfigurationChanged(
+            "_maxFollowerOnboardPeriod",
+            _maxFollowerOnboardPeriod
+        );
     }
 
     // _minFollowerUSDStake setter function
-    function setMinFollowerUSDStake(
-        uint256 minFollowerUSDStake_
-    )
-    external
-    onlyHordCongress
+    function setMinFollowerUSDStake(uint256 minFollowerUSDStake_)
+        external
+        onlyHordCongress
     {
         _minFollowerUSDStake = minFollowerUSDStake_;
         emit ConfigurationChanged("_minFollowerUSDStake", _minFollowerUSDStake);
     }
 
     // _maxFollowerUSDStake setter function
-    function setMaxFollowerUSDStake(
-        uint256 maxFollowerUSDStake_
-    )
-    external
-    onlyHordCongress
+    function setMaxFollowerUSDStake(uint256 maxFollowerUSDStake_)
+        external
+        onlyHordCongress
     {
         _maxFollowerUSDStake = maxFollowerUSDStake_;
         emit ConfigurationChanged("_maxFollowerUSDStake", _maxFollowerUSDStake);
     }
 
     // _minStakePerPoolTicket setter function
-    function setMinStakePerPoolTicket(
-        uint256 minStakePerPoolTicket_
-    )
-    external
-    onlyHordCongress
+    function setMinStakePerPoolTicket(uint256 minStakePerPoolTicket_)
+        external
+        onlyHordCongress
     {
         _minStakePerPoolTicket = minStakePerPoolTicket_;
-        emit ConfigurationChanged("_minStakePerPoolTicket", _minStakePerPoolTicket);
+        emit ConfigurationChanged(
+            "_minStakePerPoolTicket",
+            _minStakePerPoolTicket
+        );
     }
 
     // _assetUtilizationRatio setter function
-    function setAssetUtilizationRatio(
-        uint256 assetUtilizationRatio_
-    )
-    external
-    onlyHordCongress
+    function setAssetUtilizationRatio(uint256 assetUtilizationRatio_)
+        external
+        onlyHordCongress
     {
         _assetUtilizationRatio = assetUtilizationRatio_;
-        emit ConfigurationChanged("_assetUtilizationRatio", _assetUtilizationRatio);
+        emit ConfigurationChanged(
+            "_assetUtilizationRatio",
+            _assetUtilizationRatio
+        );
     }
 
     // _gasUtilizationRatio setter function
-    function setGasUtilizationRatio(
-        uint256 gasUtilizationRatio_
-    )
-    external
-    onlyHordCongress
+    function setGasUtilizationRatio(uint256 gasUtilizationRatio_)
+        external
+        onlyHordCongress
     {
         _gasUtilizationRatio = gasUtilizationRatio_;
         emit ConfigurationChanged("_gasUtilizationRatio", _gasUtilizationRatio);
     }
 
     // _platformStakeRatio setter function
-    function setPlatformStakeRatio(
-        uint256 platformStakeRatio_
-    )
-    external
-    onlyHordCongress
+    function setPlatformStakeRatio(uint256 platformStakeRatio_)
+        external
+        onlyHordCongress
     {
         _platformStakeRatio = platformStakeRatio_;
         emit ConfigurationChanged("_platformStakeRatio", _platformStakeRatio);
     }
 
     // Set percent precision
-    function setPercentPrecision(
-        uint256 percentPrecision_
-    )
-    external
-    onlyHordCongress
+    function setPercentPrecision(uint256 percentPrecision_)
+        external
+        onlyHordCongress
     {
         _percentPrecision = percentPrecision_;
         emit ConfigurationChanged("_percentPrecision", _percentPrecision);
     }
 
     // _maxSupplyHPoolToken setter function
-    function setMaxSupplyHPoolToken(
-        uint256 maxSupplyHPoolToken_
-    )
-    external
-    onlyHordCongress
+    function setMaxSupplyHPoolToken(uint256 maxSupplyHPoolToken_)
+        external
+        onlyHordCongress
     {
         _maxSupplyHPoolToken = maxSupplyHPoolToken_;
         emit ConfigurationChanged("_maxSupplyHPoolToken", _maxSupplyHPoolToken);
     }
 
     // set max usd allocation per ticket
-    function setMaxUSDAllocationPerTicket(
-        uint256 maxUSDAllocationPerTicket_
-    )
-    external
-    onlyHordCongress
+    function setMaxUSDAllocationPerTicket(uint256 maxUSDAllocationPerTicket_)
+        external
+        onlyHordCongress
     {
         _maxUSDAllocationPerTicket = maxUSDAllocationPerTicket_;
-        emit ConfigurationChanged("_maxUSDAllocationPerTicket", _maxUSDAllocationPerTicket);
+        emit ConfigurationChanged(
+            "_maxUSDAllocationPerTicket",
+            _maxUSDAllocationPerTicket
+        );
     }
-
 
     // Getter Functions
     // _minChampStake getter function
-    function minChampStake() external view returns(uint256) {
+    function minChampStake() external view returns (uint256) {
         return _minChampStake;
     }
 
     // _maxWarmupPeriod getter function
-    function maxWarmupPeriod() external view returns(uint256) {
+    function maxWarmupPeriod() external view returns (uint256) {
         return _maxWarmupPeriod;
     }
 
     // _maxFollowerOnboardPeriod getter function
-    function maxFollowerOnboardPeriod() external view returns(uint256) {
+    function maxFollowerOnboardPeriod() external view returns (uint256) {
         return _maxFollowerOnboardPeriod;
     }
 
     // _minFollowerUSDStake getter function
-    function minFollowerUSDStake() external view returns(uint256) {
+    function minFollowerUSDStake() external view returns (uint256) {
         return _minFollowerUSDStake;
     }
 
     // _maxFollowerUSDStake getter function
-    function maxFollowerUSDStake() external view returns(uint256) {
+    function maxFollowerUSDStake() external view returns (uint256) {
         return _maxFollowerUSDStake;
     }
 
     // _minStakePerPoolTicket getter function
-    function minStakePerPoolTicket() external view returns(uint256) {
+    function minStakePerPoolTicket() external view returns (uint256) {
         return _minStakePerPoolTicket;
     }
 
     // _assetUtilizationRatio getter function
-    function assetUtilizationRatio() external view returns(uint256) {
+    function assetUtilizationRatio() external view returns (uint256) {
         return _assetUtilizationRatio;
     }
 
     // _gasUtilizationRatio getter function
-    function gasUtilizationRatio() external view returns(uint256) {
+    function gasUtilizationRatio() external view returns (uint256) {
         return _gasUtilizationRatio;
     }
 
     // _platformStakeRatio getter function
-    function platformStakeRatio() external view returns(uint256) {
+    function platformStakeRatio() external view returns (uint256) {
         return _platformStakeRatio;
     }
 
@@ -265,7 +246,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     }
 
     // _maxSupplyHPoolToken getter function
-    function maxSupplyHPoolToken() external view returns(uint256) {
+    function maxSupplyHPoolToken() external view returns (uint256) {
         return _maxSupplyHPoolToken;
     }
 
