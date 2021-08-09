@@ -4,11 +4,11 @@ const { saveContractAddress} = require('./utils')
 async function main() {
     await hre.run('compile');
 
-    const HordTicketFactory = await hre.ethers.getContractFactory('HordTicketFactory');
-    const hordTicketFactory = await HordTicketFactory.deploy();
-    await hordTicketFactory.deployed();
-    console.log('New HordTicketFactory implementation: ', hordTicketFactory.address);
-    saveContractAddress(hre.network.name, 'HordTicketFactory', hordTicketFactory.address);
+    const HPoolManager = await hre.ethers.getContractFactory('HPoolManager');
+    const hPoolManager = await HPoolManager.deploy();
+    await hPoolManager.deployed();
+    console.log('New HPoolManager implementation: ', hPoolManager.address);
+    saveContractAddress(hre.network.name, 'HPoolManager', hPoolManager.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
