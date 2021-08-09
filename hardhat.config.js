@@ -32,7 +32,7 @@ module.exports = {
       accounts: [process.env.PK || PK],
       chainId: 3,
       gasPrice: 40000000000,
-      timeout: 50000
+      timeout: 500000
     },
     ropstenStaging: {
       // Infura public nodes
@@ -40,7 +40,7 @@ module.exports = {
       accounts: [process.env.PK || PK],
       chainId: 3,
       gasPrice: 40000000000,
-      timeout: 50000
+      timeout: 500000
     },
     kovan: {
       // Infura public nodes
