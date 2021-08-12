@@ -29,6 +29,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         TICKET_SALE,
         PRIVATE_SUBSCRIPTION,
         PUBLIC_SUBSCRIPTION,
+        SUBSCRIPTION_FAILED,
         ASSET_STATE_TRANSITION_IN_PROGRESS,
         ACTIVE,
         FINISHING,
