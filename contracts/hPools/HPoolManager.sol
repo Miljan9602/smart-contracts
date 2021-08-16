@@ -19,6 +19,7 @@ import "../libraries/SafeMath.sol";
  * Date created: 7.7.21.
  * Github: madjarevicn
  */
+//TODO: Add interface to support receiving EIP1155 tokens
 contract HPoolManager is PausableUpgradeable, HordUpgradable {
 
     using SafeMath for *;
@@ -29,6 +30,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         TICKET_SALE,
         PRIVATE_SUBSCRIPTION,
         PUBLIC_SUBSCRIPTION,
+        SUBSCRIPTION_FAILED,
         ASSET_STATE_TRANSITION_IN_PROGRESS,
         ACTIVE,
         FINISHING,
@@ -92,12 +94,13 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     /**
      * Events
      */
-    event PoolInitRequested(uint256 poolId, address champion, uint256 championEthDeposit, uint256 timestamp);
+    event PoolInitRequested(uint256 poolId, address champion, uint256 championEthDeposit, uint256 timestamp, uint256 bePoolId);
     event TicketIdSetForPool(uint256 poolId, uint256 nftTicketId);
     event HPoolStateChanged(uint256 poolId, PoolState newState);
     event Subscribed(uint256 poolId, address user, uint256 amountETH, uint256 numberOfTickets, SubscriptionRound sr);
     event TicketsWithdrawn(uint256 poolId, address user, uint256 numberOfTickets);
     event ServiceFeePaid(uint256 poolId, uint256 amount);
+    event HPoolLaunchFailed(uint256 poolId);
 
     /**
      * @notice          Initializer function, can be called only once, replacing constructor
@@ -155,7 +158,9 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
      *                  In case champion is not approved, maintainer can cancel his pool creation,
      *                  and return him back the funds.
      */
-    function createHPool() //TODO: add param be_pool_id
+    function createHPool(
+        uint256 bePoolId
+    )
     external
     payable
     whenNotPaused
@@ -181,7 +186,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         championAddressToHPoolIds[msg.sender].push(poolId);
 
         // Trigger events
-        emit PoolInitRequested(poolId, msg.sender, msg.value, block.timestamp); //TODO add to emit the be_hpool_id
+        emit PoolInitRequested(poolId, msg.sender, msg.value, block.timestamp, bePoolId);
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
@@ -279,7 +284,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     function startPublicSubscriptionPhase(
         uint256 poolId
     )
-    public
+    external
     onlyMaintainer
     {
         require(poolId < hPools.length, "hPool with poolId does not exist.");
@@ -325,7 +330,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     function endSubscriptionPhaseAndInitHPool(
         uint256 poolId
     )
-    public
+    external
     onlyMaintainer
     {
         hPool storage hp = hPools[poolId];
@@ -354,6 +359,26 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
+    function endSubscriptionPhaseAndTerminatePool(
+        uint256 poolId
+    )
+    external
+    onlyMaintainer
+    {
+        //TODO: And expose function where followers can withdraw their deposits in ETH, as well as the champion itself
+        hPool storage hp = hPools[poolId];
+
+        require(hp.poolState == PoolState.PUBLIC_SUBSCRIPTION, "hPool is not in subscription state.");
+        require(hp.followersEthDeposit < getMinSubscriptionToLaunchInETH(), "hPool subscription amount is above threshold.");
+
+        // Set new pool state
+        hp.poolState = PoolState.SUBSCRIPTION_FAILED;
+        //TODO: What we do with maintainer fees spent by now? (Should we charge everyone 1% -> Sounds like easiest solution)
+
+        // Trigger event
+        emit HPoolStateChanged(poolId, hp.poolState);
+        emit HPoolLaunchFailed(poolId);
+    }
 
     /**
      * @notice          Function to withdraw tickets. It can be called whenever after subscription phase.

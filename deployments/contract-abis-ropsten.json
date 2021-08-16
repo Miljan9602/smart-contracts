@@ -1723,6 +1723,12 @@
                         "internalType": "uint256",
                         "name": "timestamp",
                         "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "bePoolId",
+                        "type": "uint256"
                     }
                 ],
                 "name": "PoolInitRequested",
@@ -1842,7 +1848,13 @@
                 "type": "event"
             },
             {
-                "inputs": [],
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "bePoolId",
+                        "type": "uint256"
+                    }
+                ],
                 "name": "createHPool",
                 "outputs": [],
                 "stateMutability": "payable",

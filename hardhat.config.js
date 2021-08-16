@@ -18,11 +18,6 @@ task('accounts', 'Prints the list of accounts', async () => {
   }
 })
 
-
-// You have to export an object to set up your config
-// This object can have the following optional entries:
-// defaultNetwork, networks, solc, and paths.
-// Go to https://buidler.dev/config/ to learn more
 module.exports = {
   defaultNetwork: 'local',
   networks: {
@@ -32,7 +27,7 @@ module.exports = {
       accounts: [process.env.PK || PK],
       chainId: 3,
       gasPrice: 40000000000,
-      timeout: 50000
+      timeout: 500000
     },
     ropstenStaging: {
       // Infura public nodes
@@ -40,7 +35,7 @@ module.exports = {
       accounts: [process.env.PK || PK],
       chainId: 3,
       gasPrice: 40000000000,
-      timeout: 50000
+      timeout: 500000
     },
     kovan: {
       // Infura public nodes
@@ -64,6 +59,12 @@ module.exports = {
   },
   solidity: {
     version: '0.6.12',
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
   },
   paths: {
     sources: "./contracts",
