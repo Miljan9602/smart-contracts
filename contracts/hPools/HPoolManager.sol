@@ -316,7 +316,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     function publicSubscribeForHPool(uint256 poolId) external payable {
         hPool storage hp = hPools[poolId];
         require(
-            hp.poolState == PoolState.PRIVATE_SUBSCRIPTION,
+            hp.poolState == PoolState.PUBLIC_SUBSCRIPTION,
             "hPool is not in PUBLIC_SUBSCRIPTION state."
         );
 
