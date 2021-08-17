@@ -1,7 +1,7 @@
 //"SPDX-License-Identifier: UNLICENSED"
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155HolderUpgradeable.sol";
 
 import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IHordTicketFactory.sol";
@@ -18,8 +18,8 @@ import "../libraries/SafeMath.sol";
  * Date created: 7.7.21.
  * Github: madjarevicn
  */
-//TODO: Add interface to support receiving EIP1155 tokens
-contract HPoolManager is PausableUpgradeable, HordUpgradable {
+contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
+
     using SafeMath for *;
 
     // States of the pool contract
@@ -68,26 +68,26 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     }
 
     // Instance of Hord Configuration contract
-    IHordConfiguration hordConfiguration;
+    IHordConfiguration internal hordConfiguration;
     // Instance of oracle
-    AggregatorV3Interface linkOracle;
+    AggregatorV3Interface internal linkOracle;
     // Instance of hord ticket factory
-    IHordTicketFactory hordTicketFactory;
+    IHordTicketFactory internal hordTicketFactory;
     // Instance of Hord treasury contract
-    IHordTreasury hordTreasury;
+    IHordTreasury internal hordTreasury;
     // Instance of HPool Factory contract
-    IHPoolFactory hPoolFactory;
+    IHPoolFactory internal hPoolFactory;
 
     // All hPools
     hPool[] public hPools;
     // Map pool Id to all subscriptions
-    mapping(uint256 => Subscription[]) poolIdToSubscriptions;
+    mapping(uint256 => Subscription[]) internal poolIdToSubscriptions;
     // Map user address to pool id to his subscription for that pool
-    mapping(address => mapping(uint256 => Subscription)) userToPoolIdToSubscription;
+    mapping(address => mapping(uint256 => Subscription)) internal userToPoolIdToSubscription;
     // Mapping user to ids of all pools he has subscribed for
-    mapping(address => uint256[]) userToPoolIdsSubscribedFor;
+    mapping(address => uint256[]) internal userToPoolIdsSubscribedFor;
     // Support listing pools per champion
-    mapping(address => uint256[]) championAddressToHPoolIds;
+    mapping(address => uint256[]) internal championAddressToHPoolIds;
 
     /**
      * Events
