@@ -174,8 +174,6 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
      *                  and return him back the funds.
      */
     function createHPool(uint256 bePoolId) external payable whenNotPaused {
-        // Requirements
-        require(msg.sender == tx.origin, "Only direct contract calls.");
         require(
             msg.value >= getMinimalETHToInitPool(),
             "ETH amount is less than minimal deposit."
