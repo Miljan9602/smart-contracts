@@ -19,7 +19,6 @@ import "../libraries/SafeMath.sol";
  * Github: madjarevicn
  */
 contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
-
     using SafeMath for *;
 
     // States of the pool contract
@@ -83,7 +82,8 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     // Map pool Id to all subscriptions
     mapping(uint256 => Subscription[]) internal poolIdToSubscriptions;
     // Map user address to pool id to his subscription for that pool
-    mapping(address => mapping(uint256 => Subscription)) internal userToPoolIdToSubscription;
+    mapping(address => mapping(uint256 => Subscription))
+        internal userToPoolIdToSubscription;
     // Mapping user to ids of all pools he has subscribed for
     mapping(address => uint256[]) internal userToPoolIdsSubscribedFor;
     // Support listing pools per champion
@@ -173,7 +173,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
      *                  In case champion is not approved, maintainer can cancel his pool creation,
      *                  and return him back the funds.
      */
-    function createHPool(uint256 bePoolId) external payable whenNotPaused {
+    function createHPool(uint256 bePoolId) external payable {
         require(
             msg.value >= getMinimalETHToInitPool(),
             "ETH amount is less than minimal deposit."
