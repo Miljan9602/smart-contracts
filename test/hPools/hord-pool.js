@@ -38,7 +38,7 @@ async function setupContractAndAccounts () {
         config.hordTokenName,
         config.hordTokenSymbol,
         toHordDenomination(config.hordTotalSupply.toString()),
-        hordCongress.address
+        ownerAddr
     );
     await hordToken.deployed()
     hordToken = hordToken.connect(owner)
@@ -274,7 +274,7 @@ describe('hPools', async () => {
 
     describe('private subscription phase', async() => {
 
-        it('should not let nonMaintainer address to call setNftForPool function', async() => {
+        it('should not let nonMaintainer address to call startPrivateSubscriptionPhase function', async() => {
             await expect(hPoolManager.connect(owner).startPrivateSubscriptionPhase(poolId))
                 .to.be.revertedWith("HordUpgradable: Restricted only to Maintainer");
         });
@@ -308,14 +308,109 @@ describe('hPools', async () => {
                 .to.be.revertedWith("hPool is not in PRIVATE_SUBSCRIPTION state.");
         });
 
-        /*it('should', async() => {
+        //TODO: ERC1155 !!!!!
+        xit('should', async() => {
             poolId = 0;
             etherAmount = 10;
             weiValue = Web3.utils.toWei(etherAmount.toString(), 'ether');
-            await hPoolManager.privateSubscribeForHPool(poolId, { value: weiValue, from:  });
-        });*/
+
+            await hordTicketFactory.connect(hordCongress).setApprovalForAll(ownerAddr, true);
+            let a = await hordTicketFactory.connect(hordCongress).isApprovedForAll(hordCongressAddr, ownerAddr);
+            console.log(a);
+            await hPoolManager.connect(hordCongress).privateSubscribeForHPool(poolId, { value: weiValue });
+        });
 
     });
+
+    describe('public subscription phase', async() => {
+
+        it('should not let nonMaintainer address to call startPublicSubscriptionPhase function', async() => {
+            poolId = 0;
+            await expect(hPoolManager.connect(owner).startPublicSubscriptionPhase(poolId))
+                .to.be.revertedWith("HordUpgradable: Restricted only to Maintainer");
+        });
+
+        it('should check values after maintainer calls startPublicSubscriptionPhase function', async() => {
+            await hPoolManager.connect(maintainer).startPublicSubscriptionPhase(poolId);
+            poolState = 3;
+            hPool = await hPoolManager.hPools(poolId);
+            expect(hPool.poolState)
+                .to.be.equal(poolState);
+        });
+
+        it('should not let to start public subscription phase if hPool does not exist', async() => {
+            poolId = 10;
+            await expect(hPoolManager.connect(maintainer).startPublicSubscriptionPhase(poolId))
+                .to.be.revertedWith("hPool with poolId does not exist.");
+        });
+
+        it('should check if previous state is not PRIVATE_SUBSCRIPTION state', async() => {
+            poolId = 0;
+            await expect(hPoolManager.connect(maintainer).startPublicSubscriptionPhase(poolId))
+                .to.be.reverted;
+        });
+
+        it('should check if previous state is not PUBLIC_SUBSCRIPTION state in publicSubscribeForHPool function', async() => {
+            poolId = 1;
+            etherAmount = 10;
+            weiValue = Web3.utils.toWei(etherAmount.toString(), 'ether');
+
+            await expect(hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: weiValue }))
+                .to.be.revertedWith("hPool is not in PUBLIC_SUBSCRIPTION state.");
+        });
+
+        //TODO: Check after values
+        it('should check values after publicSubscribeForHPool function', async() => {
+            poolId = 0;
+            await hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: weiValue });
+        });
+
+        it('should not let user to subscribe more than once', async() => {
+            await expect(hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: weiValue }))
+                .to.be.revertedWith("User can not subscribe more than once.");
+        });
+
+    });
+
+    describe('end subscription phase', async() => {
+
+        it('should not let nonMaintainer address to call endSubscriptionPhaseAndInitHPool function', async() => {
+            poolId = 0;
+            await expect(hPoolManager.connect(owner).endSubscriptionPhaseAndInitHPool(poolId))
+                .to.be.revertedWith("HordUpgradable: Restricted only to Maintainer");
+        });
+
+        it('should not let nonMaintainer address to call endSubscriptionPhaseAndInitHPool function', async() => {
+            poolId = 1;
+            await expect(hPoolManager.connect(maintainer).endSubscriptionPhaseAndInitHPool(poolId))
+                .to.be.revertedWith("hPool is not in subscription state.");
+        });
+
+        //TODO: followersEthDeposit is not initialize
+        xit('should check if previous state is not PUBLIC_SUBSCRIPTION state in publicSubscribeForHPool function', async() => {
+
+        });
+
+    });
+
+    describe('get functions', async() => {
+
+        it('should check return values in getPoolInfo function', async() => {
+           poolId = 0;
+           hPool = await hPoolManager.connect(maintainer).getPoolInfo(poolId);
+
+           expect(hPool[2])
+               .to.be.equal(championAddr);
+            expect(hPool[4])
+                .to.be.equal(nftTicketId);
+           expect(hPool[5])
+               .to.be.equal(true);
+        });
+
+
+
+    });
+
 
 
 });
