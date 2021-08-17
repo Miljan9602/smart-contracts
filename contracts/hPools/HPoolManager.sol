@@ -53,6 +53,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         uint256 amountEth;
         uint256 numberOfTickets;
         SubscriptionRound sr;
+        bool isSubscriptionWithdrawnPoolTerminated;
     }
 
     // HPool struct
@@ -99,6 +100,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     event HPoolStateChanged(uint256 poolId, PoolState newState);
     event Subscribed(uint256 poolId, address user, uint256 amountETH, uint256 numberOfTickets, SubscriptionRound sr);
     event TicketsWithdrawn(uint256 poolId, address user, uint256 numberOfTickets);
+    event SubscriptionWithdrawn(uint256 poolId, address user, uint256 amountEth, uint256 numberOfTickets);
     event ServiceFeePaid(uint256 poolId, uint256 amount);
     event HPoolLaunchFailed(uint256 poolId);
 
@@ -359,6 +361,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
+
     function endSubscriptionPhaseAndTerminatePool(
         uint256 poolId
     )
@@ -380,6 +383,32 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         emit HPoolLaunchFailed(poolId);
     }
 
+    function withdrawDeposit(uint256 poolId) public {
+        hPool storage hp = hPools[poolId];
+        Subscription storage s = userToPoolIdToSubscription[msg.sender][poolId];
+
+        require(hp.poolState == PoolState.SUBSCRIPTION_FAILED, "Pool is not in valid state.");
+        require(!s.isSubscriptionWithdrawnPoolTerminated, "Subscription already withdrawn");
+
+        if (s.numberOfTickets > 0) {
+            hordTicketFactory.safeTransferFrom(
+                address(this),
+                msg.sender,
+                hp.nftTicketId,
+                s.numberOfTickets,
+                "0x0"
+            );
+        }
+
+        // Transfer subscription back to user
+        safeTransferETH(msg.sender, s.amountEth);
+        // Mark that user withdrawn his subscription.
+        s.isSubscriptionWithdrawnPoolTerminated = true;
+        // Fire SubscriptionWithdrawn event
+        emit SubscriptionWithdrawn(poolId, msg.sender, s.amountEth, s.numberOfTickets);
+        // Mark that user taken all tickets
+        s.numberOfTickets = 0;
+    }
     /**
      * @notice          Function to withdraw tickets. It can be called whenever after subscription phase.
      * @param           poolId is the ID of the pool for which user is withdrawing.
@@ -388,7 +417,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         hPool storage hp = hPools[poolId];
         Subscription storage s = userToPoolIdToSubscription[msg.sender][poolId];
 
-        require(s.amountEth > 0, "User did not partcipate in this hPool.");
+        require(s.amountEth > 0, "User did not participate in this hPool.");
         require(s.numberOfTickets > 0, "User have already withdrawn his tickets.");
         require(uint256 (hp.poolState) > 3, "Only after Subscription phase user can withdraw tickets.");
 
