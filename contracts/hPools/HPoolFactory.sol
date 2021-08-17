@@ -12,11 +12,10 @@ import "./HPool.sol";
  * Github: madjarevicn
  */
 contract HPoolFactory is PausableUpgradeable, HordUpgradable {
-
     address public hPoolManager;
-    address [] deployedHPools;
+    address[] deployedHPools;
 
-    modifier onlyHPoolManager {
+    modifier onlyHPoolManager() {
         require(msg.sender == hPoolManager);
         _;
     }
@@ -24,12 +23,9 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
     /**
      * @notice          Initializer function, can be called only once, replacing constructor
      */
-    function initialize (
-        address _hordCongress,
-        address _maintainersRegistry
-    )
-    initializer
-    external
+    function initialize(address _hordCongress, address _maintainersRegistry)
+        external
+        initializer
     {
         setCongressAndMaintainers(_hordCongress, _maintainersRegistry);
     }
@@ -38,11 +34,7 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
      * @notice          Function to set HPoolManager contract address during the deployment.
      * @param           _hPoolManager is the address of HPoolManager smart-contract.
      */
-    function setHPoolManager(
-        address _hPoolManager
-    )
-    external
-    {
+    function setHPoolManager(address _hPoolManager) external {
         require(hPoolManager == address(0));
         require(_hPoolManager != address(0));
 
@@ -52,13 +44,13 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
     /**
      * @notice          Function to deploy hPool, only callable by HPoolManager
      */
-    function deployHPool()
-    external
-    onlyHPoolManager
-    returns (address)
-    {
+    function deployHPool() external onlyHPoolManager returns (address) {
         // Deploy the HPool contract
-        HPool hpContract = new HPool(hordCongress, address(maintainersRegistry), hPoolManager);
+        HPool hpContract = new HPool(
+            hordCongress,
+            address(maintainersRegistry),
+            hPoolManager
+        );
 
         // Add deployed pool to array of deployed pools
         deployedHPools.push(address(hpContract));
@@ -73,20 +65,19 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
      * @param           endIndex is the end index for query
      *                  As an example to fetch [2,3,4,5] elements in array input will be (2,6)
      */
-    function getDeployedHPools(uint startIndex, uint endIndex)
-    external
-    view
-    returns (address[] memory)
+    function getDeployedHPools(uint256 startIndex, uint256 endIndex)
+        external
+        view
+        returns (address[] memory)
     {
-        address [] memory hPools = new address[](startIndex - endIndex);
-        uint counter;
+        address[] memory hPools = new address[](startIndex - endIndex);
+        uint256 counter;
 
-        for(uint i = startIndex; i < endIndex; i++) {
+        for (uint256 i = startIndex; i < endIndex; i++) {
             hPools[counter] = deployedHPools[i];
             counter++;
         }
 
         return deployedHPools;
     }
-
 }

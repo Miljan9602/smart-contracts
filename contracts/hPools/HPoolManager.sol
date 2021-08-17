@@ -1,7 +1,7 @@
 //"SPDX-License-Identifier: UNLICENSED"
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155HolderUpgradeable.sol";
 
 import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IHordTicketFactory.sol";
@@ -12,20 +12,17 @@ import "../interfaces/IHPool.sol";
 import "../system/HordUpgradable.sol";
 import "../libraries/SafeMath.sol";
 
-
 /**
  * HPoolManager contract.
  * @author Nikola Madjarevic
  * Date created: 7.7.21.
  * Github: madjarevicn
  */
-//TODO: Add interface to support receiving EIP1155 tokens
-contract HPoolManager is PausableUpgradeable, HordUpgradable {
-
+contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     using SafeMath for *;
 
     // States of the pool contract
-    enum PoolState{
+    enum PoolState {
         PENDING_INIT,
         TICKET_SALE,
         PRIVATE_SUBSCRIPTION,
@@ -53,6 +50,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         uint256 amountEth;
         uint256 numberOfTickets;
         SubscriptionRound sr;
+        bool isSubscriptionWithdrawnPoolTerminated;
     }
 
     // HPool struct
@@ -68,37 +66,59 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         uint256 treasuryFeePaid;
     }
 
-
     // Instance of Hord Configuration contract
-    IHordConfiguration hordConfiguration;
+    IHordConfiguration internal hordConfiguration;
     // Instance of oracle
-    AggregatorV3Interface linkOracle;
+    AggregatorV3Interface internal linkOracle;
     // Instance of hord ticket factory
-    IHordTicketFactory hordTicketFactory;
+    IHordTicketFactory internal hordTicketFactory;
     // Instance of Hord treasury contract
-    IHordTreasury hordTreasury;
+    IHordTreasury internal hordTreasury;
     // Instance of HPool Factory contract
-    IHPoolFactory hPoolFactory;
+    IHPoolFactory internal hPoolFactory;
 
     // All hPools
-    hPool [] public hPools;
+    hPool[] public hPools;
     // Map pool Id to all subscriptions
-    mapping(uint256 => Subscription[]) poolIdToSubscriptions;
+    mapping(uint256 => Subscription[]) internal poolIdToSubscriptions;
     // Map user address to pool id to his subscription for that pool
-    mapping(address => mapping(uint256 => Subscription)) userToPoolIdToSubscription;
+    mapping(address => mapping(uint256 => Subscription))
+        internal userToPoolIdToSubscription;
     // Mapping user to ids of all pools he has subscribed for
-    mapping(address => uint256[]) userToPoolIdsSubscribedFor;
+    mapping(address => uint256[]) internal userToPoolIdsSubscribedFor;
     // Support listing pools per champion
-    mapping (address => uint[]) championAddressToHPoolIds;
+    mapping(address => uint256[]) internal championAddressToHPoolIds;
 
     /**
      * Events
      */
-    event PoolInitRequested(uint256 poolId, address champion, uint256 championEthDeposit, uint256 timestamp, uint256 bePoolId);
+    event PoolInitRequested(
+        uint256 poolId,
+        address champion,
+        uint256 championEthDeposit,
+        uint256 timestamp,
+        uint256 bePoolId
+    );
     event TicketIdSetForPool(uint256 poolId, uint256 nftTicketId);
     event HPoolStateChanged(uint256 poolId, PoolState newState);
-    event Subscribed(uint256 poolId, address user, uint256 amountETH, uint256 numberOfTickets, SubscriptionRound sr);
-    event TicketsWithdrawn(uint256 poolId, address user, uint256 numberOfTickets);
+    event Subscribed(
+        uint256 poolId,
+        address user,
+        uint256 amountETH,
+        uint256 numberOfTickets,
+        SubscriptionRound sr
+    );
+    event TicketsWithdrawn(
+        uint256 poolId,
+        address user,
+        uint256 numberOfTickets
+    );
+    event SubscriptionWithdrawn(
+        uint256 poolId,
+        address user,
+        uint256 amountEth,
+        uint256 numberOfTickets
+    );
     event ServiceFeePaid(uint256 poolId, uint256 amount);
     event HPoolLaunchFailed(uint256 poolId);
 
@@ -107,7 +127,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
      * @param           _hordCongress is the address of HordCongress contract
      * @param           _maintainersRegistry is the address of the MaintainersRegistry contract
      */
-    function initialize (
+    function initialize(
         address _hordCongress,
         address _maintainersRegistry,
         address _hordTicketFactory,
@@ -116,10 +136,7 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         address _hPoolFactory,
         address _chainlinkOracle,
         address _hordConfiguration
-    )
-    initializer
-    external
-    {
+    ) external initializer {
         require(_hordCongress != address(0));
         require(_maintainersRegistry != address(0));
         require(_hordTicketFactory != address(0));
@@ -139,10 +156,9 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
      * @notice          Internal function to handle safe transferring of ETH.
      */
     function safeTransferETH(address to, uint256 value) internal {
-        (bool success,) = to.call{value:value}(new bytes(0));
-        require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
+        (bool success, ) = to.call{value: value}(new bytes(0));
+        require(success, "TransferHelper: ETH_TRANSFER_FAILED");
     }
-
 
     /**
      * @notice          Internal function to pay service to hord treasury contract
@@ -152,30 +168,24 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         emit ServiceFeePaid(poolId, amount);
     }
 
-
     /**
      * @notice          Function where champion can create his pool.
      *                  In case champion is not approved, maintainer can cancel his pool creation,
      *                  and return him back the funds.
      */
-    function createHPool(
-        uint256 bePoolId
-    )
-    external
-    payable
-    whenNotPaused
-    {
-        // Requirements
-        require(msg.sender == tx.origin, "Only direct contract calls.");
-        require(msg.value >= getMinimalETHToInitPool(), "ETH amount is less than minimal deposit.");
+    function createHPool(uint256 bePoolId) external payable {
+        require(
+            msg.value >= getMinimalETHToInitPool(),
+            "ETH amount is less than minimal deposit."
+        );
 
         // Create hPool structure
         hPool memory hp;
 
-        hp.poolState= PoolState.PENDING_INIT;
-        hp.championEthDeposit= msg.value;
-        hp.championAddress= msg.sender;
-        hp.createdAt= block.timestamp;
+        hp.poolState = PoolState.PENDING_INIT;
+        hp.championEthDeposit = msg.value;
+        hp.championAddress = msg.sender;
+        hp.createdAt = block.timestamp;
 
         // Compute ID to match position in array
         uint256 poolId = hPools.length;
@@ -186,30 +196,34 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         championAddressToHPoolIds[msg.sender].push(poolId);
 
         // Trigger events
-        emit PoolInitRequested(poolId, msg.sender, msg.value, block.timestamp, bePoolId);
+        emit PoolInitRequested(
+            poolId,
+            msg.sender,
+            msg.value,
+            block.timestamp,
+            bePoolId
+        );
         emit HPoolStateChanged(poolId, hp.poolState);
     }
-
 
     /**
      * @notice          Function to set NFT for pool, which will at the same time validate the pool itself.
      * @param           poolId is the ID of the pool contract.
      */
-    function setNftForPool(
-        uint256 poolId,
-        uint256 _nftTicketId
-    )
-    external
-    onlyMaintainer
+    function setNftForPool(uint256 poolId, uint256 _nftTicketId)
+        external
+        onlyMaintainer
     {
-
         require(poolId < hPools.length, "hPool with poolId does not exist.");
         require(_nftTicketId > 0, "NFT id can not be 0.");
 
         hPool storage hp = hPools[poolId];
 
         require(!hp.isValidated, "hPool already validated.");
-        require(hp.poolState == PoolState.PENDING_INIT, "Bad state transition.");
+        require(
+            hp.poolState == PoolState.PENDING_INIT,
+            "Bad state transition."
+        );
 
         hp.isValidated = true;
         hp.nftTicketId = _nftTicketId;
@@ -219,17 +233,14 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
-
     /**
      * @notice          Function to start private subscription phase. Can be started only if previous
      *                  state of the hPool was TICKET_SALE.
      * @param           poolId is the ID of the pool contract.
      */
-    function startPrivateSubscriptionPhase(
-        uint256 poolId
-    )
-    external
-    onlyMaintainer
+    function startPrivateSubscriptionPhase(uint256 poolId)
+        external
+        onlyMaintainer
     {
         require(poolId < hPools.length, "hPool with poolId does not exist.");
 
@@ -241,24 +252,22 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
-
     /**
      * @notice          Function for users to subscribe for the hPool.
      */
-    function privateSubscribeForHPool(
-        uint256 poolId
-    )
-    external
-    payable
-    {
+    function privateSubscribeForHPool(uint256 poolId) external payable {
         hPool storage hp = hPools[poolId];
-        require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION, "hPool is not in PRIVATE_SUBSCRIPTION state.");
+        require(
+            hp.poolState == PoolState.PRIVATE_SUBSCRIPTION,
+            "hPool is not in PRIVATE_SUBSCRIPTION state."
+        );
 
         Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
         require(s.amountEth == 0, "User can not subscribe more than once.");
 
-
-        uint256 numberOfTicketsToUse = getRequiredNumberOfTicketsToUse(msg.value);
+        uint256 numberOfTicketsToUse = getRequiredNumberOfTicketsToUse(
+            msg.value
+        );
         require(numberOfTicketsToUse > 0);
 
         hordTicketFactory.safeTransferFrom(
@@ -278,14 +287,18 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         poolIdToSubscriptions[poolId].push(s);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
 
-        emit Subscribed(poolId, msg.sender, msg.value, numberOfTicketsToUse, s.sr);
+        emit Subscribed(
+            poolId,
+            msg.sender,
+            msg.value,
+            numberOfTicketsToUse,
+            s.sr
+        );
     }
 
-    function startPublicSubscriptionPhase(
-        uint256 poolId
-    )
-    external
-    onlyMaintainer
+    function startPublicSubscriptionPhase(uint256 poolId)
+        external
+        onlyMaintainer
     {
         require(poolId < hPools.length, "hPool with poolId does not exist.");
 
@@ -300,14 +313,12 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     /**
      * @notice          Function for users to subscribe for the hPool.
      */
-    function publicSubscribeForHPool(
-        uint256 poolId
-    )
-    external
-    payable
-    {
+    function publicSubscribeForHPool(uint256 poolId) external payable {
         hPool storage hp = hPools[poolId];
-        require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION, "hPool is not in PUBLIC_SUBSCRIPTION state.");
+        require(
+            hp.poolState == PoolState.PRIVATE_SUBSCRIPTION,
+            "hPool is not in PUBLIC_SUBSCRIPTION state."
+        );
 
         Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
         require(s.amountEth == 0, "User can not subscribe more than once.");
@@ -327,16 +338,19 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
     /**
      * @notice          Maintainer should end subscription phase in case all the criteria is reached
      */
-    function endSubscriptionPhaseAndInitHPool(
-        uint256 poolId
-    )
-    external
-    onlyMaintainer
+    function endSubscriptionPhaseAndInitHPool(uint256 poolId)
+        external
+        onlyMaintainer
     {
         hPool storage hp = hPools[poolId];
-        require(hp.poolState == PoolState.PUBLIC_SUBSCRIPTION, "hPool is not in subscription state.");
-        require(hp.followersEthDeposit >= getMinSubscriptionToLaunchInETH(), "hPool subscription amount is below threshold.");
-
+        require(
+            hp.poolState == PoolState.PUBLIC_SUBSCRIPTION,
+            "hPool is not in subscription state."
+        );
+        require(
+            hp.followersEthDeposit >= getMinSubscriptionToLaunchInETH(),
+            "hPool subscription amount is below threshold."
+        );
 
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
 
@@ -346,11 +360,16 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         // Set the deployed address of hPool
         hp.hPoolContractAddress = address(hpContract);
 
-        uint256 treasuryFeeETH = hp.followersEthDeposit.mul(hordConfiguration.gasUtilizationRatio()).div(hordConfiguration.percentPrecision());
+        uint256 treasuryFeeETH = hp
+            .followersEthDeposit
+            .mul(hordConfiguration.gasUtilizationRatio())
+            .div(hordConfiguration.percentPrecision());
 
         payServiceFeeToTreasury(poolId, treasuryFeeETH);
 
-        hpContract.depositBudgetFollowers{value: hp.followersEthDeposit.sub(treasuryFeeETH)}();
+        hpContract.depositBudgetFollowers{
+            value: hp.followersEthDeposit.sub(treasuryFeeETH)
+        }();
         hpContract.depositBudgetChampion{value: hp.championEthDeposit}();
 
         hp.treasuryFeePaid = treasuryFeeETH;
@@ -359,17 +378,21 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         emit HPoolStateChanged(poolId, hp.poolState);
     }
 
-    function endSubscriptionPhaseAndTerminatePool(
-        uint256 poolId
-    )
-    external
-    onlyMaintainer
+    function endSubscriptionPhaseAndTerminatePool(uint256 poolId)
+        external
+        onlyMaintainer
     {
         //TODO: And expose function where followers can withdraw their deposits in ETH, as well as the champion itself
         hPool storage hp = hPools[poolId];
 
-        require(hp.poolState == PoolState.PUBLIC_SUBSCRIPTION, "hPool is not in subscription state.");
-        require(hp.followersEthDeposit < getMinSubscriptionToLaunchInETH(), "hPool subscription amount is above threshold.");
+        require(
+            hp.poolState == PoolState.PUBLIC_SUBSCRIPTION,
+            "hPool is not in subscription state."
+        );
+        require(
+            hp.followersEthDeposit < getMinSubscriptionToLaunchInETH(),
+            "hPool subscription amount is above threshold."
+        );
 
         // Set new pool state
         hp.poolState = PoolState.SUBSCRIPTION_FAILED;
@@ -380,6 +403,44 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         emit HPoolLaunchFailed(poolId);
     }
 
+    function withdrawDeposit(uint256 poolId) public {
+        hPool storage hp = hPools[poolId];
+        Subscription storage s = userToPoolIdToSubscription[msg.sender][poolId];
+
+        require(
+            hp.poolState == PoolState.SUBSCRIPTION_FAILED,
+            "Pool is not in valid state."
+        );
+        require(
+            !s.isSubscriptionWithdrawnPoolTerminated,
+            "Subscription already withdrawn"
+        );
+
+        if (s.numberOfTickets > 0) {
+            hordTicketFactory.safeTransferFrom(
+                address(this),
+                msg.sender,
+                hp.nftTicketId,
+                s.numberOfTickets,
+                "0x0"
+            );
+        }
+
+        // Transfer subscription back to user
+        safeTransferETH(msg.sender, s.amountEth);
+        // Mark that user withdrawn his subscription.
+        s.isSubscriptionWithdrawnPoolTerminated = true;
+        // Fire SubscriptionWithdrawn event
+        emit SubscriptionWithdrawn(
+            poolId,
+            msg.sender,
+            s.amountEth,
+            s.numberOfTickets
+        );
+        // Mark that user taken all tickets
+        s.numberOfTickets = 0;
+    }
+
     /**
      * @notice          Function to withdraw tickets. It can be called whenever after subscription phase.
      * @param           poolId is the ID of the pool for which user is withdrawing.
@@ -388,9 +449,15 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         hPool storage hp = hPools[poolId];
         Subscription storage s = userToPoolIdToSubscription[msg.sender][poolId];
 
-        require(s.amountEth > 0, "User did not partcipate in this hPool.");
-        require(s.numberOfTickets > 0, "User have already withdrawn his tickets.");
-        require(uint256 (hp.poolState) > 3, "Only after Subscription phase user can withdraw tickets.");
+        require(s.amountEth > 0, "User did not participate in this hPool.");
+        require(
+            s.numberOfTickets > 0,
+            "User have already withdrawn his tickets."
+        );
+        require(
+            uint256(hp.poolState) > 3,
+            "Only after Subscription phase user can withdraw tickets."
+        );
 
         hordTicketFactory.safeTransferFrom(
             address(this),
@@ -407,150 +474,127 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
         s.numberOfTickets = 0;
     }
 
-
     /**
      * @notice          Function to get minimal amount of ETH champion needs to
      *                  put in, in order to create hPool.
      * @return         Amount of ETH (in WEI units)
      */
-    function getMinimalETHToInitPool()
-    public
-    view
-    returns (uint256)
-    {
+    function getMinimalETHToInitPool() public view returns (uint256) {
         uint256 latestPrice = uint256(getLatestPrice());
         uint256 usdEThRate = one.mul(one).div(latestPrice);
         return usdEThRate.mul(hordConfiguration.minChampStake()).div(one);
     }
-
 
     /**
      * @notice          Function to get maximal amount of ETH user can subscribe with
      *                  per 1 access ticket
      * @return         Amount of ETH (in WEI units)
      */
-    function getMaxSubscriptionInETHPerTicket()
-    public
-    view
-    returns (uint256)
-    {
+    function getMaxSubscriptionInETHPerTicket() public view returns (uint256) {
         uint256 latestPrice = uint256(getLatestPrice());
         uint256 usdEThRate = one.mul(one).div(latestPrice);
-        return usdEThRate.mul(hordConfiguration.maxUSDAllocationPerTicket()).div(one);
+        return
+            usdEThRate.mul(hordConfiguration.maxUSDAllocationPerTicket()).div(
+                one
+            );
     }
 
     /**
      * @notice          Function to get minimal subscription in ETH so pool can launch
      */
-    function getMinSubscriptionToLaunchInETH()
-    public
-    view
-    returns (uint256)
-    {
+    function getMinSubscriptionToLaunchInETH() public view returns (uint256) {
         uint256 latestPrice = uint256(getLatestPrice());
         uint256 usdEThRate = one.mul(one).div(latestPrice);
         return usdEThRate.mul(hordConfiguration.minFollowerUSDStake()).div(one);
     }
 
-
     /**
      * @notice          Function to fetch the latest price of the stored oracle.
      */
-    function getLatestPrice()
-    public
-    view
-    returns (int)
-    {
-        (,int price,,,) = linkOracle.latestRoundData();
+    function getLatestPrice() public view returns (int256) {
+        (, int256 price, , , ) = linkOracle.latestRoundData();
         return price;
     }
-
 
     /**
      * @notice          Function to fetch on how many decimals is the response
      */
-    function getDecimalsReturnPrecision()
-    public
-    view
-    returns (uint8)
-    {
+    function getDecimalsReturnPrecision() public view returns (uint8) {
         return linkOracle.decimals();
     }
-
 
     /**
      * @notice          Function to get IDs of all pools for the champion.
      */
-    function getChampionPoolIds(
-        address champion
-    )
-    external
-    view
-    returns (uint256 [] memory)
+    function getChampionPoolIds(address champion)
+        external
+        view
+        returns (uint256[] memory)
     {
         return championAddressToHPoolIds[champion];
     }
 
-
     /**
      * @notice          Function to get IDs of pools for which user subscribed
      */
-    function getPoolsUserSubscribedFor(
-        address user
-    )
-    external
-    view
-    returns (uint256 [] memory)
+    function getPoolsUserSubscribedFor(address user)
+        external
+        view
+        returns (uint256[] memory)
     {
         return userToPoolIdsSubscribedFor[user];
     }
 
-
     /**
      * @notice          Function to compute how much user can currently subscribe in ETH for the hPool.
      */
-    function getMaxUserSubscriptionInETH(
-        address user,
-        uint256 poolId
-    )
-    external
-    view
-    returns (uint256)
+    function getMaxUserSubscriptionInETH(address user, uint256 poolId)
+        external
+        view
+        returns (uint256)
     {
         hPool memory hp = hPools[poolId];
 
         Subscription memory s = userToPoolIdToSubscription[user][poolId];
 
-        if(s.amountEth > 0) {
+        if (s.amountEth > 0) {
             // User already subscribed, can subscribe only once.
             return 0;
         }
 
-        uint256 numberOfTickets = hordTicketFactory.balanceOf(user, hp.nftTicketId);
+        uint256 numberOfTickets = hordTicketFactory.balanceOf(
+            user,
+            hp.nftTicketId
+        );
         uint256 maxUserSubscriptionPerTicket = getMaxSubscriptionInETHPerTicket();
 
         return numberOfTickets.mul(maxUserSubscriptionPerTicket);
     }
-
 
     /**
      * @notice          Function to return required number of tickets for user to use in order to subscribe
      *                  with selected amount
      * @param           subscriptionAmount is the amount of ETH user wants to subscribe with.
      */
-    function getRequiredNumberOfTicketsToUse(uint256 subscriptionAmount) public view returns (uint256) {
-
+    function getRequiredNumberOfTicketsToUse(uint256 subscriptionAmount)
+        public
+        view
+        returns (uint256)
+    {
         uint256 maxParticipationPerTicket = getMaxSubscriptionInETHPerTicket();
-        uint256 amountOfTicketsToUse = (subscriptionAmount).div(maxParticipationPerTicket);
+        uint256 amountOfTicketsToUse = (subscriptionAmount).div(
+            maxParticipationPerTicket
+        );
 
-
-        if(subscriptionAmount.mul(maxParticipationPerTicket) < amountOfTicketsToUse) {
+        if (
+            subscriptionAmount.mul(maxParticipationPerTicket) <
+            amountOfTicketsToUse
+        ) {
             amountOfTicketsToUse++;
         }
 
         return amountOfTicketsToUse;
     }
-
 
     /**
      * @notice          Function to get user subscription for the pool.
@@ -558,43 +602,50 @@ contract HPoolManager is PausableUpgradeable, HordUpgradable {
      * @param           user is the address of user
      * @return          amount of ETH user deposited and number of tickets taken from user.
      */
-    function getUserSubscriptionForPool(
-        uint256 poolId,
-        address user
-    )
-    external
-    view
-    returns (uint256, uint256)
+    function getUserSubscriptionForPool(uint256 poolId, address user)
+        external
+        view
+        returns (uint256, uint256)
     {
-        Subscription memory subscription = userToPoolIdToSubscription[user][poolId];
+        Subscription memory subscription = userToPoolIdToSubscription[user][
+            poolId
+        ];
 
-        return (
-            subscription.amountEth,
-            subscription.numberOfTickets
-        );
+        return (subscription.amountEth, subscription.numberOfTickets);
     }
-
 
     /**
      * @notice          Function to get information for specific pool
      * @param           poolId is the ID of the pool
      */
-    function getPoolInfo(
-        uint256 poolId
-    )
-    external
-    view
-    returns (
-        uint256, uint256, address, uint256, uint256, bool, uint256, address, uint256
-    )
+    function getPoolInfo(uint256 poolId)
+        external
+        view
+        returns (
+            uint256,
+            uint256,
+            address,
+            uint256,
+            uint256,
+            bool,
+            uint256,
+            address,
+            uint256
+        )
     {
         // Load pool into memory
         hPool memory hp = hPools[poolId];
 
         return (
-            uint256(hp.poolState), hp.championEthDeposit, hp.championAddress, hp.createdAt, hp.nftTicketId,
-            hp.isValidated, hp.followersEthDeposit, hp.hPoolContractAddress, hp.treasuryFeePaid
+            uint256(hp.poolState),
+            hp.championEthDeposit,
+            hp.championAddress,
+            hp.createdAt,
+            hp.nftTicketId,
+            hp.isValidated,
+            hp.followersEthDeposit,
+            hp.hPoolContractAddress,
+            hp.treasuryFeePaid
         );
     }
-
 }
