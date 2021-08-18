@@ -287,6 +287,8 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         poolIdToSubscriptions[poolId].push(s);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
 
+        hp.followersEthDeposit = hp.followersEthDeposit.add(msg.value);
+
         emit Subscribed(
             poolId,
             msg.sender,
@@ -327,6 +329,8 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         s.numberOfTickets = 0;
         s.user = msg.sender;
         s.sr = SubscriptionRound.PUBLIC;
+
+        hp.followersEthDeposit = hp.followersEthDeposit.add(msg.value);
 
         // Store subscription
         poolIdToSubscriptions[poolId].push(s);
