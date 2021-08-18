@@ -11,7 +11,7 @@ let config;
 let accounts, owner, ownerAddr, hordCongress, hordCongressAddr, bob, bobAddr, alice, aliceAddr, maintainer, maintainerAddr,
     maintainersRegistry, hordTicketFactory, hordToken, hordTicketManager, hordTreasury, hordConfiguration, champion, championAddr;
 let hPoolManager;
-let hPoolFactory, hPoolFactoryAddr, aggregatorV3;
+let hPoolFactory, aggregatorV3;
 let etherAmount, bePoolId, weiValue, poolState, poolId, hPool, nftTicketId;
 
 async function setupContractAndAccounts () {
@@ -30,8 +30,6 @@ async function setupContractAndAccounts () {
     maintainerAddr = await maintainer.getAddress()
     champion = accounts[9]
     championAddr = await champion.getAddress()
-    hPoolFactory = accounts[3]
-    hPoolFactoryAddr = await hPoolFactory.getAddress()
 
     const Hord = await hre.ethers.getContractFactory("HordToken");
     hordToken = await Hord.deploy(
@@ -102,6 +100,15 @@ async function setupContractAndAccounts () {
     );
     await hordConfiguration.deployed()
 
+    const HPoolFactory = await ethers.getContractFactory('HPoolFactory')
+    hPoolFactory = await upgrades.deployProxy(HPoolFactory, [
+            hordCongressAddr,
+            maintainersRegistry.address
+        ]
+    );
+
+    await hPoolFactory.deployed()
+
     const HPoolManager = await ethers.getContractFactory('HPoolManager');
     const poolManager = await HPoolManager.deploy();
 
@@ -119,35 +126,35 @@ describe('hPools', async () => {
         it('should not let pass 0x0 address in initialize function', async () => {
             await expect(hPoolManager.initialize(address(0), maintainersRegistry.address,
                 hordTicketFactory.address, hordTreasury.address, hordToken.address,
-                hPoolFactoryAddr, aggregatorV3.address, hordConfiguration.address))
+                hPoolFactory.address, aggregatorV3.address, hordConfiguration.address))
                 .to.be.reverted;
 
             await expect(hPoolManager.initialize(hordCongressAddr, address(0),
                 hordTicketFactory.address, hordTreasury.address, hordToken.address,
-                hPoolFactoryAddr, aggregatorV3.address, hordConfiguration.address))
+                hPoolFactory.address, aggregatorV3.address, hordConfiguration.address))
                 .to.be.reverted;
 
             await expect(hPoolManager.initialize(hordCongressAddr, maintainersRegistry.address,
                 address(0), hordTreasury.address, hordToken.address,
-                hPoolFactoryAddr, aggregatorV3.address, hordConfiguration.address))
+                hPoolFactory.address, aggregatorV3.address, hordConfiguration.address))
                 .to.be.reverted;
 
             await expect(hPoolManager.initialize(hordCongressAddr, maintainersRegistry.address,
                 hordTicketFactory.address, hordTreasury.address, hordToken.address,
-                hPoolFactoryAddr, aggregatorV3.address, address(0)))
+                hPoolFactory.address, aggregatorV3.address, address(0)))
                 .to.be.reverted;
         });
 
         it('should let initialize once', async () => {
             await hPoolManager.initialize(hordCongressAddr, maintainersRegistry.address,
                 hordTicketFactory.address, hordTreasury.address, hordToken.address,
-                hPoolFactoryAddr, aggregatorV3.address, hordConfiguration.address);
+                hPoolFactory.address, aggregatorV3.address, hordConfiguration.address);
         });
 
         it('sholud not let initialize twice', async () => {
             await expect(hPoolManager.connect(alice).initialize(hordCongressAddr, maintainersRegistry.address,
                hordTicketFactory.address, hordTreasury.address, hordToken.address,
-               hPoolFactoryAddr, aggregatorV3.address, hordConfiguration.address))
+                hPoolFactory.address, aggregatorV3.address, hordConfiguration.address))
                     .to.be.reverted;
         });
 
@@ -155,11 +162,26 @@ describe('hPools', async () => {
 
     describe('Create hPool by champion', async() => {
 
+        it('should not let to ETH amount is less than minimal deposit in createHPool function', async() => {
+            etherAmount = 0;
+            bePoolId = 5;
+            weiValue = Web3.utils.toWei(etherAmount.toString(), 'ether');
+
+            await expect(hPoolManager.connect(champion).createHPool(bePoolId, { value: weiValue }))
+                .to.be.revertedWith( "ETH amount is less than minimal deposit.");
+        });
+
         it('should check length of hPools array after createHPool function', async() => {
             etherAmount = 10;
             bePoolId = 0;
             weiValue = Web3.utils.toWei(etherAmount.toString(), 'ether');
 
+            await hPoolManager.connect(champion).createHPool(bePoolId, { value: weiValue });
+            bePoolId++;
+            await hPoolManager.connect(champion).createHPool(bePoolId, { value: weiValue });
+            bePoolId++;
+            await hPoolManager.connect(champion).createHPool(bePoolId, { value: weiValue });
+            bePoolId++;
             await hPoolManager.connect(champion).createHPool(bePoolId, { value: weiValue });
             bePoolId++;
             await hPoolManager.connect(champion).createHPool(bePoolId, { value: weiValue });
@@ -193,48 +215,25 @@ describe('hPools', async () => {
                 .to.be.equal(championAddr);
         });
 
-        xit('should not let to ETH amount is less than minimal deposit in createHPool function', async() => {
-            etherAmount = 10;
-            weiValue = Web3.utils.toWei(etherAmount.toString(), 'ether');
-            /*  await expect(hPoolManager.createHPool({ value: ethers.utils.parseEther(etherAmount.toString()) }))
-                    .to.be.revertedWith("ETH amount is less than minimal deposit");
-            */
-           /* await expect(hPoolManager.connect(champion).createHPool(bePoolId, { value: weiValue }))
-                .to.be.revertedWith("ETH amount is less than minimal deposit");
-            */
-
-            let a = await hPoolManager.getMinimalETHToInitPool();
-            let b = new BigNumber.from(weiValue);
-
-            console.log(a);
-            console.log(b);
-            console.log(a > b)
-            console.log(a < b)
-
-            await hPoolManager.createHPool(bePoolId, { value: b });
-
-        });
-
-
-        xit('should let only direct conntract calls', async() => {
-            await expect(hPoolManager.createHPool())
-                .to.be.revertedWith("Only direct contract calls.");
-        });
-
-
     });
 
     describe('setNftForPool by maintainer', async() => {
 
         it('should not let nonMaintainer address to call setNftForPool function', async() => {
-            await expect(hPoolManager.connect(owner).setNftForPool(poolId, 2))
+            nftTicketId = 2;
+            await expect(hPoolManager.connect(owner).setNftForPool(poolId, nftTicketId))
                 .to.be.revertedWith("HordUpgradable: Restricted only to Maintainer");
         });
 
         it('should check values after maintainer calls setNftForPool function', async() => {
-            nftTicketId = 2;
-
             await hPoolManager.connect(maintainer).setNftForPool(poolId, nftTicketId);
+            poolId = 2;
+            await hPoolManager.connect(maintainer).setNftForPool(poolId, nftTicketId);
+            poolId = 3;
+            await hPoolManager.connect(maintainer).setNftForPool(poolId, nftTicketId);
+            poolId = 4;
+            await hPoolManager.connect(maintainer).setNftForPool(poolId, nftTicketId);
+
             poolState = 1;
             hPool = await hPoolManager.hPools(poolId);
 
@@ -281,6 +280,13 @@ describe('hPools', async () => {
 
         it('should check values after maintainer calls startPrivateSubscriptionPhase function', async() => {
             await hPoolManager.connect(maintainer).startPrivateSubscriptionPhase(poolId);
+            poolId = 2;
+            await hPoolManager.connect(maintainer).startPrivateSubscriptionPhase(poolId);
+            poolId = 3;
+            await hPoolManager.connect(maintainer).startPrivateSubscriptionPhase(poolId);
+            poolId = 4;
+            await hPoolManager.connect(maintainer).startPrivateSubscriptionPhase(poolId);
+
             poolState = 2;
             hPool = await hPoolManager.hPools(poolId);
             expect(hPool.poolState)
@@ -308,16 +314,30 @@ describe('hPools', async () => {
                 .to.be.revertedWith("hPool is not in PRIVATE_SUBSCRIPTION state.");
         });
 
+        it('should check if msg.value is equal 0 in privateSubscribeForHPool function', async() => {
+            poolId = 0;
+            etherAmount = 0;
+            weiValue = Web3.utils.toWei(etherAmount.toString(), 'ether');
+
+            await expect(hPoolManager.connect(bob).privateSubscribeForHPool(poolId, { value: weiValue }))
+                .to.be.reverted;
+        });
+
         //TODO: ERC1155 !!!!!
         xit('should', async() => {
-            poolId = 0;
             etherAmount = 10;
             weiValue = Web3.utils.toWei(etherAmount.toString(), 'ether');
 
-            await hordTicketFactory.connect(hordCongress).setApprovalForAll(ownerAddr, true);
-            let a = await hordTicketFactory.connect(hordCongress).isApprovedForAll(hordCongressAddr, ownerAddr);
-            console.log(a);
-            await hPoolManager.connect(hordCongress).privateSubscribeForHPool(poolId, { value: weiValue });
+            await hordTicketFactory.connect(owner).setApprovalForAll(hPoolManager.address, true);
+            let b = await hordTicketFactory.balanceOf(ownerAddr, 2);
+            console.log(b)
+            await hPoolManager.privateSubscribeForHPool(poolId, { value: weiValue });
+
+        });
+
+        //TODO: add test if user wants to subscribe more than once
+        xit('should not let user to subscribe more than once', async() => {
+
         });
 
     });
@@ -332,6 +352,13 @@ describe('hPools', async () => {
 
         it('should check values after maintainer calls startPublicSubscriptionPhase function', async() => {
             await hPoolManager.connect(maintainer).startPublicSubscriptionPhase(poolId);
+            poolId = 2;
+            await hPoolManager.connect(maintainer).startPublicSubscriptionPhase(poolId);
+            poolId = 3;
+            await hPoolManager.connect(maintainer).startPublicSubscriptionPhase(poolId);
+            poolId = 4;
+            await hPoolManager.connect(maintainer).startPublicSubscriptionPhase(poolId);
+
             poolState = 3;
             hPool = await hPoolManager.hPools(poolId);
             expect(hPool.poolState)
@@ -363,6 +390,8 @@ describe('hPools', async () => {
         it('should check values after publicSubscribeForHPool function', async() => {
             poolId = 0;
             await hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: weiValue });
+            poolId = 3;
+            await hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: weiValue });
         });
 
         it('should not let user to subscribe more than once', async() => {
@@ -380,15 +409,72 @@ describe('hPools', async () => {
                 .to.be.revertedWith("HordUpgradable: Restricted only to Maintainer");
         });
 
-        it('should not let nonMaintainer address to call endSubscriptionPhaseAndInitHPool function', async() => {
+        it('should check if previous state is not PUBLIC_SUBSCRIPTION state in endSubscriptionPhaseAndInitHPool function', async() => {
             poolId = 1;
             await expect(hPoolManager.connect(maintainer).endSubscriptionPhaseAndInitHPool(poolId))
                 .to.be.revertedWith("hPool is not in subscription state.");
         });
 
-        //TODO: followersEthDeposit is not initialize
-        xit('should check if previous state is not PUBLIC_SUBSCRIPTION state in publicSubscribeForHPool function', async() => {
+        //TODO: check more values
+        it('should check values after endSubscriptionPhaseAndInitHPool function', async() => {
+            poolId = 0;
+            poolState = 5;
+            await hPoolFactory.connect(hordCongress).setHPoolManager(hPoolManager.address);
+            await hPoolManager.connect(maintainer).endSubscriptionPhaseAndInitHPool(poolId);
 
+            hPool = await hPoolManager.hPools(poolId);
+
+            expect(hPool.poolState)
+                .to.be.equal(poolState);
+        });
+
+        it('should check if hPool subscription amount is below threshold in endSubscriptionPhaseAndInitHPool function', async() => {
+            poolId = 2;
+            hPool = await hPoolManager.hPools(poolId);
+
+            await expect(hPoolManager.connect(maintainer).endSubscriptionPhaseAndInitHPool(poolId))
+                .to.be.revertedWith("hPool subscription amount is below threshold.");
+        });
+
+        it('should not let nonMaintainer address to call endSubscriptionPhaseAndTerminatePool function', async() => {
+            poolId = 3;
+            await expect(hPoolManager.connect(owner).endSubscriptionPhaseAndTerminatePool(poolId))
+                .to.be.revertedWith("HordUpgradable: Restricted only to Maintainer");
+        });
+
+        it('should check if previous state is not PUBLIC_SUBSCRIPTION state in endSubscriptionPhaseAndTerminatePool function', async() => {
+            poolId = 1;
+            await expect(hPoolManager.connect(maintainer).endSubscriptionPhaseAndTerminatePool(poolId))
+                .to.be.revertedWith("hPool is not in subscription state.");
+        });
+
+        it('should check if hPool subscription amount is below threshold in endSubscriptionPhaseAndTerminatePool function', async() => {
+            poolId = 3;
+            hPool = await hPoolManager.hPools(poolId);
+
+            await expect(hPoolManager.connect(maintainer).endSubscriptionPhaseAndTerminatePool(poolId))
+                .to.be.revertedWith("hPool subscription amount is above threshold.");
+        });
+
+        it('should check pool state after endSubscriptionPhaseAndTerminatePool function', async() => {
+            poolId = 4;
+            poolState = 4;
+
+            await hPoolManager.connect(maintainer).endSubscriptionPhaseAndTerminatePool(poolId);
+            hPool = await hPoolManager.hPools(poolId);
+
+            expect(hPool.poolState)
+                .to.be.equal(poolState);
+        });
+
+    });
+
+    describe('post subscription phase', async() => {
+
+        //TODO: check values
+        it('should', async() => {
+            poolId = 4;
+            await hPoolManager.connect(maintainer).withdrawDeposit(poolId);
         });
 
     });
@@ -408,9 +494,7 @@ describe('hPools', async () => {
         });
 
 
-
     });
-
 
 
 });
