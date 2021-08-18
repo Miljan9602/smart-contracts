@@ -382,7 +382,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         external
         onlyMaintainer
     {
-        //TODO: And expose function where followers can withdraw their deposits in ETH, as well as the champion itself
         hPool storage hp = hPools[poolId];
 
         require(
@@ -396,7 +395,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         // Set new pool state
         hp.poolState = PoolState.SUBSCRIPTION_FAILED;
-        //TODO: What we do with maintainer fees spent by now? (Should we charge everyone 1% -> Sounds like easiest solution)
 
         // Trigger event
         emit HPoolStateChanged(poolId, hp.poolState);
