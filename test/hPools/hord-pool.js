@@ -9,7 +9,7 @@ const { ethers, expect, isEthException, awaitTx, toHordDenomination, hexify, Big
 
 let config;
 let accounts, owner, ownerAddr, hordCongress, hordCongressAddr, bob, bobAddr, alice, aliceAddr, maintainer, maintainerAddr,
-    maintainersRegistry, hordTicketFactory, hordToken, hordTicketManager, hordTreasury, hordConfiguration, champion, championAddr;
+    maintainersRegistry, hordTicketFactory, hordToken, hordTicketManager, hordTreasury, hordConfiguration, champion, championAddr, ticketFactory, factoryAddr, htm, htmAddr;
 let hPoolManager;
 let hPoolFactory, aggregatorV3;
 let etherAmount, bePoolId, weiValue, poolState, poolId, hPool, nftTicketId;
@@ -20,6 +20,8 @@ async function setupContractAndAccounts () {
     accounts = await ethers.getSigners()
     owner = accounts[0]
     ownerAddr = await owner.getAddress()
+    ticketFactory = accounts[4]
+    factoryAddr = await ticketFactory.getAddress()
     hordCongress = accounts[5]
     hordCongressAddr = await hordCongress.getAddress()
     alice = accounts[6];
@@ -30,6 +32,8 @@ async function setupContractAndAccounts () {
     maintainerAddr = await maintainer.getAddress()
     champion = accounts[9]
     championAddr = await champion.getAddress()
+    htm = accounts[3]
+    htmAddr = await htm.getAddress()
 
     const Hord = await hre.ethers.getContractFactory("HordToken");
     hordToken = await Hord.deploy(
@@ -67,6 +71,8 @@ async function setupContractAndAccounts () {
         ]
     );
     await hordTicketFactory.deployed()
+
+    await hordTicketManager.setHordTicketFactory(hordTicketFactory.address);
 
     const HordTreasury = await ethers.getContractFactory('HordTreasury');
     hordTreasury = await upgrades.deployProxy(HordTreasury, [
@@ -110,10 +116,9 @@ async function setupContractAndAccounts () {
     await hPoolFactory.deployed()
 
     const HPoolManager = await ethers.getContractFactory('HPoolManager');
-    const poolManager = await HPoolManager.deploy();
+    hPoolManager = await HPoolManager.deploy();
 
-    await poolManager.deployed()
-    hPoolManager = poolManager.connect(owner);
+    await hPoolManager.deployed();
 }
 
 describe('hPools', async () => {
@@ -220,7 +225,7 @@ describe('hPools', async () => {
     describe('setNftForPool by maintainer', async() => {
 
         it('should not let nonMaintainer address to call setNftForPool function', async() => {
-            nftTicketId = 2;
+            nftTicketId = 1;
             await expect(hPoolManager.connect(owner).setNftForPool(poolId, nftTicketId))
                 .to.be.revertedWith("HordUpgradable: Restricted only to Maintainer");
         });
@@ -249,7 +254,7 @@ describe('hPools', async () => {
 
         it('should not let to set nft for hPool which does not exist', async() => {
            poolId = 10;
-           nftTicketId = 2;
+           nftTicketId = 1;
            await expect(hPoolManager.connect(maintainer).setNftForPool(poolId, nftTicketId))
                .to.be.revertedWith("hPool with poolId does not exist.");
         });
@@ -263,7 +268,7 @@ describe('hPools', async () => {
 
         it('should not let to validate same hPool twice', async() => {
             poolId = 0;
-            nftTicketId = 2;
+            nftTicketId = 1;
 
             await expect(hPoolManager.connect(maintainer).setNftForPool(poolId, nftTicketId))
                 .to.be.revertedWith("hPool already validated.");
@@ -328,17 +333,42 @@ describe('hPools', async () => {
             etherAmount = 10;
             weiValue = Web3.utils.toWei(etherAmount.toString(), 'ether');
 
-            await hordTicketFactory.connect(owner).setApprovalForAll(hPoolManager.address, true);
-            let b = await hordTicketFactory.balanceOf(ownerAddr, 2);
-            console.log(b)
-            await hPoolManager.privateSubscribeForHPool(poolId, { value: weiValue });
+            let ticketFactoryContract = hordTicketFactory.connect(maintainer);
+            let lastAddedId = await ticketFactoryContract.lastMintedTokenId();
+            let tokenId = parseInt(lastAddedId,10) + 1;
+            let championId = 1;
+
+            await awaitTx(ticketFactoryContract.mintNewHPoolNFT(tokenId, etherAmount, championId));
+            //tokenId++;
+            //await hordTicketFactory.connect(owner).setApprovalForAll(hordTicketManager.address, true);
+            //await hordTicketFactory.connect(owner).safeTransferFrom(hordTicketManager.address, ownerAddr, tokenId, 5, 0x0);
+
+            //await hordTicketFactory.safeTransferFrom(ownerAddr, bobAddr, 1, 5, 0x0);
+            //await hordTicketFactory.connect(htm).setApprovalForAll(ownerAddr, true);
+
+            etherAmount = 2;
+            await hPoolManager.connect(bob).privateSubscribeForHPool(championId, { value: etherAmount });
+
+
+            /*let b = await hordTicketFactory.balanceOf(hordTicketManager.address, tokenId);
+            console.log(b);
+            await hordTicketFactory.safeTransferFrom(hordTicketManager.address, ownerAddr, tokenId, 10, 0x0);
+            let c = await hordTicketFactory.balanceOf(ownerAddr, tokenId);
+            console.log(c);
+
+
+            await hordTicketFactory.connect(owner).setApprovalForAll(hordTicketManager.address, true);
+            etherAmount = 2;
+            await hPoolManager.connect(owner).privateSubscribeForHPool(poolId, { value: etherAmount });*/
 
         });
 
-        //TODO: add test if user wants to subscribe more than once
         xit('should not let user to subscribe more than once', async() => {
-
+            etherAmount = 10;
+            expect(await hPoolManager.connect(bob).privateSubscribeForHPool(championId, { value: etherAmount }))
+                .to.be.revertedWith("User can not subscribe more than once.");
         });
+
 
     });
 
