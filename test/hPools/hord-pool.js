@@ -8,11 +8,13 @@ let configuration = require('../../deployments/deploymentConfig.json');
 const { ethers, expect, isEthException, awaitTx, toHordDenomination, hexify, BigNumber } = require('../setup')
 
 let config;
-let accounts, owner, ownerAddr, hordCongress, hordCongressAddr, bob, bobAddr, alice, aliceAddr, maintainer, maintainerAddr,
-    maintainersRegistry, hordTicketFactory, hordToken, hordTicketManager, hordTreasury, hordConfiguration, champion, championAddr, ticketFactory, factoryAddr, htm, htmAddr;
+let accounts, owner, ownerAddr, user, userAddr, user1, user1Addr, hordCongress, hordCongressAddr, bob, bobAddr, alice, aliceAddr, maintainer, maintainerAddr,
+    maintainersRegistry, hordTicketFactory, hordToken, hordTicketManager, hordTreasury, hordConfiguration, champion, championAddr, ticketFactory, factoryAddr, hPoolM, hPoolMAddr;
 let hPoolManager;
 let hPoolFactory, aggregatorV3;
-let etherAmount, bePoolId, weiValue, poolState, poolId, hPool, nftTicketId;
+let etherAmount, bePoolId, weiValue, poolState, poolId, hPool, nftTicketId, amountForUser;
+
+const zeroValue = 0;
 
 async function setupContractAndAccounts () {
     config = configuration[hre.network.name]
@@ -32,8 +34,12 @@ async function setupContractAndAccounts () {
     maintainerAddr = await maintainer.getAddress()
     champion = accounts[9]
     championAddr = await champion.getAddress()
-    htm = accounts[3]
-    htmAddr = await htm.getAddress()
+    hPoolM = accounts[3]
+    hPoolMAddr = await hPoolM.getAddress()
+    user = accounts[2]
+    userAddr = await user.getAddress()
+    user1 = accounts[1]
+    user1Addr = await user1.getAddress()
 
     const Hord = await hre.ethers.getContractFactory("HordToken");
     hordToken = await Hord.deploy(
@@ -329,8 +335,9 @@ describe('hPools', async () => {
         });
 
         //TODO: ERC1155 !!!!!
-        xit('should', async() => {
-            etherAmount = 10;
+        it('should check values after privateSubscribeForHPool function', async() => {
+            etherAmount = 30;
+            amountForUser = 10;
             weiValue = Web3.utils.toWei(etherAmount.toString(), 'ether');
 
             let ticketFactoryContract = hordTicketFactory.connect(maintainer);
@@ -339,33 +346,30 @@ describe('hPools', async () => {
             let championId = 1;
 
             await awaitTx(ticketFactoryContract.mintNewHPoolNFT(tokenId, etherAmount, championId));
-            //tokenId++;
-            //await hordTicketFactory.connect(owner).setApprovalForAll(hordTicketManager.address, true);
-            //await hordTicketFactory.connect(owner).safeTransferFrom(hordTicketManager.address, ownerAddr, tokenId, 5, 0x0);
 
-            //await hordTicketFactory.safeTransferFrom(ownerAddr, bobAddr, 1, 5, 0x0);
-            //await hordTicketFactory.connect(htm).setApprovalForAll(ownerAddr, true);
+            await hordTicketFactory.safeTransferFrom(hordTicketManager.address, bobAddr, tokenId, amountForUser, 0x0);
+            await hordTicketFactory.safeTransferFrom(hordTicketManager.address, aliceAddr, tokenId, amountForUser, 0x0);
+            await hordTicketFactory.safeTransferFrom(hordTicketManager.address, user1Addr, tokenId, amountForUser, 0x0);
 
             etherAmount = 2;
-            await hPoolManager.connect(bob).privateSubscribeForHPool(championId, { value: etherAmount });
+            poolId = 3;
 
+            await hPoolManager.connect(user1).privateSubscribeForHPool(poolId, { value: etherAmount });
 
-            /*let b = await hordTicketFactory.balanceOf(hordTicketManager.address, tokenId);
-            console.log(b);
-            await hordTicketFactory.safeTransferFrom(hordTicketManager.address, ownerAddr, tokenId, 10, 0x0);
-            let c = await hordTicketFactory.balanceOf(ownerAddr, tokenId);
-            console.log(c);
+            poolId = 4;
 
+            await hPoolManager.connect(bob).privateSubscribeForHPool(poolId, { value: etherAmount });
+            await hPoolManager.connect(alice).privateSubscribeForHPool(poolId, { value: etherAmount });
+            hPool = await hPoolManager.hPools(poolId);
 
-            await hordTicketFactory.connect(owner).setApprovalForAll(hordTicketManager.address, true);
-            etherAmount = 2;
-            await hPoolManager.connect(owner).privateSubscribeForHPool(poolId, { value: etherAmount });*/
+            expect(hPool.followersEthDeposit)
+                .to.be.equal(etherAmount * 2);
 
         });
 
-        xit('should not let user to subscribe more than once', async() => {
+        it('should not let user to subscribe more than once', async() => {
             etherAmount = 10;
-            expect(await hPoolManager.connect(bob).privateSubscribeForHPool(championId, { value: etherAmount }))
+            await expect(hPoolManager.connect(bob).privateSubscribeForHPool(poolId, { value: etherAmount }))
                 .to.be.revertedWith("User can not subscribe more than once.");
         });
 
@@ -416,12 +420,32 @@ describe('hPools', async () => {
                 .to.be.revertedWith("hPool is not in PUBLIC_SUBSCRIPTION state.");
         });
 
-        //TODO: Check after values
         it('should check values after publicSubscribeForHPool function', async() => {
+            let amountBeofre;
+            let amountAfter;
+
             poolId = 0;
+            hPool = await hPoolManager.hPools(poolId);
+            amountBeofre = hPool.followersEthDeposit;
             await hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: weiValue });
+            hPool = await hPoolManager.hPools(poolId);
+            amountAfter = hPool.followersEthDeposit;
+            resp = await amountBeofre.add(weiValue);
+
+            expect(amountAfter)
+                .to.be.equal(resp);
+
             poolId = 3;
+            hPool = await hPoolManager.hPools(poolId);
+            amountBeofre = hPool.followersEthDeposit;
             await hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: weiValue });
+            hPool = await hPoolManager.hPools(poolId);
+            amountAfter = hPool.followersEthDeposit;
+            resp = await amountBeofre.add(weiValue);
+
+            expect(amountAfter)
+                .to.be.equal(resp);
+
         });
 
         it('should not let user to subscribe more than once', async() => {
@@ -445,7 +469,6 @@ describe('hPools', async () => {
                 .to.be.revertedWith("hPool is not in subscription state.");
         });
 
-        //TODO: check more values
         it('should check values after endSubscriptionPhaseAndInitHPool function', async() => {
             poolId = 0;
             poolState = 5;
@@ -456,6 +479,13 @@ describe('hPools', async () => {
 
             expect(hPool.poolState)
                 .to.be.equal(poolState);
+
+            let treasuryFeeETH = await hPool.followersEthDeposit.mul(config["gasUtilizationRatio"]);
+            let percentPrecision = await hordConfiguration.percentPrecision();
+            let treasuryFeePaid = treasuryFeeETH.div(percentPrecision);
+
+            expect(hPool.treasuryFeePaid)
+                .to.be.equal(treasuryFeePaid);
         });
 
         it('should check if hPool subscription amount is below threshold in endSubscriptionPhaseAndInitHPool function', async() => {
@@ -501,10 +531,59 @@ describe('hPools', async () => {
 
     describe('post subscription phase', async() => {
 
-        //TODO: check values
-        it('should', async() => {
+        it('should not let to pass if previous state is not SUBSCRIPTION_FAILED state in withdrawDeposit function', async() => {
+            poolId = 0;
+            await expect(hPoolManager.connect(bob).withdrawDeposit(poolId))
+                .to.be.revertedWith("Pool is not in valid state.");
+        });
+
+        it('should check values after withdrawDeposit function', async() => {
             poolId = 4;
-            await hPoolManager.connect(maintainer).withdrawDeposit(poolId);
+            await hPoolManager.connect(bob).withdrawDeposit(poolId);
+            let bobSubscription = await hPoolManager.getUserSubscriptionForPool(poolId, bobAddr);
+
+            expect(bobSubscription[1])
+                .to.be.equal(zeroValue);
+        });
+
+        it('should not let to make safeTransferFrom if number of tickets is equal 0 in withdrawDeposit function', async() => {
+            await hPoolManager.connect(owner).withdrawDeposit(poolId);
+
+            let ownerSubscription = await hPoolManager.connect(owner).getUserSubscriptionForPool(poolId, bobAddr);
+
+            expect(ownerSubscription[1])
+                .to.be.equal(zeroValue);
+        });
+
+        it('should not let to pass if deposit already withdrawn withdrawDeposit function', async() => {
+            await expect(hPoolManager.connect(bob).withdrawDeposit(poolId))
+                .to.be.revertedWith("Subscription already withdrawn");
+        });
+
+        it('should not let user to withdraw tickets if user did not participate in this hPool in withdrawTickets function ', async() => {
+            poolId = 4;
+            await expect(hPoolManager.connect(user).withdrawTickets(poolId))
+                .to.be.revertedWith("User did not participate in this hPool.");
+        });
+
+        it('should not let to pass if previous state is before subscription phase in withdrawTickets function ', async() => {
+            poolId = 3;
+            await expect(hPoolManager.connect(user1).withdrawTickets(poolId))
+                .to.be.revertedWith("Only after Subscription phase user can withdraw tickets.");
+        });
+
+        it('should check values after withdrawTickets function ', async() => {
+            poolId = 4;
+            await hPoolManager.connect(alice).withdrawTickets(poolId);
+            let aliceSubscription = await hPoolManager.getUserSubscriptionForPool(poolId, aliceAddr);
+
+            expect(aliceSubscription[1])
+                .to.be.equal(zeroValue);
+        });
+
+        it('should not let to pass if tickets already withdrawn withdrawDeposit function', async() => {
+            await expect(hPoolManager.connect(alice).withdrawTickets(poolId))
+                .to.be.revertedWith("User have already withdrawn his tickets.");
         });
 
     });
@@ -513,15 +592,43 @@ describe('hPools', async () => {
 
         it('should check return values in getPoolInfo function', async() => {
            poolId = 0;
-           hPool = await hPoolManager.connect(maintainer).getPoolInfo(poolId);
+           let hPoolInfo = await hPoolManager.connect(maintainer).getPoolInfo(poolId);
 
-           expect(hPool[2])
+           expect(hPoolInfo[2])
                .to.be.equal(championAddr);
-            expect(hPool[4])
+           expect(hPoolInfo[4])
                 .to.be.equal(nftTicketId);
-           expect(hPool[5])
+           expect(hPoolInfo[5])
                .to.be.equal(true);
         });
+
+        it('should check return values in getDecimalsReturnPrecision function', async() => {
+            let checkDecimals = 10;
+            let decimals = await hPoolManager.getDecimalsReturnPrecision();
+
+            expect(decimals)
+               .to.be.equal(checkDecimals);
+        });
+
+        it('should check if amounthEth of subscription is equal 0 in getMaxUserSubscriptionInETH function', async() => {
+            poolId = 4;
+            let maxUserSubscription = await hPoolManager.getMaxUserSubscriptionInETH(bobAddr, poolId);
+            expect(maxUserSubscription)
+                .to.be.equal(zeroValue);
+        });
+
+        it('should check return values in getMaxUserSubscriptionInETH function', async() => {
+            poolId = 0;
+            let maxUserSubscription = await hPoolManager.getMaxUserSubscriptionInETH(bobAddr, poolId);
+            hPool = await hPoolManager.hPools(poolId);
+            let numberOfTickets = await hordTicketFactory.balanceOf(bobAddr, hPool.nftTicketId);
+            let maxUserSubscriptionPerTicket = await hPoolManager.getMaxSubscriptionInETHPerTicket();
+            let resp = await numberOfTickets.mul(maxUserSubscriptionPerTicket);
+
+            expect(resp)
+                .to.be.equal(maxUserSubscription);
+        });
+
 
 
     });
