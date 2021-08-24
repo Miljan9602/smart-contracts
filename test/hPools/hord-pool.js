@@ -5,7 +5,7 @@ const {
 const hre = require("hardhat");
 const Web3 = require('web3');
 let configuration = require('../../deployments/deploymentConfig.json');
-const { ethers, expect, isEthException, awaitTx, toHordDenomination, hexify, BigNumber } = require('../setup')
+const { ethers, expect, isEthException, awaitTx, toHordDenomination, waitForSomeTime, BigNumber } = require('../setup')
 
 let config;
 let accounts, owner, ownerAddr, user, userAddr, user1, user1Addr, hordCongress, hordCongressAddr, bob, bobAddr, alice, aliceAddr, maintainer, maintainerAddr,
@@ -348,8 +348,6 @@ describe('hPools', async () => {
 
         it('should check values after privateSubscribeForHPool function', async() => {
             etherAmount = 30;
-            amountForUser = 10;
-            weiValue = Web3.utils.toWei(etherAmount.toString(), 'ether');
 
             let ticketFactoryContract = hordTicketFactory.connect(maintainer);
             let lastAddedId = await ticketFactoryContract.lastMintedTokenId();
@@ -358,11 +356,37 @@ describe('hPools', async () => {
 
             await awaitTx(ticketFactoryContract.mintNewHPoolNFT(tokenId, etherAmount, championId));
 
-            await hordTicketFactory.safeTransferFrom(hordTicketManager.address, bobAddr, tokenId, amountForUser, 0x0);
+            await hordToken.connect(owner).transfer(bobAddr, toHordDenomination(config['minAmountToStake'] * 3));
+            await hordToken.connect(owner).transfer(aliceAddr, toHordDenomination(config['minAmountToStake'] * 3));
+            await hordToken.connect(owner).transfer(user1Addr, toHordDenomination(config['minAmountToStake'] * 3));
 
-            await hordTicketFactory.safeTransferFrom(hordTicketManager.address, aliceAddr, tokenId, amountForUser, 0x0);
-            await hordTicketFactory.safeTransferFrom(hordTicketManager.address, user1Addr, tokenId, amountForUser, 0x0);
+            let balanceB = await hordToken.balanceOf(bobAddr);
+            await hordToken.connect(bob).approve(hordTicketManager.address, balanceB);
+            await hordTicketManager.connect(bob).stakeAndReserveNFTs(tokenId, 3);
 
+            let balanceA = await hordToken.balanceOf(aliceAddr);
+            await hordToken.connect(alice).approve(hordTicketManager.address, balanceA);
+            await hordTicketManager.connect(alice).stakeAndReserveNFTs(tokenId, 3);
+
+            let balanceU = await hordToken.balanceOf(user1Addr);
+            await hordToken.connect(user1).approve(hordTicketManager.address, balanceU);
+            await hordTicketManager.connect(user1).stakeAndReserveNFTs(tokenId, 3);
+
+            let startIndex = 0;
+            let endIndex = await hordTicketManager.getNumberOfStakesForUserAndToken(bobAddr, tokenId);
+
+            await waitForSomeTime(owner.provider, config["minTimeToStake"]);
+            await hordTicketManager.connect(bob).claimNFTs(tokenId, startIndex, endIndex);
+
+            endIndex = await hordTicketManager.getNumberOfStakesForUserAndToken(aliceAddr, tokenId);
+
+            await waitForSomeTime(owner.provider, config["minTimeToStake"]);
+            await hordTicketManager.connect(alice).claimNFTs(tokenId, startIndex, endIndex);
+
+            endIndex = await hordTicketManager.getNumberOfStakesForUserAndToken(user1Addr, tokenId);
+
+            await waitForSomeTime(owner.provider, config["minTimeToStake"]);
+            await hordTicketManager.connect(user1).claimNFTs(tokenId, startIndex, endIndex);
 
             etherAmount = 2;
             poolId = 3;
