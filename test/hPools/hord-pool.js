@@ -729,6 +729,15 @@ describe('hPools', async () => {
                 .to.be.equal(maxUserSubscription);
         });
 
+        it('should check return values in getPoolsUserSubscribedFor function', async() => {
+            poolId = 4;
+            let hPoolIds = await hPoolManager.getPoolsUserSubscribedFor(bobAddr);
+
+            expect(hPoolIds[0])
+                .to.be.equal(poolId);
+
+        });
+
     });
 
 
