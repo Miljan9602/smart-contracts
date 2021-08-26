@@ -12,7 +12,7 @@ let accounts, owner, ownerAddr, user, userAddr, user1, user1Addr, hordCongress, 
     maintainersRegistry, hordTicketFactory, hordToken, hordTicketManager, hordTreasury, hordConfiguration, champion, championAddr, ticketFactory, factoryAddr, hPoolM, hPoolMAddr;
 let hPoolManager;
 let hPoolFactory, aggregatorV3;
-let etherAmount, bePoolId, weiValue, poolState, poolId, hPool, nftTicketId, amountForUser;
+let etherAmount, bePoolId, weiValue, poolState, poolId, hPool, nftTicketId, championId, tokenId, tx;
 
 const zeroValue = 0;
 
@@ -199,7 +199,7 @@ describe('hPools', async () => {
             bePoolId ++;
             await hPoolManager.connect(champion).createHPool(bePoolId, { value: weiValue });
             bePoolId++;
-            await hPoolManager.connect(champion).createHPool(bePoolId, { value: weiValue });
+            tx = await awaitTx(hPoolManager.connect(champion).createHPool(bePoolId, { value: weiValue }));
 
             const pools = await hPoolManager.getChampionPoolIds(championAddr);
             const poolsNum = pools.length;
@@ -207,6 +207,12 @@ describe('hPools', async () => {
             expect(poolsNum)
                 .to.be.equal(bePoolId + 1);
 
+        });
+
+        it('should check PoolInitRequested event', async() => {
+            expect(tx.events.length).to.equal(2);
+            expect(tx.events[0].event).to.equal('PoolInitRequested');
+            expect(parseInt(tx.events[0].args.bePoolId)).to.equal(bePoolId);
         });
 
         it('should check championEthDeposit of hPool after createHPool function', async() => {
@@ -239,7 +245,23 @@ describe('hPools', async () => {
                 .to.be.revertedWith("HordUpgradable: Restricted only to Maintainer");
         });
 
+        it('should mint some NFT`s', async() => {
+            etherAmount = 30;
+
+            let lastAddedId = await hordTicketFactory.lastMintedTokenId();
+            tokenId = parseInt(lastAddedId,10) + 1;
+            championId = 1;
+            await awaitTx(hordTicketFactory.connect(maintainer).mintNewHPoolNFT(tokenId, etherAmount, championId));
+        });
+
+        it('should not let to set NFT which does not exist', async() => {
+            nftTicketId = 3;
+            await expect(hPoolManager.connect(maintainer).setNftForPool(poolId, nftTicketId))
+                .to.be.reverted;
+        })
+
         it('should check values after maintainer calls setNftForPool function', async() => {
+            nftTicketId = 1;
             await hPoolManager.connect(maintainer).setNftForPool(poolId, nftTicketId);
             poolId = 2;
             await hPoolManager.connect(maintainer).setNftForPool(poolId, nftTicketId);
@@ -349,28 +371,22 @@ describe('hPools', async () => {
         it('should check values after privateSubscribeForHPool function', async() => {
             etherAmount = 30;
 
-            let ticketFactoryContract = hordTicketFactory.connect(maintainer);
-            let lastAddedId = await ticketFactoryContract.lastMintedTokenId();
-            let tokenId = parseInt(lastAddedId,10) + 1;
-            let championId = 1;
-
-            await awaitTx(ticketFactoryContract.mintNewHPoolNFT(tokenId, etherAmount, championId));
-
             await hordToken.connect(owner).transfer(bobAddr, toHordDenomination(config['minAmountToStake'] * 3));
             await hordToken.connect(owner).transfer(aliceAddr, toHordDenomination(config['minAmountToStake'] * 3));
             await hordToken.connect(owner).transfer(user1Addr, toHordDenomination(config['minAmountToStake'] * 3));
 
+            let numberOfTickets = 3;
             let balanceB = await hordToken.balanceOf(bobAddr);
             await hordToken.connect(bob).approve(hordTicketManager.address, balanceB);
-            await hordTicketManager.connect(bob).stakeAndReserveNFTs(tokenId, 3);
+            await hordTicketManager.connect(bob).stakeAndReserveNFTs(tokenId, numberOfTickets);
 
             let balanceA = await hordToken.balanceOf(aliceAddr);
             await hordToken.connect(alice).approve(hordTicketManager.address, balanceA);
-            await hordTicketManager.connect(alice).stakeAndReserveNFTs(tokenId, 3);
+            await hordTicketManager.connect(alice).stakeAndReserveNFTs(tokenId, numberOfTickets);
 
             let balanceU = await hordToken.balanceOf(user1Addr);
             await hordToken.connect(user1).approve(hordTicketManager.address, balanceU);
-            await hordTicketManager.connect(user1).stakeAndReserveNFTs(tokenId, 3);
+            await hordTicketManager.connect(user1).stakeAndReserveNFTs(tokenId, numberOfTickets);
 
             let startIndex = 0;
             let endIndex = await hordTicketManager.getNumberOfStakesForUserAndToken(bobAddr, tokenId);
@@ -735,7 +751,11 @@ describe('hPools', async () => {
 
             expect(hPoolIds[0])
                 .to.be.equal(poolId);
+        });
 
+        it('should check return values in getLastMintedTokenId function', async() => {
+            expect(await hordTicketFactory.getLastMintedTokenId())
+               .to.be.equal(tokenId);
         });
 
     });
