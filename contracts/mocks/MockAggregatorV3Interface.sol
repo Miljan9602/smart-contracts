@@ -8,6 +8,15 @@ pragma solidity 0.6.12;
  */
 contract MockAggregatorV3Interface {
 
+    function decimals()
+    external
+    view
+    returns (uint8)
+    {
+        return 10;
+    }
+
+
     function latestRoundData()
     external
     view
