@@ -51,63 +51,63 @@ describe('HordConfiguration', async() => {
     });
 
     it('should check return values in minChampStake function', async() => {
-        let minChampStake = 10;
+        let minChampStake = config["minChampStake"];
         await hordConfiguration.connect(hordCongress).setMinChampStake(minChampStake);
         expect(await hordConfiguration.minChampStake())
             .to.be.equal(minChampStake);
     });
 
     it('should check return values in maxWarmupPeriod function', async() => {
-        let maxWarumPeriod = 10;
+        let maxWarumPeriod = config["maxWarmupPeriod"];
         await hordConfiguration.connect(hordCongress).setMaxWarmupPeriod(maxWarumPeriod);
         expect(await hordConfiguration.maxWarmupPeriod())
             .to.be.equal(maxWarumPeriod);
     });
 
     it('should check return values in maxFollowerOnboardPeriod function', async() => {
-        let maxFollowerOnboardPeriod = 10;
+        let maxFollowerOnboardPeriod = config["maxFollowerOnboardPeriod"];
         await hordConfiguration.connect(hordCongress).setMaxFollowerOnboardPeriod(maxFollowerOnboardPeriod);
         expect(await hordConfiguration.maxFollowerOnboardPeriod())
             .to.be.equal(maxFollowerOnboardPeriod);
     });
 
     it('should check return values in minFollowerUSDStake function', async() => {
-        let minFollowerUSDStake = 10;
+        let minFollowerUSDStake = config["minFollowerEthStake"];
         await hordConfiguration.connect(hordCongress).setMinFollowerUSDStake(minFollowerUSDStake);
         expect(await hordConfiguration.minFollowerUSDStake())
             .to.be.equal(minFollowerUSDStake);
     });
 
     it('should check return values in maxFollowerUSDStake function', async() => {
-        let maxFollowerUSDStake = 10;
+        let maxFollowerUSDStake = config["maxFollowerEthStake"];
         await hordConfiguration.connect(hordCongress).setMaxFollowerUSDStake(maxFollowerUSDStake);
         expect(await hordConfiguration.maxFollowerUSDStake())
             .to.be.equal(maxFollowerUSDStake);
     });
 
     it('should check return values in minStakePerPoolTicket function', async() => {
-        let minStakePerPoolTicket = 10;
+        let minStakePerPoolTicket = config["minStakePerPoolTicket"];
         await hordConfiguration.connect(hordCongress).setMinStakePerPoolTicket(minStakePerPoolTicket);
         expect(await hordConfiguration.minStakePerPoolTicket())
             .to.be.equal(minStakePerPoolTicket);
     });
 
     it('should check return values in assetUtilizationRatio function', async() => {
-        let assetUtilizationRatio = 10;
+        let assetUtilizationRatio = config["assetUtilizationRatio"];
         await hordConfiguration.connect(hordCongress).setAssetUtilizationRatio(assetUtilizationRatio);
         expect(await hordConfiguration.assetUtilizationRatio())
             .to.be.equal(assetUtilizationRatio);
     });
 
     it('should check return values in gasUtilizationRatio function', async() => {
-        let gasUtilizationRatio = 10;
+        let gasUtilizationRatio = config["gasUtilizationRatio"];
         await hordConfiguration.connect(hordCongress).setGasUtilizationRatio(gasUtilizationRatio);
         expect(await hordConfiguration.gasUtilizationRatio())
             .to.be.equal(gasUtilizationRatio);
     });
 
     it('should check return values in platformStakeRatio function', async() => {
-        let platformStakeRatio = 10;
+        let platformStakeRatio = config["platformStakeRatio"];
         await hordConfiguration.connect(hordCongress).setPlatformStakeRatio(platformStakeRatio);
         expect(await hordConfiguration.platformStakeRatio())
             .to.be.equal(platformStakeRatio);
@@ -121,14 +121,14 @@ describe('HordConfiguration', async() => {
     });
 
     it('should check return values in maxSupplyHPoolToken function', async() => {
-        let maxSupplyHPoolToken = 10;
+        let maxSupplyHPoolToken = config["maxSupplyHPoolToken"];
         await hordConfiguration.connect(hordCongress).setMaxSupplyHPoolToken(maxSupplyHPoolToken);
         expect(await hordConfiguration.maxSupplyHPoolToken())
             .to.be.equal(maxSupplyHPoolToken);
     });
 
     it('should check return values in maxUSDAllocationPerTicket function', async() => {
-        let maxUSDAllocationPerTicket = 10;
+        let maxUSDAllocationPerTicket = config["maxUSDAllocationPerTicket"];
         await hordConfiguration.connect(hordCongress).setMaxUSDAllocationPerTicket(maxUSDAllocationPerTicket);
         expect(await hordConfiguration.maxUSDAllocationPerTicket())
             .to.be.equal(maxUSDAllocationPerTicket);
