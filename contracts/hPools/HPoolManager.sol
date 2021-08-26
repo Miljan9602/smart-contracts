@@ -216,6 +216,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     {
         require(poolId < hPools.length, "hPool with poolId does not exist.");
         require(_nftTicketId > 0, "NFT id can not be 0.");
+        require(_nftTicketId <= hordTicketFactory.lastMintedTokenId(), "NFT does not exist");
 
         hPool storage hp = hPools[poolId];
 

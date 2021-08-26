@@ -11,4 +11,5 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
  */
 interface IHordTicketFactory is IERC1155 {
     function getTokenSupply(uint tokenId) external view returns (uint256);
+    function lastMintedTokenId() external view returns (uint256);
 }
