@@ -19,32 +19,33 @@ contract HPool is HordUpgradable, HPoolToken {
     IHPoolManager public hPoolManager;
     IUniswapV2Router01 public uniswapRouter;
 
-    //TODO: Add HPOOL ID
+    uint256 public hPoolId;
     bool public isHPoolTokenMinted;
     mapping(address => bool) public didUserClaimHPoolTokens;
 
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
     event HPoolTokenMinted(string name, string symbol, uint256 totalSupply);
-    //TODO: Add event ClaimedHPoolTokens
+    event ClaimedHPoolTokens(address beneficiary, uint256 numberOfClaimedTokens);
 
     modifier onlyHPoolManager {
-        //TODO: Add error message
-        require(msg.sender == address(hPoolManager));
+        require(msg.sender == address(hPoolManager), "Restricted only to HPoolManager.");
         _;
     }
 
     constructor(
+        uint256 _hPoolId,
         address _hordCongress,
         address _hordMaintainersRegistry,
-        address _hordPoolManager
+        address _hordPoolManager,
+        address _uniswapRouter
     )
     public
     {
         setCongressAndMaintainers(_hordCongress, _hordMaintainersRegistry);
+        hPoolId = _hPoolId;
         hPoolManager = IHPoolManager(_hordPoolManager);
-        //TODO: Set through constructor arguments
-        uniswapRouter = IUniswapV2Router01(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+        uniswapRouter = IUniswapV2Router01(_uniswapRouter);
     }
 
     function depositBudgetFollowers()
@@ -80,29 +81,33 @@ contract HPool is HordUpgradable, HPoolToken {
         emit HPoolTokenMinted(name, symbol, _totalSupply);
     }
 
-    // TODO: rename to `claimHPoolTokens`
-    function withdrawHPoolTokens()
-    public
+    function claimHPoolTokens()
+    external
     {
-        //TODO: Get from HPoolManager totalFollowersDeposit
-        //TODO: Get from HPoolManager Subscription for user
-        //TODO: Apply formula: subscriptionEThUser/ totalFollowerDeposit * totalSupply
-        require(msg.sender != address(this), "Can not withdraw to HPoolContract contract");
         require(!didUserClaimHPoolTokens[msg.sender], "Follower already withdraw tokens.");
+
+        uint256 numberOfTokensToClaim = getNumberOfTokensUserCanClaim(msg.sender);
+        _transfer(address(this), msg.sender, numberOfTokensToClaim);
 
         didUserClaimHPoolTokens[msg.sender] = true;
 
-        //TODO: Call _transfer, think about params
-        transfer(msg.sender, getNumberOfTokensForClaiming(msg.sender));
+        emit ClaimedHPoolTokens(msg.sender, numberOfTokensToClaim);
     }
 
     function getNumberOfTokensUserCanClaim(address follower)
     public
+    view
     returns (uint256)
     {
-        //TODO: If user claimed, should return 0
 
-        uint256 tokensForClaiming = balanceOf(follower).div(totalDeposit).mul(totalSupply());
+        if(didUserClaimHPoolTokens[follower]) {
+            return 0;
+        }
+
+        (uint256 subscriptionEThUser, ) = hPoolManager.getUserSubscriptionForPool(hPoolId, msg.sender);
+        (, , , , , , uint256 totalFollowerDeposit, , ) = hPoolManager.getPoolInfo(hPoolId);
+
+        uint256 tokensForClaiming = subscriptionEThUser.div(totalFollowerDeposit).mul(totalSupply());
         return tokensForClaiming;
     }
 

@@ -362,7 +362,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
 
         // Deploy the HPool contract
-        IHPool hpContract = IHPool(hPoolFactory.deployHPool());
+        IHPool hpContract = IHPool(hPoolFactory.deployHPool(poolId));
 
         //Mint HPoolToken for certain HPool
         hpContract.mintHPoolToken(name, symbol, hordConfiguration.totalSupplyHPoolTokens());
