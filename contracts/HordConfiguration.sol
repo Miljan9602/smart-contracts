@@ -34,6 +34,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
     uint256 private _maxSupplyHPoolToken;
     // Representing maximal USD allocation per ticket
     uint256 private _maxUSDAllocationPerTicket;
+    //Total supply for HPoolToken
+    uint256 private _totalSupplyHPoolTokens;
 
     event ConfigurationChanged(string parameter, uint256 newValue);
 
@@ -53,7 +55,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
         uint256 gasUtilizationRatio_,
         uint256 platformStakeRatio_,
         uint256 maxSupplyHPoolToken_,
-        uint256 maxUSDAllocationPerTicket_
+        uint256 maxUSDAllocationPerTicket_,
+        uint256 totalSupplyHPoolTokens_
     ) external initializer {
         // Set hord congress and maintainers registry
         setCongressAndMaintainers(hordCongress_, maintainersRegistry_);
@@ -69,6 +72,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
         _platformStakeRatio = platformStakeRatio_;
         _maxSupplyHPoolToken = maxSupplyHPoolToken_;
         _maxUSDAllocationPerTicket = maxUSDAllocationPerTicket_;
+        _totalSupplyHPoolTokens = totalSupplyHPoolTokens_;
 
         _percentPrecision = 100;
     }
@@ -194,6 +198,15 @@ contract HordConfiguration is HordUpgradable, Initializable {
         );
     }
 
+    // _totalSupplyHPoolTokens setter function
+    function setTotalSupplyHPoolTokens(uint256 totalSupplyHPoolTokens_)
+    external
+    onlyHordCongress
+    {
+        _totalSupplyHPoolTokens = totalSupplyHPoolTokens_;
+        emit ConfigurationChanged("_totalSupplyHPoolTokens", _totalSupplyHPoolTokens);
+    }
+
     // Getter Functions
     // _minChampStake getter function
     function minChampStake() external view returns (uint256) {
@@ -254,4 +267,11 @@ contract HordConfiguration is HordUpgradable, Initializable {
     function maxUSDAllocationPerTicket() external view returns (uint256) {
         return _maxUSDAllocationPerTicket;
     }
+
+    // _totalSupplyHPoolTokens getter function
+    function totalSupplyHPoolTokens() external view returns (uint256) {
+        return _totalSupplyHPoolTokens;
+    }
+
+
 }
