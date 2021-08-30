@@ -345,7 +345,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     /**
      * @notice          Maintainer should end subscription phase in case all the criteria is reached
      */
-    function endSubscriptionPhaseAndInitHPool(uint256 poolId)
+    function endSubscriptionPhaseAndInitHPool(uint256 poolId, string memory name, string memory symbol)
         external
         onlyMaintainer
     {
@@ -363,6 +363,9 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         // Deploy the HPool contract
         IHPool hpContract = IHPool(hPoolFactory.deployHPool());
+
+        //Mint HPoolToken for certain HPool
+        hpContract.mintHPoolToken(name, symbol, hordConfiguration.totalSupplyHPoolTokens());
 
         // Set the deployed address of hPool
         hp.hPoolContractAddress = address(hpContract);
