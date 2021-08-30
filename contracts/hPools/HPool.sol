@@ -19,15 +19,17 @@ contract HPool is HordUpgradable, HPoolToken {
     IHPoolManager public hPoolManager;
     IUniswapV2Router01 public uniswapRouter;
 
+    //TODO: Add HPOOL ID
     bool public isHPoolTokenMinted;
-    uint256 public totalDeposit;
     mapping(address => bool) public didUserClaimHPoolTokens;
 
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
     event HPoolTokenMinted(string name, string symbol, uint256 totalSupply);
+    //TODO: Add event ClaimedHPoolTokens
 
     modifier onlyHPoolManager {
+        //TODO: Add error message
         require(msg.sender == address(hPoolManager));
         _;
     }
@@ -41,6 +43,7 @@ contract HPool is HordUpgradable, HPoolToken {
     {
         setCongressAndMaintainers(_hordCongress, _hordMaintainersRegistry);
         hPoolManager = IHPoolManager(_hordPoolManager);
+        //TODO: Set through constructor arguments
         uniswapRouter = IUniswapV2Router01(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
     }
 
@@ -49,7 +52,6 @@ contract HPool is HordUpgradable, HPoolToken {
     onlyHPoolManager
     payable
     {
-        totalDeposit = msg.value;
         emit FollowersBudgetDeposit(msg.value);
     }
 
@@ -78,20 +80,28 @@ contract HPool is HordUpgradable, HPoolToken {
         emit HPoolTokenMinted(name, symbol, _totalSupply);
     }
 
+    // TODO: rename to `claimHPoolTokens`
     function withdrawHPoolTokens()
     public
     {
+        //TODO: Get from HPoolManager totalFollowersDeposit
+        //TODO: Get from HPoolManager Subscription for user
+        //TODO: Apply formula: subscriptionEThUser/ totalFollowerDeposit * totalSupply
         require(msg.sender != address(this), "Can not withdraw to HPoolContract contract");
         require(!didUserClaimHPoolTokens[msg.sender], "Follower already withdraw tokens.");
 
         didUserClaimHPoolTokens[msg.sender] = true;
+
+        //TODO: Call _transfer, think about params
         transfer(msg.sender, getNumberOfTokensForClaiming(msg.sender));
     }
 
-    function getNumberOfTokensForClaiming(address follower)
+    function getNumberOfTokensUserCanClaim(address follower)
     public
     returns (uint256)
     {
+        //TODO: If user claimed, should return 0
+
         uint256 tokensForClaiming = balanceOf(follower).div(totalDeposit).mul(totalSupply());
         return tokensForClaiming;
     }
