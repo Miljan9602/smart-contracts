@@ -70,7 +70,7 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
         view
         returns (address[] memory)
     {
-        address[] memory hPools = new address[](startIndex - endIndex);
+        address[] memory hPools = new address[](endIndex - startIndex);
         uint256 counter;
 
         for (uint256 i = startIndex; i < endIndex; i++) {
@@ -78,6 +78,6 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
             counter++;
         }
 
-        return deployedHPools;
+        return hPools;
     }
 }

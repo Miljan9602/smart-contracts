@@ -3,7 +3,7 @@ const {
     encodeParameters
 } = require('./ethereum');
 const configuration = require('../deployments/deploymentConfig.json');
-const { ethers, expect, isEthException, awaitTx, toHordDenomination, waitForSomeTime, BigNumber } = require('./setup')
+const { ethers, expect, isEthException, awaitTx, toHordDenomination, waitForSomeTime} = require('./setup')
 const hre = require("hardhat");
 
 

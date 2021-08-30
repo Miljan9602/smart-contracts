@@ -7,17 +7,18 @@ let configuration = require('../../deployments/deploymentConfig.json');
 const { ethers, expect, isEthException, awaitTx, toHordDenomination, hexify } = require('../setup')
 
 let config;
-let hordCongress, hordCongressMembersRegistry, hordToken, accounts, owner, ownerAddr, anotherAccount, anotherAccountAddr, r
+let hordCongress, hordCongressMembersRegistry, hordToken, accounts, owner, ownerAddr, anotherAccount, anotherAccountAddr, firstProposal
 let nonCongressAcc, nonCongressAccAddr
 let initialMembers, initialNames
 let tokensToTransfer = 1000;
-let targets, values, signatures, calldatas, description, proposalId, numberOfProposals
+let targets, values, signatures, calldatas, description, proposalId, secondProposalId, thirdProposalId, numberOfProposals
 let minimumQuorum = 3
 let zeroValue = 0
 let congressAcc, congressAddr
 let targetMemberAcc, targetMemberAddr
-const targetMemberName = "0x7465737400000000000000000000000000000000000000000000000000000000";
+let secondProposal, thirdProposal
 
+const targetMemberName = "0x7465737400000000000000000000000000000000000000000000000000000000"
 const zeroAddress = "0x000000000000000000000000000000000000000000"
 
 async function setupContractAndAccounts () {
@@ -101,7 +102,7 @@ describe('Governance', () => {
 
         it('should setup proposal information', async() => {
             targets = [hordToken.address];
-            values = ["0"];
+            values = [zeroValue];
             signatures = ["transfer(address,uint256)"];
             calldatas = [encodeParameters(['address','uint256'], [anotherAccountAddr, toHordDenomination(tokensToTransfer)])];
             description = `Transfer ${tokensToTransfer} tokens from HordCongress to ${anotherAccountAddr}`;
@@ -117,15 +118,15 @@ describe('Governance', () => {
 
         describe('Should BE able to propose from congress member', async() => {
             it(`should create a proposal to transfer ${tokensToTransfer} tokens from Congress`, async() => {
-                r = await awaitTx(hordCongress.propose(targets, values, signatures, calldatas, description));
+                firstProposal = await awaitTx(hordCongress.propose(targets, values, signatures, calldatas, description));
             });
 
             it('should check ProposalCreated event', async() => {
-                proposalId = parseInt(r.events[0].args.id);
-                expect(r.events.length).to.equal(1)
-                expect(r.events[0].event).to.equal('ProposalCreated')
-                expect(r.events[0].args.proposer).to.equal(ownerAddr)
-                expect(r.events[0].args.description).to.equal(description)
+                proposalId = parseInt(firstProposal.events[0].args.id);
+                expect(firstProposal.events.length).to.equal(1)
+                expect(firstProposal.events[0].event).to.equal('ProposalCreated')
+                expect(firstProposal.events[0].args.proposer).to.equal(ownerAddr)
+                expect(firstProposal.events[0].args.description).to.equal(description)
             });
 
             it('should check proposal id is properly incrementing', async() => {
@@ -133,8 +134,15 @@ describe('Governance', () => {
                 expect(proposalId).to.be.equal(numberOfProposals);
             });
 
+            it('should create two another proposal', async() => {
+                secondProposal = await awaitTx(hordCongress.connect(anotherAccount).propose(targets, values, signatures, calldatas, description));
+                secondProposalId = parseInt(secondProposal.events[0].args.id);
+                thirdProposal = await awaitTx(hordCongress.connect(anotherAccount).propose(targets, values, signatures, calldatas, description));
+                thirdProposalId = parseInt(thirdProposal.events[0].args.id);
+            });
+
             it('should check length of arguments in proposal function', async() => {
-                values = ["0", "1"];
+                values = [zeroValue, zeroValue];
                 signatures = ["transfer(address,uint256)", "transfer(address,uint256)"];
                 calldatas = [encodeParameters(['address','uint256'], [anotherAccountAddr, toHordDenomination(tokensToTransfer)]),
                     encodeParameters(['address','uint256'], [nonCongressAccAddr, toHordDenomination(tokensToTransfer)])];
@@ -157,27 +165,37 @@ describe('Governance', () => {
 
         describe('Should BE able to vote on submitted proposal', async() => {
             it(`should vote on proposal`, async() => {
-                r = await awaitTx(hordCongress.castVote(proposalId, true));
+                firstProposal = await awaitTx(hordCongress.castVote(proposalId, true));
             });
 
             it(`should vote from ${anotherAccountAddr} for proposal`, async() => {
-                r = await awaitTx(hordCongress.connect(anotherAccount).castVote(proposalId, true));
+                firstProposal = await awaitTx(hordCongress.connect(anotherAccount).castVote(proposalId, true));
             });
 
             it('should not let voter to vote more times', async () => {
-               await expect(hordCongress.connect(anotherAccount).castVote(proposalId, true))
+               await expect(hordCongress.castVote(proposalId, true))
                    .to.be.revertedWith("HordCongress::_castVote: voter already voted");
             });
 
+            it('should check if not enough time has passed for canceled proposal', async() => {
+                await expect(hordCongress.cancel(proposalId))
+                    .to.be.reverted;
+            });
+
             it('should execute proposal', async() => {
-                r = await awaitTx(hordCongress.execute(proposalId));
-                expect(r.events.length).to.equal(3);
-                expect(r.events[2].event).to.equal('ProposalExecuted');
+                firstProposal = await awaitTx(hordCongress.execute(proposalId));
+                expect(firstProposal.events.length).to.equal(3);
+                expect(firstProposal.events[2].event).to.equal('ProposalExecuted');
             });
 
             it('sholud check if proposal is previously executed', async() => {
                await expect(hordCongress.execute(proposalId))
                    .to.be.reverted;
+            });
+
+            it('sholud check if votes in favor of proposal are smaller to minimalQuorum', async() => {
+                await expect(hordCongress.execute(secondProposalId))
+                    .to.be.reverted;
             });
 
             it('sholud check if proposal is previously canceled', async() => {
@@ -191,12 +209,6 @@ describe('Governance', () => {
                     .to.be.equal(minimumQuorum);
             });
 
-            xit('should check if proposal are greater or equal to minimalQuorum in execute function', async() => {
-                let a = await hordCongress.connect(congressAcc).receipts(0);
-                console.log(a);
-                //await expect(hordCongress.execute(proposalId))
-                  //  .to.be.reverted;
-            });
         });
 
     });
@@ -209,7 +221,7 @@ describe('Governance', () => {
 
         it('should check return values in getActions function', async() => {
             targets = [hordToken.address];
-            values = ["0"];
+            values = [zeroValue];
             signatures = ["transfer(address,uint256)"];
             calldatas = [encodeParameters(['address','uint256'], [anotherAccountAddr, toHordDenomination(tokensToTransfer)])];
 
@@ -272,8 +284,9 @@ describe('Governance', () => {
         });
 
         it('should check before/after values after removeMember function', async() => {
+            const falseMemberName = "0x2555737400000000000000000000000000000000000000000000000000000000";
             await hordCongressMembersRegistry.connect(congressAcc)
-                .addMember(nonCongressAccAddr, "0x2555737400000000000000000000000000000000000000000000000000000000");
+                .addMember(nonCongressAccAddr, falseMemberName);
             await hordCongressMembersRegistry.connect(congressAcc).removeMember(nonCongressAccAddr);
             expect(await hordCongressMembersRegistry.connect(congressAcc).isMember(nonCongressAccAddr))
                 .to.equal(false);
@@ -290,6 +303,28 @@ describe('Governance', () => {
                 .to.equal(targetMemberAddr);
             expect((resp[1]))
                 .to.equal(targetMemberName);
+        });
+
+    });
+
+    describe("Should be able canceled proposal", async() => {
+        it('should must pass 3 days before proposal can get canceled', async() => {
+            await network.provider.send("evm_increaseTime", [360000]);
+            await network.provider.send("evm_mine");
+
+            await hordCongress.cancel(secondProposalId);
+            const proposal = await hordCongress.proposals(secondProposalId);
+            expect(proposal.canceled)
+                .to.be.equal(true);
+        });
+
+        it('should not let to canceled proposal which alredy reached minimalQuorum', async() => {
+            const minQuorum = 1;
+            await hordCongressMembersRegistry.connect(congressAcc).changeMinimumQuorum(minQuorum);
+            await hordCongress.castVote(thirdProposalId, true);
+
+            await expect(hordCongress.cancel(thirdProposalId))
+                .to.be.revertedWith("HordCongress:cancel: Proposal already reached quorum");
         });
 
     });
