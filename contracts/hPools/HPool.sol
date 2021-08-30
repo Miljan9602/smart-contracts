@@ -4,6 +4,7 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol";
 import "../system/HordUpgradable.sol";
 import "../interfaces/IHPoolManager.sol";
 import "./HPoolToken.sol";
+import "../libraries/SafeMath.sol";
 
 /**
  * HPool contract.
@@ -13,10 +14,14 @@ import "./HPoolToken.sol";
  */
 contract HPool is HordUpgradable, HPoolToken {
 
+    using SafeMath for uint256;
+
     IHPoolManager public hPoolManager;
     IUniswapV2Router01 public uniswapRouter;
 
     bool public isHPoolTokenMinted;
+    uint256 public totalDeposit;
+    mapping(address => bool) public didUserClaimHPoolTokens;
 
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
@@ -44,6 +49,7 @@ contract HPool is HordUpgradable, HPoolToken {
     onlyHPoolManager
     payable
     {
+        totalDeposit = msg.value;
         emit FollowersBudgetDeposit(msg.value);
     }
 
@@ -70,6 +76,24 @@ contract HPool is HordUpgradable, HPoolToken {
         createToken(name, symbol, _totalSupply, address(this));
         // Trigger even that hPool token is minted
         emit HPoolTokenMinted(name, symbol, _totalSupply);
+    }
+
+    function withdrawHPoolTokens()
+    public
+    {
+        require(msg.sender != address(this), "Can not withdraw to HPoolContract contract");
+        require(!didUserClaimHPoolTokens[msg.sender], "Follower already withdraw tokens.");
+
+        didUserClaimHPoolTokens[msg.sender] = true;
+        transfer(msg.sender, getNumberOfTokensForClaiming(msg.sender));
+    }
+
+    function getNumberOfTokensForClaiming(address follower)
+    public
+    returns (uint256)
+    {
+        uint256 tokensForClaiming = balanceOf(follower).div(totalDeposit).mul(totalSupply());
+        return tokensForClaiming;
     }
 
     function swapExactTokensForEth(
@@ -137,6 +161,4 @@ contract HPool is HordUpgradable, HPoolToken {
             deadline
         );
     }
-
-
 }
