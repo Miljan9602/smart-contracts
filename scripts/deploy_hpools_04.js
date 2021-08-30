@@ -24,7 +24,8 @@ async function main() {
         config.gasUtilizationRatio,
         config.platformStakeRatio,
         toHordDenomination(config.maxSupplyHPoolToken),
-        toHordDenomination(config.maxUSDAllocationPerTicket)
+        toHordDenomination(config.maxUSDAllocationPerTicket),
+        toHordDenomination(config.totalSupplyHPoolTokens)
     ]);
     await hordConfiguration.deployed();
     console.log('HordConfiguration Proxy is deployed to: ', hordConfiguration.address);
