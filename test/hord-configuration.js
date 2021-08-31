@@ -38,7 +38,8 @@ async function setupContractAndAccounts () {
             config["gasUtilizationRatio"],
             config["platformStakeRatio"],
             config["maxSupplyHPoolToken"],
-            config["maxUSDAllocationPerTicket"]
+            config["maxUSDAllocationPerTicket"],
+            config["totalSupplyHPoolTokens"]
         ]
     );
     await hordConfiguration.deployed()
@@ -132,6 +133,13 @@ describe('HordConfiguration', async() => {
         await hordConfiguration.connect(hordCongress).setMaxUSDAllocationPerTicket(maxUSDAllocationPerTicket);
         expect(await hordConfiguration.maxUSDAllocationPerTicket())
             .to.be.equal(maxUSDAllocationPerTicket);
+    });
+
+    it('should check return values in totalSupplyHPoolTokens function', async() => {
+        let totalSupplyHPoolTokens = config["totalSupplyHPoolTokens"];
+        await hordConfiguration.connect(hordCongress).setTotalSupplyHPoolTokens(totalSupplyHPoolTokens);
+        expect(await hordConfiguration.totalSupplyHPoolTokens())
+            .to.be.equal(totalSupplyHPoolTokens);
     });
 
 
