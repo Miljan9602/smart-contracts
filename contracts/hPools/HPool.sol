@@ -104,7 +104,7 @@ contract HPool is HordUpgradable, HPoolToken {
             return 0;
         }
 
-        (uint256 subscriptionEThUser, ) = hPoolManager.getUserSubscriptionForPool(hPoolId, msg.sender);
+        (uint256 subscriptionEThUser, ) = hPoolManager.getUserSubscriptionForPool(hPoolId, follower);
         (, , , , , , uint256 totalFollowerDeposit, , ) = hPoolManager.getPoolInfo(hPoolId);
 
         uint256 tokensForClaiming = subscriptionEThUser.div(totalFollowerDeposit).mul(totalSupply());
