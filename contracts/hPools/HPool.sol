@@ -22,6 +22,7 @@ contract HPool is HordUpgradable, HPoolToken {
     uint256 public hPoolId;
     bool public isHPoolTokenMinted;
     mapping(address => bool) public didUserClaimHPoolTokens;
+    address[] public hPoolTokensHolders;
 
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
@@ -90,25 +91,9 @@ contract HPool is HordUpgradable, HPoolToken {
         _transfer(address(this), msg.sender, numberOfTokensToClaim);
 
         didUserClaimHPoolTokens[msg.sender] = true;
+        hPoolTokensHolders.push(msg.sender);
 
         emit ClaimedHPoolTokens(msg.sender, numberOfTokensToClaim);
-    }
-
-    function getNumberOfTokensUserCanClaim(address follower)
-    public
-    view
-    returns (uint256)
-    {
-
-        if(didUserClaimHPoolTokens[follower]) {
-            return 0;
-        }
-
-        (uint256 subscriptionEThUser, ) = hPoolManager.getUserSubscriptionForPool(hPoolId, follower);
-        (, , , , , , uint256 totalFollowerDeposit, , ) = hPoolManager.getPoolInfo(hPoolId);
-
-        uint256 tokensForClaiming = subscriptionEThUser.div(totalFollowerDeposit).mul(totalSupply());
-        return tokensForClaiming;
     }
 
     function swapExactTokensForEth(
@@ -176,4 +161,22 @@ contract HPool is HordUpgradable, HPoolToken {
             deadline
         );
     }
+
+    function getNumberOfTokensUserCanClaim(address follower)
+    public
+    view
+    returns (uint256)
+    {
+
+        if(didUserClaimHPoolTokens[follower]) {
+            return 0;
+        }
+
+        (uint256 subscriptionEThUser, ) = hPoolManager.getUserSubscriptionForPool(hPoolId, follower);
+        (, , , , , , uint256 totalFollowerDeposit, , ) = hPoolManager.getPoolInfo(hPoolId);
+
+        uint256 tokensForClaiming = subscriptionEThUser.div(totalFollowerDeposit).mul(totalSupply());
+        return tokensForClaiming;
+    }
+
 }
