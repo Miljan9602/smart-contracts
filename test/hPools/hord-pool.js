@@ -757,22 +757,17 @@ describe('hPools', async () => {
                 .to.be.equal(poolId);
         });
 
-        it('should check return values after getSubscribedAddresses function', async() => {
-            let subscribedAddresses = await hPoolManager.getSubscribedAddresses(poolId);
+        it('should check return values after getSubscribedAddressesAndNumberOfTickets function', async() => {
+            let subscribedAddresses = await hPoolManager.getSubscribedAddressesAndNumberOfTickets(poolId);
 
-            expect(subscribedAddresses[0])
+            expect(subscribedAddresses[0][0])
                 .to.be.equal(bobAddr);
 
-            expect(subscribedAddresses[1])
+            expect(subscribedAddresses[0][1])
                 .to.be.equal(aliceAddr);
-        });
 
-        it('should check return values after getNumberOfTicketsUsedForSubscribing function', async() => {
-            let numberOfUsedTickets = await hPoolManager.getNumberOfTicketsUsedForSubscribing(poolId);
-            let subscribedAddresses = await hPoolManager.getSubscribedAddresses(poolId);
-
-            expect(numberOfUsedTickets)
-                .to.be.equal(subscribedAddresses.length);
+            expect(subscribedAddresses[1])
+                .to.be.equal(subscribedAddresses[0].length);
         });
 
     });
@@ -831,6 +826,5 @@ describe('HPool functions', async() => {
         expect(await hPoolContract.getNumberOfTokensUserCanClaim(bobAddr))
             .to.be.equal(zeroValue);
     });
-
 
 });

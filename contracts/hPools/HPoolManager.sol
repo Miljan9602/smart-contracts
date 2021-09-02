@@ -91,8 +91,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     mapping(address => uint256[]) internal userToPoolIdsSubscribedFor;
     // Support listing pools per champion
     mapping(address => uint256[]) internal championAddressToHPoolIds;
-    // Mapping pool Id to number of all subscribing tickets
-    mapping(uint256 => uint256) internal poolIdToAllSubscribedTickets;
 
     /**
      * Events
@@ -294,7 +292,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         poolIdToSubscriptions[poolId].push(s);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
         userToPoolIdsSubscribedFor[msg.sender].push(poolId);
-        poolIdToAllSubscribedTickets[poolId] = poolIdToAllSubscribedTickets[poolId].add(numberOfTicketsToUse);
 
         hp.followersEthDeposit = hp.followersEthDeposit.add(msg.value);
 
@@ -615,31 +612,22 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     }
 
     /**
-     * @notice          Function to get all subscribed addresses
+     * @notice          Function to get all subscribed addresses and number of tickets used for subscribing
      */
-    function getSubscribedAddresses(uint256 poolId)
+    function getSubscribedAddressesAndNumberOfTickets(uint256 poolId)
     external
     view
-    returns (address[] memory)
+    returns (address[] memory, uint256)
     {
         address[] memory subscribedAddresses = new address[](poolIdToSubscriptions[poolId].length);
+        uint256 ticketsUsedForSubscribing;
 
         for (uint256 i = 0; i < poolIdToSubscriptions[poolId].length; i++) {
             subscribedAddresses[i] = poolIdToSubscriptions[poolId][i].user;
+            ticketsUsedForSubscribing = ticketsUsedForSubscribing.add(poolIdToSubscriptions[poolId][i].numberOfTickets);
         }
 
-        return subscribedAddresses;
-    }
-
-    /**
-     * @notice          Function to get number of tickets used for subscribing
-     */
-    function getNumberOfTicketsUsedForSubscribing(uint256 poolId)
-    external
-    view
-    returns (uint256)
-    {
-        return poolIdToAllSubscribedTickets[poolId];
+        return (subscribedAddresses, ticketsUsedForSubscribing);
     }
 
     /**
