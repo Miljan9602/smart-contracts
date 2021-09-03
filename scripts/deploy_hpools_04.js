@@ -55,7 +55,7 @@ async function main() {
     ]);
     await hPoolManager.deployed();
     console.log('HPoolManager is deployed to:', hPoolManager.address);
-    saveContractProxies(hre.network.name, 'HPoolManager', hPoolFactory.address);
+    saveContractProxies(hre.network.name, 'HPoolManager', hPoolManager.address);
 
     // Setters
     await hPoolFactory.setHPoolManager(hPoolManager.address);
