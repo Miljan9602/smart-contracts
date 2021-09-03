@@ -10,9 +10,9 @@ const { ethers, expect, isEthException, awaitTx, toHordDenomination, waitForSome
 let config;
 let accounts, owner, ownerAddr, user, userAddr, user1, user1Addr, hordCongress, hordCongressAddr, bob, bobAddr, alice, aliceAddr, maintainer, maintainerAddr, hPoolContract,
     maintainersRegistry, hordTicketFactory, hordToken, hordTicketManager, hordTreasury, hordConfiguration, champion, championAddr, ticketFactory, factoryAddr, hPoolManagerSin, hPoolManagerSinAddr;
-let hPoolManager;
-let hPoolFactory, aggregatorV3;
+let hPoolManager, hPoolFactory, aggregatorV3;
 let etherAmount, bePoolId, weiValue, poolState, poolId = 0, hPool, nftTicketId, championId, tokenId, tx, tokensToClaim, endTicketSalePhase, endPrivateSubscriptionPhase, endPublicSubscriptionSalePhase;
+let subscribedAddresses;
 
 const uniswapAddr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 const zeroValue = 0;
@@ -758,16 +758,18 @@ describe('hPools', async () => {
         });
 
         it('should check return values after getSubscribedAddressesAndNumberOfTickets function', async() => {
-            let subscribedAddresses = await hPoolManager.getSubscribedAddressesAndNumberOfTickets(poolId);
+            subscribedAddresses = await hPoolManager.getSubscribedAddresses(poolId);
 
-            expect(subscribedAddresses[0][0])
+            expect(subscribedAddresses[0])
                 .to.be.equal(bobAddr);
 
-            expect(subscribedAddresses[0][1])
-                .to.be.equal(aliceAddr);
-
             expect(subscribedAddresses[1])
-                .to.be.equal(subscribedAddresses[0].length);
+                .to.be.equal(aliceAddr);
+        });
+
+        it('should check return values in getUsedTickets function', async() => {
+            expect(await hPoolManager.getUsedTickets(poolId))
+                .to.be.equal(subscribedAddresses.length);
         });
 
     });
