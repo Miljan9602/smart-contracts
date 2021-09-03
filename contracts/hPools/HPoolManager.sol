@@ -82,6 +82,8 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
     // All hPools
     hPool[] public hPools;
+    //Number of tickets used for subscribing
+    mapping(uint256 => uint256) usedTickets;
     // Map pool Id to all subscriptions
     mapping(uint256 => Subscription[]) internal poolIdToSubscriptions;
     // Map user address to pool id to his subscription for that pool
@@ -232,6 +234,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hp.isValidated = true;
         hp.nftTicketId = _nftTicketId;
         hp.poolState = PoolState.TICKET_SALE;
+        hp.endTicketSalePhase = block.timestamp + 259200;
 
         emit TicketIdSetForPool(poolId, hp.nftTicketId);
         emit HPoolStateChanged(poolId, hp.poolState);
@@ -251,8 +254,8 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hPool storage hp = hPools[poolId];
 
         require(hp.poolState == PoolState.TICKET_SALE);
-        hp.endTicketSalePhase = block.timestamp;
         hp.poolState = PoolState.PRIVATE_SUBSCRIPTION;
+        hp.endPrivateSubscriptionPhase = block.timestamp + 259200;
 
         emit HPoolStateChanged(poolId, hp.poolState);
     }
@@ -292,6 +295,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         poolIdToSubscriptions[poolId].push(s);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
         userToPoolIdsSubscribedFor[msg.sender].push(poolId);
+        usedTickets[poolId] = usedTickets[poolId].add(numberOfTicketsToUse);
 
         hp.followersEthDeposit = hp.followersEthDeposit.add(msg.value);
 
@@ -312,9 +316,12 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         hPool storage hp = hPools[poolId];
 
+        uint256 maxTicketsToUse = getRequiredNumberOfTicketsToUse(hordConfiguration.maxFollowerUSDStake());
+
+        require(block.timestamp >= hp.endPrivateSubscriptionPhase || usedTickets[poolId] < maxTicketsToUse);
         require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION);
-        hp.endPrivateSubscriptionPhase = block.timestamp;
         hp.poolState = PoolState.PUBLIC_SUBSCRIPTION;
+        hp.endPublicSubscriptionSalePhase = block.timestamp + 259200;
 
         emit HPoolStateChanged(poolId, hp.poolState);
     }
@@ -364,7 +371,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
             "hPool subscription amount is below threshold."
         );
 
-        hp.endPublicSubscriptionSalePhase = block.timestamp;
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
 
         // Deploy the HPool contract
@@ -409,7 +415,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
             "hPool subscription amount is above threshold."
         );
 
-        hp.endPublicSubscriptionSalePhase = block.timestamp;
         // Set new pool state
         hp.poolState = PoolState.SUBSCRIPTION_FAILED;
 
@@ -612,22 +617,28 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     }
 
     /**
-     * @notice          Function to get all subscribed addresses and number of tickets used for subscribing
+     * @notice          Function to get all subscribed addresses on one hPool
      */
-    function getSubscribedAddressesAndNumberOfTickets(uint256 poolId)
+    function getSubscribedAddresses(uint256 poolId)
     external
     view
-    returns (address[] memory, uint256)
+    returns (address[] memory)
     {
         address[] memory subscribedAddresses = new address[](poolIdToSubscriptions[poolId].length);
-        uint256 ticketsUsedForSubscribing;
 
         for (uint256 i = 0; i < poolIdToSubscriptions[poolId].length; i++) {
             subscribedAddresses[i] = poolIdToSubscriptions[poolId][i].user;
-            ticketsUsedForSubscribing = ticketsUsedForSubscribing.add(poolIdToSubscriptions[poolId][i].numberOfTickets);
         }
 
-        return (subscribedAddresses, ticketsUsedForSubscribing);
+        return subscribedAddresses;
+    }
+
+    function getUsedTickets(uint256 poolId)
+    external
+    view
+    returns (uint256)
+    {
+        return usedTickets[poolId];
     }
 
     /**
