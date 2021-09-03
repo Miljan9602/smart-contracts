@@ -12,7 +12,7 @@
         "HordTreasury": "0x7A2162E95B5b8E56348b480bcB239d48fF8A71E9",
         "HordConfiguration": "0x781b6fC369059cf33605CBECB3fF0324Fd704533",
         "HPoolFactory": "0xd6F03FB1aD9B8DA252c28e65e179E9Fc13999f30",
-        "HPoolManager": "0xd6F03FB1aD9B8DA252c28e65e179E9Fc13999f30"
+        "HPoolManager": "0xD76D664410359E9Dbe78A481921e58F90bAEBCA4"
     },
     "ropstenStaging": {
         "MaintainersRegistry": "0xAEE26e9af071a40F8AE83EDF5478810d5F1971a6",
