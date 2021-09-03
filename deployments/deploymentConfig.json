@@ -17,7 +17,7 @@
     "minChampStake": 5000,
     "maxWarmupPeriod": 259200,
     "maxFollowerOnboardPeriod": 86400,
-    "minFollowerEthStake": 200000,
+    "minFollowerEthStake": 2000,
     "maxFollowerEthStake": 2000000,
     "minStakePerPoolTicket": 2592000,
     "assetUtilizationRatio": 95,
