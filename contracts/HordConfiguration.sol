@@ -36,6 +36,12 @@ contract HordConfiguration is HordUpgradable, Initializable {
     uint256 private _maxUSDAllocationPerTicket;
     //Total supply for HPoolToken
     uint256 private _totalSupplyHPoolTokens;
+    //End time for TICKET_SALE phase
+    uint256 private _endTimeTicketSale;
+    //End time for PRIVATE_SUBSCRIPTION phase
+    uint256 private _endTimePrivateSubscription;
+    //End time for PUBLIC_SUBSCRIPTION phase
+    uint256 private _endTimePublicSubscription;
 
     event ConfigurationChanged(string parameter, uint256 newValue);
 
@@ -207,6 +213,33 @@ contract HordConfiguration is HordUpgradable, Initializable {
         emit ConfigurationChanged("_totalSupplyHPoolTokens", _totalSupplyHPoolTokens);
     }
 
+    // _endTimeTicketSale setter function
+    function setEndTimeTicketSale(uint256 endTimeTicketSale_)
+    external
+    onlyHordCongress
+    {
+        _endTimeTicketSale = endTimeTicketSale_;
+        emit ConfigurationChanged("_endTimeTicketSale", _endTimeTicketSale);
+    }
+
+    // _totalSupplyHPoolTokens setter function
+    function setEndTimePrivateSubscription(uint256 endTimePrivateSubscription_)
+    external
+    onlyHordCongress
+    {
+        _endTimePrivateSubscription = endTimePrivateSubscription_;
+        emit ConfigurationChanged("_endTimePrivateSubscription", _endTimePrivateSubscription);
+    }
+    // _totalSupplyHPoolTokens setter function
+    function setEndTimePublicSubscription(uint256 endTimePublicSubscription_)
+    external
+    onlyHordCongress
+    {
+        _endTimePublicSubscription = endTimePublicSubscription_;
+        emit ConfigurationChanged("_endTimePublicSubscription", _endTimePublicSubscription);
+    }
+
+
     // Getter Functions
     // _minChampStake getter function
     function minChampStake() external view returns (uint256) {
@@ -273,5 +306,19 @@ contract HordConfiguration is HordUpgradable, Initializable {
         return _totalSupplyHPoolTokens;
     }
 
+    // _endTimeTicketSale getter function
+    function endTimeTicketSale() external view returns (uint256) {
+        return _endTimeTicketSale;
+    }
+
+    // _endTimePrivateSubscription getter function
+    function endTimePrivateSubscription() external view returns (uint256) {
+        return _endTimePrivateSubscription;
+    }
+
+    // _endTimePublicSubscription getter function
+    function endTimePublicSubscription() external view returns (uint256) {
+        return _endTimePublicSubscription;
+    }
 
 }
