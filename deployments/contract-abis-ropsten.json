@@ -2820,6 +2820,45 @@
             },
             {
                 "inputs": [],
+                "name": "endTimePrivateSubscription",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "endTimePublicSubscription",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "endTimeTicketSale",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
                 "name": "gasUtilizationRatio",
                 "outputs": [
                     {
@@ -3074,6 +3113,45 @@
                     }
                 ],
                 "name": "setAssetUtilizationRatio",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "endTimePrivateSubscription_",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "setEndTimePrivateSubscription",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "endTimePublicSubscription_",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "setEndTimePublicSubscription",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "endTimeTicketSale_",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "setEndTimeTicketSale",
                 "outputs": [],
                 "stateMutability": "nonpayable",
                 "type": "function"
@@ -3423,6 +3501,19 @@
                     }
                 ],
                 "name": "setMaintainersRegistry",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_uniswapRouter",
+                        "type": "address"
+                    }
+                ],
+                "name": "setUniswapRouter",
                 "outputs": [],
                 "stateMutability": "nonpayable",
                 "type": "function"
