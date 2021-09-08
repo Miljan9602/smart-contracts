@@ -234,7 +234,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hp.isValidated = true;
         hp.nftTicketId = _nftTicketId;
         hp.poolState = PoolState.TICKET_SALE;
-        hp.endTicketSalePhase = block.timestamp + 259200;
+        hp.endTicketSalePhase = block.timestamp + hordConfiguration.endTimeTicketSale();
 
         emit TicketIdSetForPool(poolId, hp.nftTicketId);
         emit HPoolStateChanged(poolId, hp.poolState);
@@ -255,7 +255,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         require(hp.poolState == PoolState.TICKET_SALE);
         hp.poolState = PoolState.PRIVATE_SUBSCRIPTION;
-        hp.endPrivateSubscriptionPhase = block.timestamp + 172800;
+        hp.endPrivateSubscriptionPhase = block.timestamp + hordConfiguration.endTimePrivateSubscription();
 
         emit HPoolStateChanged(poolId, hp.poolState);
     }
@@ -321,7 +321,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         require(block.timestamp >= hp.endPrivateSubscriptionPhase || usedTickets[poolId] < maxTicketsToUse);
         require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION);
         hp.poolState = PoolState.PUBLIC_SUBSCRIPTION;
-        hp.endPublicSubscriptionSalePhase = block.timestamp + 172800;
+        hp.endPublicSubscriptionSalePhase = block.timestamp + hordConfiguration.endTimePublicSubscription();
 
         emit HPoolStateChanged(poolId, hp.poolState);
     }
