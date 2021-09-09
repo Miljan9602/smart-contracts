@@ -145,8 +145,6 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
     {
         // Get number of reserved tickets
         uint256 numberOfTicketsReserved = tokenIdToNumberOfTicketsReserved[tokenId];
-
-        require(numberOfTickets > 0, "Number of tickets must be higher than 0.");
         // Check there's enough tickets to get
         require(numberOfTicketsReserved.add(numberOfTickets)<= hordTicketFactory.getTokenSupply(tokenId),
             "Not enough tickets to sell.");
@@ -173,15 +171,6 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
         // Increase number of tickets reserved
         tokenIdToNumberOfTicketsReserved[tokenId] = numberOfTicketsReserved.add(numberOfTickets);
 
-        //Transfer NFTs to user
-        hordTicketFactory.safeTransferFrom(
-            address(this),
-            msg.sender,
-            tokenId,
-            numberOfTickets,
-            "0x0"
-        );
-
         emit TokensStaked(
             msg.sender,
             amountOfTokensToStake,
@@ -189,14 +178,6 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
             numberOfTickets,
             userStake.unlockingTime
         );
-
-        emit NFTsClaimed(
-            msg.sender,
-            0,
-            numberOfTickets,
-            tokenId
-        );
-
     }
 
     /**
@@ -213,29 +194,43 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
         UserStake [] storage userStakesForNft = addressToTokenIdToStakes[msg.sender][tokenId];
 
         uint256 totalStakeToWithdraw;
+        uint256 ticketsToWithdraw;
 
         uint256 i = startIndex;
         while (i < userStakesForNft.length && i < endIndex) {
-            UserStake storage stake = userStakesForNft[i++];
+            UserStake storage stake = userStakesForNft[i];
 
             if(stake.isWithdrawn || stake.unlockingTime > block.timestamp) {
+                i++;
                 continue;
             }
 
             totalStakeToWithdraw = totalStakeToWithdraw.add(stake.amountStaked);
+            ticketsToWithdraw = ticketsToWithdraw.add(stake.amountOfTicketsGetting);
 
             stake.isWithdrawn = true;
+            i++;
         }
 
-        if(totalStakeToWithdraw > 0) {
+        if(totalStakeToWithdraw > 0 && ticketsToWithdraw > 0) {
+
             // Transfer staking tokens
             stakingToken.transfer(msg.sender, totalStakeToWithdraw);
+
+            // Transfer NFTs
+            hordTicketFactory.safeTransferFrom(
+                address(this),
+                msg.sender,
+                tokenId,
+                ticketsToWithdraw,
+                "0x0"
+            );
 
             // Emit event
             emit NFTsClaimed(
                 msg.sender,
                 totalStakeToWithdraw,
-                0,
+                ticketsToWithdraw,
                 tokenId
             );
         }
