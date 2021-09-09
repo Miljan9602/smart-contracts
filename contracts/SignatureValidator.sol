@@ -16,6 +16,16 @@ contract SignatureValidator {
         address dstToken;
     }
 
+    //everything sold for eth and bought from eth
+    //1. initial purchase - struct = BuyOrderRatio (dstToken, ratio) - backend will submit actual ETH amount to buy with, and contract can verify that ETH is ~within 5% of the ratio signed by champion
+    //2. ongoing purchase - struct = TradeOrder (srcToken, dstToken, amountSource)
+    //3. stoploss - struct = StopLoss(srcToken,dstToken,price_usd,amountSource,valid_until)
+    //4. buyLimit - struct = BuyLimiT(srcToken,dstToken, price_usd,amount_usd,valid_until) (takeProfit)
+    //5. sellLimit - struct - SellLimit(srcToken,dstToken, price_usd, amountSource,valid_until)
+
+    //generalStruct TradeOrder(TradeType,srcToken,dstToken,ratioFromPool,amountSource,amountUSD,priceUSD,validUntil)
+    //TradeType {MarketOrderLaunch,MarketOrder,StopLoss,BuyLimit,TakeProfit}
+
 
     string public constant EIP712_DOMAIN  = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
     string public constant TRADE_ORDER_TYPE = "TradeOrder(address srcToken,address dstToken)";

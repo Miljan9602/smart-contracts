@@ -56,9 +56,9 @@ contract HPool is HordUpgradable, HPoolToken {
     }
 
     function mintHPoolToken(
-        string memory name,
-        string memory symbol,
-        uint256 _totalSupply
+        string memory name, //TODO take from backend : "Hord.app Pool Token - <Champion Name> - Gen <Nonce>" (e.g. Hord.app Pool Token - TheMoonWalker - Gen1)
+        string memory symbol, //TODO take from backend : HPOOL-<HPOOLID>
+        uint256 _totalSupply  //TODO take from configs
     )
     external
     onlyHPoolManager
@@ -72,6 +72,7 @@ contract HPool is HordUpgradable, HPoolToken {
         emit HPoolTokenMinted(name, symbol, _totalSupply);
     }
 
+    //TODO: work in sigs
     function swapExactTokensForEth(
         address token,
         uint amountIn,
@@ -94,6 +95,7 @@ contract HPool is HordUpgradable, HPoolToken {
         );
     }
 
+    //TODO: workin sigs
     function swapExactEthForTokens(
         address token,
         uint amountOutMin,
@@ -115,6 +117,7 @@ contract HPool is HordUpgradable, HPoolToken {
         );
     }
 
+    //TODO workin sigs
     function swapExactTokensForTokens(
         address tokenA,
         address tokenB,
