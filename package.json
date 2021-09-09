@@ -32,7 +32,7 @@
     "ethers": "^5.4.1",
     "form-data": "^4.0.0",
     "git-branch": "^2.0.1",
-    "hardhat": "^2.5.0",
+    "hardhat": "2.5.0",
     "isomorphic-fetch": "^3.0.0",
     "solidity-coverage": "^0.7.16",
     "stochasm": "^0.5.0",
