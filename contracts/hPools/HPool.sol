@@ -98,9 +98,9 @@ contract HPool is HordUpgradable, HPoolToken {
 
     function swapExactTokensForEth(
         address token,
-        uint256 amountIn,
-        uint256 amountOutMin,
-        uint256 deadline
+        uint amountIn,
+        uint amountOutMin,
+        uint deadline
     )
     external
     {
@@ -120,8 +120,8 @@ contract HPool is HordUpgradable, HPoolToken {
 
     function swapExactEthForTokens(
         address token,
-        uint256 amountOutMin,
-        uint256 deadline
+        uint amountOutMin,
+        uint deadline
     )
     external
     payable
@@ -142,9 +142,9 @@ contract HPool is HordUpgradable, HPoolToken {
     function swapExactTokensForTokens(
         address tokenA,
         address tokenB,
-        uint256 amountIn,
-        uint256 amountOutMin,
-        uint256 deadline
+        uint amountIn,
+        uint amountOutMin,
+        uint deadline
     )
     external
     {
