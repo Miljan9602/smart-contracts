@@ -16,7 +16,7 @@ let hordCongress, hordCongressAddress, accounts, owner, ownerAddr, maintainer, m
     user, userAddress, config,
     hordToken, maintainersRegistryContract, ticketFactoryContract, ticketManagerContract,
     championId, supplyToMint, tx, tokenId, lastAddedId, ticketsToBuy, reservedTickets,
-    hordBalance, ticketsBalance, amountStaked, ticketFactory, factoryAddress, supplyToAdd, index
+    hordBalance, ticketsBalance, amountStaked, ticketFactory, factoryAddress, supplyToAdd, index, maintainersRegistry;
 
 async function setupAccounts () {
     config = configuration[hre.network.name];
@@ -54,7 +54,7 @@ async function setupContracts () {
 
 
     const MaintainersRegistry = await ethers.getContractFactory('MaintainersRegistry')
-    const maintainersRegistry = await upgrades.deployProxy(MaintainersRegistry, [[maintainerAddr], hordCongressAddress]);
+    maintainersRegistry = await upgrades.deployProxy(MaintainersRegistry, [[maintainerAddr], hordCongressAddress]);
     await maintainersRegistry.deployed()
     maintainersRegistryContract = maintainersRegistry.connect(owner);
 
@@ -155,6 +155,18 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
         it('should not let maintainer to call setMinAmountToStake function', async() => {
             await expect(ticketManagerContract.connect(maintainer).setMinAmountToStake(minAmountToStake))
                 .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
+        });
+
+        it('should check if non hordCongress address call setMaintainersRegistry function in HordUpgradable contract', async() => {
+            await expect(ticketManagerContract.connect(user).setMaintainersRegistry(maintainersRegistry.address))
+                .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
+        });
+
+        it('should check if hordCongress address call setMaintainersRegistry function in HordUpgradable contract', async() => {
+            await ticketManagerContract.connect(hordCongress).setMaintainersRegistry(maintainersRegistry.address);
+            const maintainerReg = await ticketManagerContract.maintainersRegistry();
+            expect(maintainersRegistry.address)
+                .to.be.equal(maintainerReg);
         });
 
     });
