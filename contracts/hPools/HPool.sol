@@ -22,6 +22,7 @@ contract HPool is HordUpgradable, HPoolToken {
     uint256 public hPoolId;
     bool public isHPoolTokenMinted;
     mapping(address => bool) public didUserClaimHPoolTokens;
+    mapping(address => uint256) public amountOfTokens;
     address[] public hPoolTokensHolders;
 
     event FollowersBudgetDeposit(uint256 amount);
@@ -109,14 +110,17 @@ contract HPool is HordUpgradable, HPoolToken {
         path[0] = token;
         path[1] = uniswapRouter.WETH();
 
-        uniswapRouter.swapExactTokensForETH(
+        uint256[] memory amounts = uniswapRouter.swapExactTokensForETH(
             amountIn,
             amountOutMin,
             path,
             msg.sender,
             deadline
         );
+
+        amountOfTokens[token] = amountOfTokens[token] - amounts[0];
     }
+
 
     function swapExactEthForTokens(
         address token,
@@ -131,12 +135,14 @@ contract HPool is HordUpgradable, HPoolToken {
         path[0] = uniswapRouter.WETH();
         path[1] = token;
 
-        uniswapRouter.swapExactETHForTokens(
+        uint256[] memory amounts = uniswapRouter.swapExactETHForTokens(
             amountOutMin,
             path,
             msg.sender,
             deadline
         );
+
+        amountOfTokens[token] = amountOfTokens[token] + amounts[1];
     }
 
     function swapExactTokensForTokens(
@@ -153,13 +159,16 @@ contract HPool is HordUpgradable, HPoolToken {
         path[0] = tokenA;
         path[1] = tokenB;
 
-        uniswapRouter.swapExactTokensForTokens(
+        uint256[] memory amounts = uniswapRouter.swapExactTokensForTokens(
             amountIn,
             amountOutMin,
             path,
             msg.sender,
             deadline
         );
+
+        amountOfTokens[tokenA] = amountOfTokens[tokenA] - amounts[0];
+        amountOfTokens[tokenB] = amountOfTokens[tokenB] + amounts[1];
     }
 
     function getNumberOfTokensUserCanClaim(address follower)
