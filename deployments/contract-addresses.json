@@ -35,7 +35,7 @@
         "HordTicketFactory": "0x39CE6f6A0eCFc5bBC03A19d391F8c6B4e35F40e2",
         "HordTreasury": "0x4550E08282cA135e9E97621523B63b297e081853",
         "AggregatorV3Interface": "0xc6575aafa3AeD2C77AF84d2971ee2c7576a2D9ff",
-        "HordConfiguration": "0x4914aFC81F104b7E40598fa9E0B4e9Bd08062990",
+        "HordConfiguration": "0x87de9f01464A888ff87466cC44667C50c598b6E9",
         "HPoolFactory": "0x112C7C6F628639404106b356Ac968cfd97BDd70B",
         "HPoolManager": "0x7CfA0e026ac4F6D3031Ac364F6B2235F27D150E8"
     }
