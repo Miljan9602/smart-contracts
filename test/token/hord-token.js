@@ -1,10 +1,11 @@
-const { ethers, expect, isEthException, awaitTx, toHordDenomination } = require('../setup')
+const { ethers, expect, isEthException, awaitTx, toHordDenomination, BigNumber } = require('../setup')
 const config = require('../../deployments/deploymentConfig.json');
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 const INITIAL_SUPPLY = toHordDenomination(config['local'].hordTotalSupply)
 const transferAmount = toHordDenomination(10)
 const unitTokenAmount = toHordDenomination(1)
+const decimals = 18
 
 const overdraftAmount = INITIAL_SUPPLY.add(unitTokenAmount)
 const overdraftAmountPlusOne = overdraftAmount.add(unitTokenAmount)
@@ -42,6 +43,24 @@ describe('HordToken:ERC20', () => {
   describe('totalSupply', () => {
     it('returns the total amount of tokens', async () => {
       (await hordToken.totalSupply()).should.equal(INITIAL_SUPPLY)
+    })
+  })
+
+  describe('name', () => {
+    it('returns the name token', async () => {
+      (await hordToken.name()).should.equal(config['local'].hordTokenName)
+    })
+  })
+
+  describe('symbol', () => {
+    it('returns the total amount of tokens', async () => {
+      (await hordToken.symbol()).should.equal(config['local'].hordTokenSymbol)
+    })
+  })
+
+  describe('decimals', () => {
+    it('returns the total amount of tokens', async () => {
+      (await hordToken.decimals()).should.equal(decimals)
     })
   })
 
@@ -344,4 +363,50 @@ describe('HordToken:ERC20:increaseAllowance', () => {
       })
     })
   })
+});
+
+describe('HordToken:ERC20:decreaseAllowance', () => {
+  before('setup HordToken contract', async () => {
+    await setupContractAndAccounts()
+  })
+
+  describe('when the spender is NOT the zero address', () => {
+    describe('when the sender has enough balance', () => {
+      describe('when the spender had an approved amount', () => {
+        before(async () => {
+          await hordToken.approve(anotherAccountAddr, toHordDenomination(20))
+          r = await (await hordToken.decreaseAllowance(anotherAccountAddr, transferAmount)).wait()
+        })
+        it('approves the requested amount', async () => {
+          (await hordToken.allowance(ownerAddr, anotherAccountAddr)).should.equal(transferAmount)
+        })
+
+        it('emits an approval event', async () => {
+          expect(r.events.length).to.equal(1)
+          expect(r.events[0].event).to.equal('Approval')
+          expect(r.events[0].args.owner).to.equal(ownerAddr)
+          expect(r.events[0].args.spender).to.equal(anotherAccountAddr)
+          r.events[0].args.value.should.equal(transferAmount)
+        })
+      })
+    })
+  })
+});
+
+describe('HordToken:ERC20:burn', () => {
+  before('setup HordToken contract', async () => {
+    await setupContractAndAccounts()
+  })
+
+  it('should check values after burn function', async() => {
+    let amountToBurn = 3;
+
+    await hordToken.transfer(anotherAccountAddr, 10);
+    let balanceBefore = await hordToken.balanceOf(anotherAccountAddr);
+
+    await hordToken.connect(anotherAccount).burn(amountToBurn);
+
+    expect(await hordToken.balanceOf(anotherAccountAddr))
+        .to.be.equal(balanceBefore - amountToBurn);
+  });
 });
