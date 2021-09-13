@@ -10,9 +10,9 @@
         "HordTicketFactory": "0xb01B71ccD40E14100AB1c4635251ae29b12c951a",
         "ProxyAdmin": "0x57fd097C3740D4FeF94D233BB33cc5F5336EF12B",
         "HordTreasury": "0x86EfF7F755809652247d741352f84C068CBa7B96",
-        "HordConfiguration": "0xc6e0306CAcab7616ebeD9529890f3A6De0312e19",
-        "HPoolFactory": "0x4c35b93330DeD7a5E75FCFBe5ed9487D160eb200",
-        "HPoolManager": "0xcdC31D0254AE686B277ef73CCf05A19e5f0b0aDE"
+        "HordConfiguration": "0x095eAF801A80079E90d5969201f38424410f29b3",
+        "HPoolFactory": "0xFe8aFA55212DF879935f344e5a0fD389f67546Ac",
+        "HPoolManager": "0x43d80d77F9884d9a772C40Aae089cae001AcEA7a"
     },
     "ropstenStaging": {
         "MaintainersRegistry": "0xAEE26e9af071a40F8AE83EDF5478810d5F1971a6",
