@@ -2183,6 +2183,19 @@
             },
             {
                 "inputs": [],
+                "name": "getLinkOracle",
+                "outputs": [
+                    {
+                        "internalType": "contract AggregatorV3Interface",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
                 "name": "getMaxSubscriptionInETHPerTicket",
                 "outputs": [
                     {
@@ -2699,6 +2712,19 @@
                 "name": "publicSubscribeForHPool",
                 "outputs": [],
                 "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "contract AggregatorV3Interface",
+                        "name": "_linkOracle",
+                        "type": "address"
+                    }
+                ],
+                "name": "setLinkOracle",
+                "outputs": [],
+                "stateMutability": "nonpayable",
                 "type": "function"
             },
             {
