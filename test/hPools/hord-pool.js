@@ -12,7 +12,7 @@ let accounts, owner, ownerAddr, user, userAddr, user1, user1Addr, hordCongress, 
     maintainersRegistry, hordTicketFactory, hordToken, hordTicketManager, hordTreasury, hordConfiguration, champion, championAddr, ticketFactory, factoryAddr, hPoolManagerSin, hPoolManagerSinAddr;
 let hPoolManager, hPoolFactory, aggregatorV3;
 let etherAmount, bePoolId, weiValue, poolState, poolId = 0, hPool, nftTicketId, championId, tokenId, tx, tokensToClaim, endTicketSalePhase, endPrivateSubscriptionPhase, endPublicSubscriptionSalePhase;
-let subscribedAddresses;
+let subscribedAddresses, tokenName, tokenSymbol, checkDecimals, transferAmount, contractAddress;
 
 const uniswapAddr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 const zeroValue = 0;
@@ -138,6 +138,8 @@ async function setupContractAndAccounts () {
         uniswapAddr
     );
     await hPoolContract.deployed()
+
+    await hordConfiguration.connect(hordCongress).setTotalSupplyHPoolTokens(10000000);
 
 }
 
@@ -508,6 +510,8 @@ describe('hPools', async () => {
             expect(amountAfter)
                 .to.be.equal(resp);
 
+            await hPoolManager.connect(alice).publicSubscribeForHPool(poolId, { value: weiValue });
+
             poolId = 6;
             hPool = await hPoolManager.hPools(poolId);
             amountBeofre = hPool.followersEthDeposit;
@@ -565,11 +569,17 @@ describe('hPools', async () => {
             poolId = 0;
             poolState = 5;
             await hPoolFactory.connect(hordCongress).setHPoolManager(hPoolManager.address);
-            await hPoolManager.connect(maintainer).endSubscriptionPhaseAndInitHPool(poolId, "aa", "a");
+            tokenName = "aa";
+            tokenSymbol = "a";
+            await hPoolManager.connect(maintainer).endSubscriptionPhaseAndInitHPool(poolId, tokenName, tokenSymbol);
             poolId = 5;
-            await hPoolManager.connect(maintainer).endSubscriptionPhaseAndInitHPool(poolId, "bb", "b");
+            tokenName = "bb";
+            tokenSymbol = "b";
+            await hPoolManager.connect(maintainer).endSubscriptionPhaseAndInitHPool(poolId, tokenName, tokenSymbol);
             poolId = 6;
-            await hPoolManager.connect(maintainer).endSubscriptionPhaseAndInitHPool(poolId, "cc", "c");
+            tokenName = "cc";
+            tokenSymbol = "c";
+            await hPoolManager.connect(maintainer).endSubscriptionPhaseAndInitHPool(poolId, tokenName, tokenSymbol);
 
             hPool = await hPoolManager.hPools(poolId);
             endPublicSubscriptionSalePhase = hPool.endPublicSubscriptionSalePhase;
@@ -737,7 +747,7 @@ describe('hPools', async () => {
         });
 
         it('should check return values in getDecimalsReturnPrecision function', async() => {
-            let checkDecimals = 10;
+            checkDecimals = 10;
             let decimals = await hPoolManager.getDecimalsReturnPrecision();
 
             expect(decimals)
@@ -788,59 +798,109 @@ describe('hPools', async () => {
 
     });
 
+    describe('HPool functions', async() => {
+
+        it("should not let HPoolManager to minted HPoolTokens more times.", async() => {
+            await hPoolContract.connect(hPoolManagerSin).mintHPoolToken("a", "aa", config["totalSupplyHPoolTokens"]);
+            await expect(hPoolContract.connect(hPoolManagerSin).mintHPoolToken("a", "aa", config["totalSupplyHPoolTokens"]))
+                .to.be.revertedWith("HPoolToken can be minted only once.");
+        });
+
+        it('should check values after claimHPoolTokens function', async() => {
+            poolId = 5;
+            tokenName = "bb";
+            tokenSymbol = "b";
+            hPool =  await hPoolManager.hPools(poolId);
+
+            contractAddress = hPool.hPoolContractAddress;
+            hPoolContract = await hre.ethers.getContractAt( "HPool", contractAddress);
+
+            tokensToClaim = await hPoolContract.getNumberOfTokensUserCanClaim(bobAddr);
+            tx = await awaitTx(hPoolContract.connect(bob).claimHPoolTokens());
+
+            let bobBalance = await hPoolContract.balanceOf(bobAddr);
+
+            expect(bobBalance)
+                .to.be.equal(tokensToClaim);
+        });
+
+        it('should check values in hPoolTokenHolders array', async() => {
+            let index = 0;
+            let holder = await hPoolContract.hPoolTokensHolders(index);
+
+            expect(holder)
+                .to.be.equal(bobAddr);
+        });
+
+        it('should check ClaimedHPoolTokens event', async() => {
+            expect(tx.events.length).to.equal(2);
+            expect(tx.events[1].event).to.equal('ClaimedHPoolTokens');
+            expect(parseInt(tx.events[1].args.numberOfClaimedTokens)).to.equal(tokensToClaim);
+        });
+
+        it('should not let user to claim HPoolTokens more than once', async() => {
+            await expect(hPoolContract.connect(bob).claimHPoolTokens())
+                .to.be.revertedWith("Follower already withdraw tokens.");
+        });
+
+        it('should not let non HPoolManager to call depositBudgetFollowers function', async() => {
+            await expect(hPoolContract.connect(maintainer).depositBudgetFollowers())
+                .to.be.revertedWith("Restricted only to HPoolManager.");
+        });
+
+        it('should return 0 if follower already claim HPoolTokens in getNumberOfTokensUserCanClaim function', async() => {
+            expect(await hPoolContract.getNumberOfTokensUserCanClaim(bobAddr))
+                .to.be.equal(zeroValue);
+        });
+
+    });
+
+    describe('HPoolToken functions', async() => {
+
+        it("should check name of HPoolToken", async() => {
+            let name = await hPoolContract.name();
+            expect(name)
+                .to.be.equal(tokenName);
+        });
+
+        it("should check symbol of HPoolToken", async() => {
+            let symbol = await hPoolContract.symbol();
+            expect(symbol)
+                .to.be.equal(tokenSymbol);
+        });
+
+        it("should check decimals", async() => {
+            checkDecimals = 18;
+            let decimals = await hPoolContract.decimals();
+            expect(decimals)
+                .to.be.equal(checkDecimals);
+        });
+
+        it('should check allowance after approve function', async() => {
+            transferAmount = 10;
+            await hPoolContract.connect(owner).approve(bobAddr, transferAmount);
+            let allowance = await hPoolContract.allowance(ownerAddr, bobAddr);
+
+            expect(allowance)
+                .to.be.equal(transferAmount);
+        });
+
+        it('should not let to approve 0x0 address', async() => {
+            await expect(hPoolContract.approve(address(0), transferAmount))
+                .to.be.revertedWith("ERC20: approve to the zero address");
+        });
+
+        xit('shoud not let to transfer tokens to 0x0 address', async() => {
+            await hPoolContract.connect(owner).transfer(bobAddr, transferAmount);
+            await expect(hPoolContract.connect(owner).transfer(address(0), transferAmount))
+                .to.be.revertedWith("ERC20: transfer to the zero address");
+        });
+
+        xit('should check values after transfer function', async() => {
+
+        });
+
+    });
+
 });
 
-describe('HPool functions', async() => {
-
-    it("should not let HPoolManager to minted HPoolTokens more times.", async() => {
-        await hPoolContract.connect(hPoolManagerSin).mintHPoolToken("a", "aa", config["totalSupplyHPoolTokens"]);
-        await expect(hPoolContract.connect(hPoolManagerSin).mintHPoolToken("a", "aa", config["totalSupplyHPoolTokens"]))
-            .to.be.revertedWith("HPoolToken can be minted only once.");
-    });
-
-    it('should check values after claimHPoolTokens function', async() => {
-        poolId = 5;
-        hPool =  await hPoolManager.hPools(poolId);
-
-        let contractAddress = hPool.hPoolContractAddress;
-        hPoolContract = await hre.ethers.getContractAt( "HPool",contractAddress);
-
-        tokensToClaim = await hPoolContract.getNumberOfTokensUserCanClaim(bobAddr);
-        tx = await awaitTx(hPoolContract.connect(bob).claimHPoolTokens());
-
-        let bobBalance = await hPoolContract.balanceOf(bobAddr);
-
-        expect(bobBalance)
-            .to.be.equal(tokensToClaim);
-    });
-
-    it('should check values in hPoolTokenHolders array', async() => {
-        let index = 0;
-        let holder = await hPoolContract.hPoolTokensHolders(index);
-
-        expect(holder)
-            .to.be.equal(bobAddr);
-    });
-
-    it('should check ClaimedHPoolTokens event', async() => {
-        expect(tx.events.length).to.equal(2);
-        expect(tx.events[1].event).to.equal('ClaimedHPoolTokens');
-        expect(parseInt(tx.events[1].args.numberOfClaimedTokens)).to.equal(tokensToClaim);
-    });
-
-    it('should not let user to claim HPoolTokens more than once', async() => {
-        await expect(hPoolContract.connect(bob).claimHPoolTokens())
-            .to.be.revertedWith("Follower already withdraw tokens.");
-    });
-
-    it('should not let non HPoolManager to call depositBudgetFollowers function', async() => {
-        await expect(hPoolContract.connect(maintainer).depositBudgetFollowers())
-            .to.be.revertedWith("Restricted only to HPoolManager.");
-    });
-
-    it('should return 0 if follower already claim HPoolTokens in getNumberOfTokensUserCanClaim function', async() => {
-        expect(await hPoolContract.getNumberOfTokensUserCanClaim(bobAddr))
-            .to.be.equal(zeroValue);
-    });
-
-});
