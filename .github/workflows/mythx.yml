@@ -52,6 +52,8 @@ jobs:
             analyze \
             --mode quick \
             --async \
+            --create-group \
+            --group-name "@hord/smart-contracts@${{ github.sha }}" \
             --solc-version 0.6.12 \
             --check-properties \
             fcontracts/HordConfiguration.sol --include HordConfiguration \
