@@ -974,7 +974,7 @@ describe('hPools', async () => {
                 .to.be.revertedWith("ERC20: burn amount exceeds balance")
         });
 
-        it('should check Transfer event after transfer function', async() => {
+        it('should check Transfer event after burn function', async() => {
             expect(tx.events.length).to.equal(1)
             expect(tx.events[0].event).to.equal('Transfer');
             expect(tx.events[0].args.from).to.equal(bobAddr)
