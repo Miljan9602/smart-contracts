@@ -12,7 +12,7 @@ let accounts, owner, ownerAddr, user, userAddr, user1, user1Addr, hordCongress, 
     maintainersRegistry, hordTicketFactory, hordToken, hordTicketManager, hordTreasury, hordConfiguration, champion, championAddr, ticketFactory, factoryAddr, hPoolManagerSin, hPoolManagerSinAddr;
 let hPoolManager, hPoolFactory, aggregatorV3;
 let etherAmount, bePoolId, weiValue, poolState, poolId = 0, hPool, nftTicketId, championId, tokenId, tx, tokensToClaim, endTicketSalePhase, endPrivateSubscriptionPhase, endPublicSubscriptionSalePhase;
-let subscribedAddresses, tokenName, tokenSymbol, checkDecimals, transferAmount, contractAddress;
+let subscribedAddresses, tokenName, tokenSymbol, checkDecimals, transferAmount, contractAddress, currAllowance;
 
 const uniswapAddr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 const zeroValue = 0;
@@ -888,15 +888,98 @@ describe('hPools', async () => {
                 .to.be.revertedWith("ERC20: approve to the zero address");
         });
 
-        xit('shoud not let to transfer tokens to 0x0 address', async() => {
-
-            //await hPoolContract.connect(owner).transfer(bobAddr, transferAmount);
-            //await expect(hPoolContract.connect(owner).transfer(address(0), transferAmount))
-              //  .to.be.revertedWith("ERC20: transfer to the zero address");
+        it('shoud not let to transfer tokens to 0x0 address', async() => {
+            await expect(hPoolContract.connect(bob).transfer(address(0), transferAmount))
+                .to.be.revertedWith("ERC20: transfer to the zero address");
         });
 
-        xit('should check values after transfer function', async() => {
+        it('should check if user wants to transfer more tokens than he has', async() => {
+            let bobBalance = await hPoolContract.balanceOf(bobAddr);
+            transferAmount = bobBalance.add(1);
 
+            await expect(hPoolContract.transfer(aliceAddr, transferAmount))
+                .to.be.revertedWith("ERC20: transfer amount exceeds balance");
+        });
+
+        it('should check values after transfer function', async() => {
+            transferAmount = 10;
+
+            let aliceBalanceBefore = await hPoolContract.balanceOf(aliceAddr);
+            tx = await awaitTx( hPoolContract.connect(bob).transfer(aliceAddr, transferAmount));
+            let aliceBalanceAfter = await hPoolContract.balanceOf(aliceAddr);
+
+            expect(aliceBalanceAfter)
+                .to.be.equal(aliceBalanceBefore.add(transferAmount));
+        });
+
+        it('should check Transfer event after transfer function', async() => {
+            expect(tx.events.length).to.equal(1)
+            expect(tx.events[0].event).to.equal('Transfer');
+            expect(tx.events[0].args.from).to.equal(bobAddr)
+            expect(tx.events[0].args.to).to.equal(aliceAddr)
+            expect(parseInt(tx.events[0].args.value)).to.equal(transferAmount)
+        });
+
+        it('should check values after transferFrom function', async() => {
+            await hPoolContract.connect(alice).approve(bobAddr, transferAmount);
+            let allowanceBefore = await hPoolContract.allowance(aliceAddr, bobAddr);
+
+            await hPoolContract.connect(bob).transferFrom(aliceAddr, userAddr, transferAmount);
+            let allowanceAfter = await hPoolContract.allowance(aliceAddr, bobAddr);
+
+            expect(allowanceBefore)
+                .to.be.equal(allowanceAfter.add(transferAmount));
+        });
+
+        it('should check if amount higher than current allowance in transferFrom function', async() => {
+            tx = await awaitTx(hPoolContract.connect(bob).approve(userAddr, transferAmount));
+            currAllowance = await hPoolContract.allowance(bobAddr, userAddr);
+
+            await expect(hPoolContract.connect(user).transferFrom(bobAddr, aliceAddr, currAllowance.add(1)))
+                .to.be.revertedWith("ERC20: transfer amount exceeds allowance");
+        });
+
+        it('should not let to transfer from 0x0 address', async() => {
+            await expect(hPoolContract.connect(user).transferFrom(address(0), aliceAddr, currAllowance))
+                .to.be.revertedWith("ERC20: transfer from the zero address");
+        });
+
+        it('should check Approval event', async() => {
+            expect(tx.events.length).to.equal(1)
+            expect(tx.events[0].event).to.equal('Approval');
+            expect(tx.events[0].args.owner).to.equal(bobAddr);
+            expect(tx.events[0].args.spender).to.equal(userAddr);
+            expect(parseInt(tx.events[0].args.value)).to.equal(transferAmount);
+        });
+
+        it('should check values after burn function', async() => {
+            let bobBalanceBefore = await hPoolContract.balanceOf(bobAddr);
+            let totalSupplyBefore = await hPoolContract.totalSupply();
+
+            tx = await awaitTx(hPoolContract.connect(bob).burn(transferAmount));
+
+            let bobBalanceAfter = await hPoolContract.balanceOf(bobAddr);
+            let totalSupplyAfter = await hPoolContract.totalSupply();
+
+            expect(bobBalanceAfter)
+                .to.be.equal(bobBalanceBefore.sub(transferAmount));
+
+            expect(totalSupplyAfter)
+                .to.be.equal(totalSupplyBefore.sub(transferAmount));
+        });
+
+        it('should check if amount higher than account balance in burn function', async() => {
+            let userBalance = await hPoolContract.balanceOf(userAddr);
+            await expect(hPoolContract.connect(user).burn(userBalance.add(1)))
+                .to.be.revertedWith("ERC20: burn amount exceeds balance")
+        });
+
+        it('should check Transfer event after transfer function', async() => {
+            expect(tx.events.length).to.equal(1)
+            expect(tx.events[0].event).to.equal('Transfer');
+            expect(tx.events[0].args.from).to.equal(bobAddr)
+            expect(tx.events[0].args.to).to.equal(address(0))
+            expect(parseInt(tx.events[0].args.value)).to.equal(transferAmount)
         });
 
     });
