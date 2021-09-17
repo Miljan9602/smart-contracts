@@ -2717,7 +2717,7 @@
             {
                 "inputs": [
                     {
-                        "internalType": "contract AggregatorV3Interface",
+                        "internalType": "address",
                         "name": "_linkOracle",
                         "type": "address"
                     }
