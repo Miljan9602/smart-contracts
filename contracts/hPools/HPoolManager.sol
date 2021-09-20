@@ -554,6 +554,20 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     }
 
     /**
+     * @notice          Function to convert USD to ETH.
+     */
+    function convertUSDtoETH(uint256 amount)
+    external
+    view
+    returns
+    (uint256)
+    {
+        uint denominator = uint256(getLatestPrice());
+        uint256 usdToEth = amount * 1000000000000000000000 / denominator * 100000;
+        return usdToEth;
+    }
+
+    /**
      * @notice          Function to get IDs of all pools for the champion.
      */
     function getChampionPoolIds(address champion)
