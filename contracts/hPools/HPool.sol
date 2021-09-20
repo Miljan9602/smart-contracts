@@ -119,6 +119,7 @@ contract HPool is HordUpgradable, HPoolToken {
         );
 
         amountOfTokens[token] = amountOfTokens[token] - amounts[0];
+        amountOfTokens[path[1]] = amountOfTokens[path[1]] + amounts[1];
     }
 
 
@@ -142,6 +143,7 @@ contract HPool is HordUpgradable, HPoolToken {
             deadline
         );
 
+        amountOfTokens[path[0]] = amountOfTokens[path[0]] - amounts[0];
         amountOfTokens[token] = amountOfTokens[token] + amounts[1];
     }
 
@@ -181,10 +183,10 @@ contract HPool is HordUpgradable, HPoolToken {
             return 0;
         }
 
-        (uint256 subscriptionEThUser, ) = hPoolManager.getUserSubscriptionForPool(hPoolId, follower);
+        (uint256 subscriptionETHUser, ) = hPoolManager.getUserSubscriptionForPool(hPoolId, follower);
         (, , , , , , uint256 totalFollowerDeposit, , ) = hPoolManager.getPoolInfo(hPoolId);
 
-        uint256 tokensForClaiming = subscriptionEThUser.div(totalFollowerDeposit).mul(totalSupply());
+        uint256 tokensForClaiming = subscriptionETHUser.mul(totalSupply()).div(totalFollowerDeposit);
         return tokensForClaiming;
     }
 
