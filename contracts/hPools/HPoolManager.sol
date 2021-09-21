@@ -160,6 +160,16 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     /**
      * @notice          Internal function to handle safe transferring of ETH.
      */
+    function setLinkOracle(address _linkOracle)
+    external
+    {
+        require(_linkOracle != address(0));
+        linkOracle = AggregatorV3Interface(_linkOracle);
+    }
+
+    /**
+     * @notice          Internal function to handle safe transferring of ETH.
+     */
     function safeTransferETH(address to, uint256 value) internal {
         (bool success, ) = to.call{value: value}(new bytes(0));
         require(success, "TransferHelper: ETH_TRANSFER_FAILED");
@@ -234,7 +244,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hp.isValidated = true;
         hp.nftTicketId = _nftTicketId;
         hp.poolState = PoolState.TICKET_SALE;
-        hp.endTicketSalePhase = block.timestamp + 259200;
+        hp.endTicketSalePhase = block.timestamp + hordConfiguration.endTimeTicketSale();
 
         emit TicketIdSetForPool(poolId, hp.nftTicketId);
         emit HPoolStateChanged(poolId, hp.poolState);
@@ -255,7 +265,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         require(hp.poolState == PoolState.TICKET_SALE);
         hp.poolState = PoolState.PRIVATE_SUBSCRIPTION;
-        hp.endPrivateSubscriptionPhase = block.timestamp + 172800;
+        hp.endPrivateSubscriptionPhase = block.timestamp + hordConfiguration.endTimePrivateSubscription();
 
         emit HPoolStateChanged(poolId, hp.poolState);
     }
@@ -321,7 +331,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         require(block.timestamp >= hp.endPrivateSubscriptionPhase || usedTickets[poolId] < maxTicketsToUse);
         require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION);
         hp.poolState = PoolState.PUBLIC_SUBSCRIPTION;
-        hp.endPublicSubscriptionSalePhase = block.timestamp + 172800;
+        hp.endPublicSubscriptionSalePhase = block.timestamp + hordConfiguration.endTimePublicSubscription();
 
         emit HPoolStateChanged(poolId, hp.poolState);
     }
@@ -544,6 +554,20 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     }
 
     /**
+     * @notice          Function to convert USD to ETH.
+     */
+    function convertUSDtoETH(uint256 amount)
+    external
+    view
+    returns
+    (uint256)
+    {
+        uint256 latestPrice = uint256(getLatestPrice());
+        uint256 usdEThRate = one.div(latestPrice);
+        return usdEThRate;
+    }
+
+    /**
      * @notice          Function to get IDs of all pools for the champion.
      */
     function getChampionPoolIds(address champion)
@@ -639,6 +663,17 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     returns (uint256)
     {
         return usedTickets[poolId];
+    }
+
+    /**
+     * @notice          Function to get AggregatorV3Interface
+     */
+    function getLinkOracle()
+    external
+    view
+    returns (AggregatorV3Interface)
+    {
+        return linkOracle;
     }
 
     /**
