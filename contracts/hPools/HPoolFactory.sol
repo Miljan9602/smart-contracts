@@ -13,6 +13,7 @@ import "./HPool.sol";
  */
 contract HPoolFactory is PausableUpgradeable, HordUpgradable {
     address public hPoolManager;
+    //TODO: Remove uniswap router
     address private uniswapRouter;
     address[] deployedHPools;
 
@@ -61,6 +62,7 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
             hordCongress,
             address(maintainersRegistry),
             hPoolManager,
+            //TODO: Remove from constructor
             uniswapRouter
         );
 

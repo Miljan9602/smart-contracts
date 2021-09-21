@@ -63,6 +63,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         uint256 endPrivateSubscriptionPhase;
         uint256 endPublicSubscriptionSalePhase;
         uint256 nftTicketId;
+        //TODO: Add field to represent number of NFTs in total used
         bool isValidated;
         uint256 followersEthDeposit;
         address hPoolContractAddress;
@@ -82,7 +83,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
     // All hPools
     hPool[] public hPools;
-    //Number of tickets used for subscribing
+    // TODO: Remove this mapping
     mapping(uint256 => uint256) usedTickets;
     // Map pool Id to all subscriptions
     mapping(uint256 => Subscription[]) internal poolIdToSubscriptions;
@@ -554,20 +555,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     }
 
     /**
-     * @notice          Function to convert USD to ETH.
-     */
-    function convertUSDtoETH(uint256 amount)
-    external
-    view
-    returns
-    (uint256)
-    {
-        uint256 latestPrice = uint256(getLatestPrice());
-        uint256 usdEThRate = one.div(latestPrice);
-        return usdEThRate;
-    }
-
-    /**
      * @notice          Function to get IDs of all pools for the champion.
      */
     function getChampionPoolIds(address champion)
@@ -643,6 +630,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     /**
      * @notice          Function to get all subscribed addresses on one hPool
      */
+    //TODO: Add startIndex and endIndex
     function getSubscribedAddresses(uint256 poolId)
     external
     view
@@ -657,6 +645,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         return subscribedAddresses;
     }
 
+    //TODO: Get number of tickets used (rename)
     function getUsedTickets(uint256 poolId)
     external
     view

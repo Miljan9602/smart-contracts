@@ -23,6 +23,7 @@ contract HPool is HordUpgradable, HPoolToken {
     bool public isHPoolTokenMinted;
     mapping(address => bool) public didUserClaimHPoolTokens;
     mapping(address => uint256) public amountOfTokens;
+    //TODO: Delete this
     address[] public hPoolTokensHolders;
 
     event FollowersBudgetDeposit(uint256 amount);
@@ -47,6 +48,7 @@ contract HPool is HordUpgradable, HPoolToken {
         setCongressAndMaintainers(_hordCongress, _hordMaintainersRegistry);
         hPoolId = _hPoolId;
         hPoolManager = IHPoolManager(_hordPoolManager);
+        // TODO Make sure it's constant injected into bytecode
         uniswapRouter = IUniswapV2Router01(_uniswapRouter);
     }
 
@@ -158,6 +160,8 @@ contract HPool is HordUpgradable, HPoolToken {
     {
         require(msg.sender.balance >= amountIn);
         address[] memory path = new address[](2);
+
+        //TODO: Make sure that path goes through weth
         path[0] = tokenA;
         path[1] = tokenB;
 
@@ -169,6 +173,7 @@ contract HPool is HordUpgradable, HPoolToken {
             deadline
         );
 
+        //TODO: Use SafeMath
         amountOfTokens[tokenA] = amountOfTokens[tokenA] - amounts[0];
         amountOfTokens[tokenB] = amountOfTokens[tokenB] + amounts[1];
     }

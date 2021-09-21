@@ -38,6 +38,7 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
 
     // Count number of reserved tickets for tokenId
     mapping(uint256 => uint256) internal tokenIdToNumberOfTicketsReserved;
+    mapping(uint256 => uint8) internal stakeIdToVersion;
 
     event TokensStaked(
         address user,
@@ -180,7 +181,6 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
         );
 
         claimNFTsImmediately(numberOfTickets, tokenId);
-
     }
 
     function claimNFTsImmediately(uint256 numberOfTickets, uint256 tokenId) private {
