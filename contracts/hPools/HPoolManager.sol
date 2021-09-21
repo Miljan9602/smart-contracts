@@ -562,9 +562,9 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     returns
     (uint256)
     {
-        uint denominator = uint256(getLatestPrice());
-        uint256 usdToEth = amount * 1000000000000000000000 / denominator * 100000;
-        return usdToEth;
+        uint256 latestPrice = uint256(getLatestPrice());
+        uint256 usdEThRate = one.div(latestPrice);
+        return usdEThRate;
     }
 
     /**
