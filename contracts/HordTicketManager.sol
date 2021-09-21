@@ -35,10 +35,10 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
 
     /// @dev Mapping user address to tokenId to stakes for that token
     mapping(address => mapping(uint => UserStake[])) public addressToTokenIdToStakes;
-
+    /// @dev Mapping to allow backwards compatibility with new features
+    mapping(address => mapping(uint => bool)) public isTicketWithdrawn;
     // Count number of reserved tickets for tokenId
     mapping(uint256 => uint256) internal tokenIdToNumberOfTicketsReserved;
-    mapping(uint256 => uint8) internal stakeIdToVersion;
 
     event TokensStaked(
         address user,
@@ -180,11 +180,11 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
             userStake.unlockingTime
         );
 
-        claimNFTsImmediately(numberOfTickets, tokenId);
+        claimTicketsInternal(numberOfTickets, tokenId);
+        isTicketWithdrawn[msg.sender][tokenId] = true;
     }
 
-    function claimNFTsImmediately(uint256 numberOfTickets, uint256 tokenId) private {
-
+    function claimTicketsInternal(uint256 numberOfTickets, uint256 tokenId) private {
         hordTicketFactory.safeTransferFrom(
             address(this),
             msg.sender,
@@ -192,14 +192,12 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
             numberOfTickets,
             "0x0"
         );
-
         emit NFTsClaimed(
             msg.sender,
             0,
             numberOfTickets,
             tokenId
         );
-
     }
 
     /**
@@ -216,32 +214,35 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
         UserStake [] storage userStakesForNft = addressToTokenIdToStakes[msg.sender][tokenId];
 
         uint256 totalStakeToWithdraw;
+        uint256 ticketsToWithdraw;
 
         uint256 i = startIndex;
         while (i < userStakesForNft.length && i < endIndex) {
-            UserStake storage stake = userStakesForNft[i++];
+            UserStake storage stake = userStakesForNft[i];
 
             if(stake.isWithdrawn || stake.unlockingTime > block.timestamp) {
+                i++;
                 continue;
             }
 
-            totalStakeToWithdraw = totalStakeToWithdraw.add(stake.amountStaked);
+            if(!isTicketWithdrawn[msg.sender][tokenId]) {
+                ticketsToWithdraw = ticketsToWithdraw.add(stake.amountOfTicketsGetting);
+                isTicketWithdrawn[msg.sender][tokenId] = true;
+            }
 
+            totalStakeToWithdraw = totalStakeToWithdraw.add(stake.amountStaked);
             stake.isWithdrawn = true;
+            i++;
         }
 
         if(totalStakeToWithdraw > 0) {
-
             // Transfer staking tokens
             stakingToken.transfer(msg.sender, totalStakeToWithdraw);
+        }
 
-            // Emit event
-            emit NFTsClaimed(
-                msg.sender,
-                totalStakeToWithdraw,
-                0,
-                tokenId
-            );
+        if(ticketsToWithdraw > 0) {
+            // Transfer tickets
+            claimTicketsInternal(ticketsToWithdraw, tokenId);
         }
     }
 
