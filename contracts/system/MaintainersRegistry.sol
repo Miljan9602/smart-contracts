@@ -4,6 +4,7 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/proxy/Initializable.sol";
 import "../libraries/SafeMath.sol";
 
+
 contract MaintainersRegistry is Initializable {
 
     using SafeMath for uint;
@@ -13,7 +14,7 @@ contract MaintainersRegistry is Initializable {
 
 
     // Arrays
-    address [] public allMaintainers;
+    address[] public allMaintainers;
 
     // chainport congress authorized address to modify maintainers
     address public hordCongress;
@@ -25,7 +26,7 @@ contract MaintainersRegistry is Initializable {
      * @notice      Function to perform initialization
      */
     function initialize(
-        address [] memory _maintainers,
+        address[] memory _maintainers,
         address _hordCongress
     )
     public
@@ -44,7 +45,7 @@ contract MaintainersRegistry is Initializable {
     )
     public
     {
-        require(msg.sender == hordCongress, 'MaintainersRegistry :: Only congress can add maintainer');
+        require(msg.sender == hordCongress, "MaintainersRegistry :: Only congress can add maintainer");
         addMaintainerInternal(_address);
     }
 
@@ -77,7 +78,7 @@ contract MaintainersRegistry is Initializable {
     )
     external
     {
-        require(msg.sender == hordCongress, 'MaintainersRegistry :: Only congress can remove maintainer');
+        require(msg.sender == hordCongress, "MaintainersRegistry :: Only congress can remove maintainer");
         require(_isMaintainer[_maintainer] == true);
 
         uint length = allMaintainers.length;

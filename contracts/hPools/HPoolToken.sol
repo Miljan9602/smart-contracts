@@ -3,6 +3,7 @@ pragma solidity 0.6.12;
 import "../token/Context.sol";
 import "../interfaces/IERC20Metadata.sol";
 
+
 /**
  * HPoolToken contract.
  * @author Nikola Madjarevic

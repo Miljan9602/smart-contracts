@@ -3,6 +3,7 @@ pragma solidity ^0.6.12;
 
 import "../interfaces/IMaintainersRegistry.sol";
 
+
 /**
  * HordUpgradables contract.
  * @author Nikola Madjarevic

@@ -5,6 +5,7 @@ import "../system/HordUpgradable.sol";
 import "../interfaces/IHPoolManager.sol";
 import "./HPoolToken.sol";
 
+
 /**
  * HPool contract.
  * @author Nikola Madjarevic
