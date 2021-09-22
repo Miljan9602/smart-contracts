@@ -13,8 +13,6 @@ import "./HPool.sol";
  */
 contract HPoolFactory is PausableUpgradeable, HordUpgradable {
     address public hPoolManager;
-    //TODO: Remove uniswap router
-    address private uniswapRouter;
     address[] deployedHPools;
 
     modifier onlyHPoolManager() {
@@ -44,15 +42,6 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
     }
 
     /**
-     * @notice          Function to set uniswapRouter address.
-     */
-    function setUniswapRouter(address _uniswapRouter) external onlyHordCongress{
-        require(_uniswapRouter != address(0));
-
-        uniswapRouter = _uniswapRouter;
-    }
-
-    /**
      * @notice          Function to deploy hPool, only callable by HPoolManager
      */
     function deployHPool(uint256 hPoolId) external onlyHPoolManager returns (address) {
@@ -61,9 +50,7 @@ contract HPoolFactory is PausableUpgradeable, HordUpgradable {
             hPoolId,
             hordCongress,
             address(maintainersRegistry),
-            hPoolManager,
-            //TODO: Remove from constructor
-            uniswapRouter
+            hPoolManager
         );
 
         // Add deployed pool to array of deployed pools
