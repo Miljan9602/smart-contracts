@@ -3,6 +3,8 @@ module.exports = {
         'interfaces/',
         'libraries/',
         'token/Context.sol',
-        'upgradabilityTest/'
+        'upgradabilityTest/',
+        'SignatureValidator.sol',
+        'hPools/HPool.sol'
     ]
 };

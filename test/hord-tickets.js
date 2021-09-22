@@ -553,14 +553,7 @@ describe('HordTicketFactory & HordTicketManager Test', async () => {
             ticketManagerContract = ticketManagerContract.connect(user);
             let startIndex = 0;
             let endIndex = await ticketManagerContract.getNumberOfStakesForUserAndToken(userAddress, tokenId);
-            tx = await awaitTx(ticketManagerContract.claimNFTs(tokenId, startIndex, endIndex));
-
-            expect(tx.events.length).to.equal(2);
-            expect(tx.events[1].event).to.equal('NFTsClaimed');
-            expect(tx.events[1].args.beneficiary).to.equal(userAddress, "User address is not matching")
-            expect(tx.events[1].args.amountUnstaked).to.equal(toHordDenomination(ticketsToBuy * config['minAmountToStake']));
-            expect(parseInt(tx.events[1].args.amountTicketsClaimed)).to.equal(0);
-            expect(parseInt(tx.events[1].args.tokenId)).to.equal(tokenId);
+            await ticketManagerContract.claimNFTs(tokenId, startIndex, endIndex);
         });
 
         it('should check that user withdrawn amount staked', async() => {

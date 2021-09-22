@@ -134,8 +134,7 @@ async function setupContractAndAccounts () {
         poolId,
         hordCongressAddr,
         maintainersRegistry.address,
-        hPoolManagerSinAddr,
-        uniswapAddr
+        hPoolManagerSinAddr
     );
     await hPoolContract.deployed()
 
@@ -549,20 +548,6 @@ describe('hPools', async () => {
                 .to.be.reverted;
         });
 
-        it('should check if non hordCongress address call setUniswapRouter function in HPoolFactory contract', async() => {
-            await expect(hPoolFactory.connect(user).setUniswapRouter(uniswapAddr))
-                .to.be.revertedWith("HordUpgradable: Restricted only to HordCongress");
-        });
-
-        it('should check if uniswapRouter is zerroAddress in setUniswapRouter function in HPoolFactory contract', async() => {
-            await expect(hPoolFactory.connect(hordCongress).setUniswapRouter(address(0)))
-                .to.be.reverted;
-        });
-
-        it('should call setter for uniswapRouter in HPoolFactory contract', async() => {
-            await hPoolFactory.connect(hordCongress).setUniswapRouter(uniswapAddr);
-        });
-
         it('should check values after endSubscriptionPhaseAndInitHPool function', async() => {
             poolId = 0;
             poolState = 5;
@@ -780,7 +765,10 @@ describe('hPools', async () => {
         });
 
         it('should check return values after getSubscribedAddressesAndNumberOfTickets function', async() => {
-            subscribedAddresses = await hPoolManager.getSubscribedAddresses(poolId);
+            let startIndex = 0;
+            let endIndex = 2;
+
+            subscribedAddresses = await hPoolManager.getSubscribedAddresses(poolId, startIndex, endIndex);
 
             expect(subscribedAddresses[0])
                 .to.be.equal(bobAddr);
@@ -789,8 +777,8 @@ describe('hPools', async () => {
                 .to.be.equal(aliceAddr);
         });
 
-        it('should check return values in getUsedTickets function', async() => {
-            expect(await hPoolManager.getUsedTickets(poolId))
+        it('should check return values in getNumberOfTicketsUsed function', async() => {
+            expect(await hPoolManager.getNumberOfTicketsUsed(poolId))
                 .to.be.equal(subscribedAddresses.length);
         });
 
@@ -820,14 +808,6 @@ describe('hPools', async () => {
 
             expect(bobBalance)
                 .to.be.equal(tokensToClaim);
-        });
-
-        it('should check values in hPoolTokenHolders array', async() => {
-            let index = 0;
-            let holder = await hPoolContract.hPoolTokensHolders(index);
-
-            expect(holder)
-                .to.be.equal(bobAddr);
         });
 
         it('should check ClaimedHPoolTokens event', async() => {
