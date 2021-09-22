@@ -26,6 +26,9 @@
     "maxSupplyHPoolToken": 1000,
     "maxUSDAllocationPerTicket": 5000,
     "totalSupplyHPoolTokens": 1000,
+    "endTimeTicketSale": 300,
+    "endTimePrivateSubscription": 300,
+    "endTimePublicSubscription": 300,
     "uri": "https://test-api.hord.app/metadata/ticket_manager",
     "contractMetadataUri": "https://test-api.hord.app/hpool_nft/metadata",
     "maintainers": [
@@ -174,6 +177,9 @@
     "maxSupplyHPoolToken": 1000,
     "maxUSDAllocationPerTicket": 5000,
     "totalSupplyHPoolTokens": 1000,
+    "endTimeTicketSale": 300,
+    "endTimePrivateSubscription": 300,
+    "endTimePublicSubscription": 300,
     "uri": "https://api.hord.app/metadata/ticket_manager",
     "contractMetadataUri": "https://api.hord.app/hpool_nft/metadata",
     "maintainers": [
