@@ -96,9 +96,8 @@ async function setupContractAndAccounts () {
 
     const HordConfiguration = await ethers.getContractFactory('HordConfiguration')
     hordConfiguration = await upgrades.deployProxy(HordConfiguration, [
-            hordCongressAddr,
-            maintainersRegistry.address,
-            config["minChampStake"],
+            [hordCongressAddr, maintainersRegistry.address],
+            [config["minChampStake"],
             config["maxWarmupPeriod"],
             config["maxFollowerOnboardPeriod"],
             config["minFollowerEthStake"],
@@ -109,7 +108,10 @@ async function setupContractAndAccounts () {
             config["platformStakeRatio"],
             config["maxSupplyHPoolToken"],
             config["maxUSDAllocationPerTicket"],
-            config["totalSupplyHPoolTokens"]
+            config["totalSupplyHPoolTokens"],
+            config["endTimeTicketSale"],
+            config["endTimePrivateSubscription"],
+            config["endTimePublicSubscription"]]
         ]
     );
     await hordConfiguration.deployed()
