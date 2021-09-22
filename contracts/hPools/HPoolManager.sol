@@ -63,7 +63,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         uint256 endPrivateSubscriptionPhase;
         uint256 endPublicSubscriptionSalePhase;
         uint256 nftTicketId;
-        //TODO: Add field to represent number of NFTs in total used
+        uint256 numberOfTicketsUsed;
         bool isValidated;
         uint256 followersEthDeposit;
         address hPoolContractAddress;
@@ -83,8 +83,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
     // All hPools
     hPool[] public hPools;
-    // TODO: Remove this mapping
-    mapping(uint256 => uint256) usedTickets;
     // Map pool Id to all subscriptions
     mapping(uint256 => Subscription[]) internal poolIdToSubscriptions;
     // Map user address to pool id to his subscription for that pool
@@ -306,7 +304,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         poolIdToSubscriptions[poolId].push(s);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
         userToPoolIdsSubscribedFor[msg.sender].push(poolId);
-        usedTickets[poolId] = usedTickets[poolId].add(numberOfTicketsToUse);
+        hp.numberOfTicketsUsed = hp.numberOfTicketsUsed.add(numberOfTicketsToUse);
 
         hp.followersEthDeposit = hp.followersEthDeposit.add(msg.value);
 
@@ -329,7 +327,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         uint256 maxTicketsToUse = getRequiredNumberOfTicketsToUse(hordConfiguration.maxFollowerUSDStake());
 
-        require(block.timestamp >= hp.endPrivateSubscriptionPhase || usedTickets[poolId] < maxTicketsToUse);
+        require(block.timestamp >= hp.endPrivateSubscriptionPhase || hp.numberOfTicketsUsed < maxTicketsToUse);
         require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION);
         hp.poolState = PoolState.PUBLIC_SUBSCRIPTION;
         hp.endPublicSubscriptionSalePhase = block.timestamp + hordConfiguration.endTimePublicSubscription();
@@ -630,28 +628,28 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     /**
      * @notice          Function to get all subscribed addresses on one hPool
      */
-    //TODO: Add startIndex and endIndex
-    function getSubscribedAddresses(uint256 poolId)
+    function getSubscribedAddresses(uint256 poolId, uint256 startIndex, uint256 endIndex)
     external
     view
     returns (address[] memory)
     {
-        address[] memory subscribedAddresses = new address[](poolIdToSubscriptions[poolId].length);
+        address[] memory subscribedAddresses = new address[](endIndex - startIndex);
+        uint256 counter;
 
-        for (uint256 i = 0; i < poolIdToSubscriptions[poolId].length; i++) {
-            subscribedAddresses[i] = poolIdToSubscriptions[poolId][i].user;
+        for (uint256 i = startIndex; i < endIndex; i++) {
+            subscribedAddresses[counter] = poolIdToSubscriptions[poolId][i].user;
+            counter++;
         }
 
         return subscribedAddresses;
     }
 
-    //TODO: Get number of tickets used (rename)
-    function getUsedTickets(uint256 poolId)
+    function getNumberOfTicketsUsed(uint256 poolId)
     external
     view
     returns (uint256)
     {
-        return usedTickets[poolId];
+        return hp.numberOfTicketsUsed;
     }
 
     /**
