@@ -15,16 +15,15 @@ import "../libraries/SafeMath.sol";
 contract HPool is HordUpgradable, HPoolToken {
 
     using SafeMath for uint256;
+    address private constant uniswapAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
     IHPoolManager public hPoolManager;
-    IUniswapV2Router01 public uniswapRouter;
+    IUniswapV2Router01 private uniswapRouter;
 
     uint256 public hPoolId;
     bool public isHPoolTokenMinted;
     mapping(address => bool) public didUserClaimHPoolTokens;
     mapping(address => uint256) public amountOfTokens;
-    //TODO: Delete this
-    address[] public hPoolTokensHolders;
 
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
@@ -40,16 +39,14 @@ contract HPool is HordUpgradable, HPoolToken {
         uint256 _hPoolId,
         address _hordCongress,
         address _hordMaintainersRegistry,
-        address _hordPoolManager,
-        address _uniswapRouter
+        address _hordPoolManager
     )
     public
     {
         setCongressAndMaintainers(_hordCongress, _hordMaintainersRegistry);
         hPoolId = _hPoolId;
         hPoolManager = IHPoolManager(_hordPoolManager);
-        // TODO Make sure it's constant injected into bytecode
-        uniswapRouter = IUniswapV2Router01(_uniswapRouter);
+        uniswapRouter = IUniswapV2Router01(uniswapAddress);
     }
 
     function depositBudgetFollowers()
@@ -94,7 +91,6 @@ contract HPool is HordUpgradable, HPoolToken {
         _transfer(address(this), msg.sender, numberOfTokensToClaim);
 
         didUserClaimHPoolTokens[msg.sender] = true;
-        hPoolTokensHolders.push(msg.sender);
 
         emit ClaimedHPoolTokens(msg.sender, numberOfTokensToClaim);
     }
@@ -120,8 +116,8 @@ contract HPool is HordUpgradable, HPoolToken {
             deadline
         );
 
-        amountOfTokens[token] = amountOfTokens[token] - amounts[0];
-        amountOfTokens[path[1]] = amountOfTokens[path[1]] + amounts[1];
+        amountOfTokens[token] = amountOfTokens[token].sub(amounts[0]);
+        amountOfTokens[path[1]] = amountOfTokens[path[1]].add(amounts[1]);
     }
 
 
@@ -145,8 +141,8 @@ contract HPool is HordUpgradable, HPoolToken {
             deadline
         );
 
-        amountOfTokens[path[0]] = amountOfTokens[path[0]] - amounts[0];
-        amountOfTokens[token] = amountOfTokens[token] + amounts[1];
+        amountOfTokens[path[0]] = amountOfTokens[path[0]].sub(amounts[0]);
+        amountOfTokens[token] = amountOfTokens[token].add(amounts[1]);
     }
 
     function swapExactTokensForTokens(
@@ -161,9 +157,9 @@ contract HPool is HordUpgradable, HPoolToken {
         require(msg.sender.balance >= amountIn);
         address[] memory path = new address[](2);
 
-        //TODO: Make sure that path goes through weth
         path[0] = tokenA;
-        path[1] = tokenB;
+        path[1] = uniswapRouter.WETH();
+        path[2] = tokenB;
 
         uint256[] memory amounts = uniswapRouter.swapExactTokensForTokens(
             amountIn,
@@ -173,9 +169,8 @@ contract HPool is HordUpgradable, HPoolToken {
             deadline
         );
 
-        //TODO: Use SafeMath
-        amountOfTokens[tokenA] = amountOfTokens[tokenA] - amounts[0];
-        amountOfTokens[tokenB] = amountOfTokens[tokenB] + amounts[1];
+        amountOfTokens[tokenA] = amountOfTokens[tokenA].sub(amounts[0]);
+        amountOfTokens[tokenB] = amountOfTokens[tokenB].add(amounts[2]);
     }
 
     function getNumberOfTokensUserCanClaim(address follower)
