@@ -49,36 +49,27 @@ contract HordConfiguration is HordUpgradable, Initializable {
      * @notice          Initializer function
      */
     function initialize(
-        address hordCongress_,
-        address maintainersRegistry_,
-        uint256 minChampStake_,
-        uint256 maxWarmupPeriod_,
-        uint256 maxFollowerOnboardPeriod_,
-        uint256 minFollowerUSDStake_,
-        uint256 maxFollowerUSDStake_,
-        uint256 minStakePerPoolTicket_,
-        uint256 assetUtilizationRatio_,
-        uint256 gasUtilizationRatio_,
-        uint256 platformStakeRatio_,
-        uint256 maxSupplyHPoolToken_,
-        uint256 maxUSDAllocationPerTicket_,
-        uint256 totalSupplyHPoolTokens_
+        address[] memory addreses,
+        uint256[] memory configValues
     ) external initializer {
         // Set hord congress and maintainers registry
-        setCongressAndMaintainers(hordCongress_, maintainersRegistry_);
+        setCongressAndMaintainers(addreses[0], addreses[1]);
 
-        _minChampStake = minChampStake_;
-        _maxWarmupPeriod = maxWarmupPeriod_;
-        _maxFollowerOnboardPeriod = maxFollowerOnboardPeriod_;
-        _minFollowerUSDStake = minFollowerUSDStake_;
-        _maxFollowerUSDStake = maxFollowerUSDStake_;
-        _minStakePerPoolTicket = minStakePerPoolTicket_;
-        _assetUtilizationRatio = assetUtilizationRatio_;
-        _gasUtilizationRatio = gasUtilizationRatio_;
-        _platformStakeRatio = platformStakeRatio_;
-        _maxSupplyHPoolToken = maxSupplyHPoolToken_;
-        _maxUSDAllocationPerTicket = maxUSDAllocationPerTicket_;
-        _totalSupplyHPoolTokens = totalSupplyHPoolTokens_;
+        _minChampStake = configValues[0];
+        _maxWarmupPeriod = configValues[1];
+        _maxFollowerOnboardPeriod = configValues[2];
+        _minFollowerUSDStake = configValues[3];
+        _maxFollowerUSDStake = configValues[4];
+        _minStakePerPoolTicket = configValues[5];
+        _assetUtilizationRatio = configValues[6];
+        _gasUtilizationRatio = configValues[7];
+        _platformStakeRatio = configValues[8];
+        _maxSupplyHPoolToken = configValues[9];
+        _maxUSDAllocationPerTicket = configValues[10];
+        _totalSupplyHPoolTokens = configValues[11];
+        _endTimeTicketSale = configValues[12];
+        _endTimePrivateSubscription = configValues[13];
+        _endTimePublicSubscription = configValues[14];
 
         _percentPrecision = 100;
     }
@@ -86,8 +77,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
     // Setter Functions
     // _minChampStake setter function
     function setMinChampStake(uint256 minChampStake_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _minChampStake = minChampStake_;
         emit ConfigurationChanged("_minChampStake", _minChampStake);
@@ -95,8 +86,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // _maxWarmupPeriod setter function
     function setMaxWarmupPeriod(uint256 maxWarmupPeriod_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _maxWarmupPeriod = maxWarmupPeriod_;
         emit ConfigurationChanged("_maxWarmupPeriod", _maxWarmupPeriod);
@@ -104,8 +95,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // _maxFollowerOnboardPeriod setter function
     function setMaxFollowerOnboardPeriod(uint256 maxFollowerOnboardPeriod_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _maxFollowerOnboardPeriod = maxFollowerOnboardPeriod_;
         emit ConfigurationChanged(
@@ -116,8 +107,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // _minFollowerUSDStake setter function
     function setMinFollowerUSDStake(uint256 minFollowerUSDStake_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _minFollowerUSDStake = minFollowerUSDStake_;
         emit ConfigurationChanged("_minFollowerUSDStake", _minFollowerUSDStake);
@@ -125,8 +116,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // _maxFollowerUSDStake setter function
     function setMaxFollowerUSDStake(uint256 maxFollowerUSDStake_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _maxFollowerUSDStake = maxFollowerUSDStake_;
         emit ConfigurationChanged("_maxFollowerUSDStake", _maxFollowerUSDStake);
@@ -134,8 +125,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // _minStakePerPoolTicket setter function
     function setMinStakePerPoolTicket(uint256 minStakePerPoolTicket_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _minStakePerPoolTicket = minStakePerPoolTicket_;
         emit ConfigurationChanged(
@@ -146,8 +137,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // _assetUtilizationRatio setter function
     function setAssetUtilizationRatio(uint256 assetUtilizationRatio_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _assetUtilizationRatio = assetUtilizationRatio_;
         emit ConfigurationChanged(
@@ -158,8 +149,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // _gasUtilizationRatio setter function
     function setGasUtilizationRatio(uint256 gasUtilizationRatio_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _gasUtilizationRatio = gasUtilizationRatio_;
         emit ConfigurationChanged("_gasUtilizationRatio", _gasUtilizationRatio);
@@ -167,8 +158,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // _platformStakeRatio setter function
     function setPlatformStakeRatio(uint256 platformStakeRatio_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _platformStakeRatio = platformStakeRatio_;
         emit ConfigurationChanged("_platformStakeRatio", _platformStakeRatio);
@@ -176,8 +167,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // Set percent precision
     function setPercentPrecision(uint256 percentPrecision_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _percentPrecision = percentPrecision_;
         emit ConfigurationChanged("_percentPrecision", _percentPrecision);
@@ -185,8 +176,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // _maxSupplyHPoolToken setter function
     function setMaxSupplyHPoolToken(uint256 maxSupplyHPoolToken_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _maxSupplyHPoolToken = maxSupplyHPoolToken_;
         emit ConfigurationChanged("_maxSupplyHPoolToken", _maxSupplyHPoolToken);
@@ -194,8 +185,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
 
     // set max usd allocation per ticket
     function setMaxUSDAllocationPerTicket(uint256 maxUSDAllocationPerTicket_)
-        external
-        onlyHordCongress
+    external
+    onlyHordCongress
     {
         _maxUSDAllocationPerTicket = maxUSDAllocationPerTicket_;
         emit ConfigurationChanged(
@@ -216,6 +207,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     // _endTimeTicketSale setter function
     function setEndTimeTicketSale(uint256 endTimeTicketSale_)
     external
+    onlyHordCongress
     {
         _endTimeTicketSale = endTimeTicketSale_;
         emit ConfigurationChanged("_endTimeTicketSale", _endTimeTicketSale);
@@ -224,6 +216,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     // _totalSupplyHPoolTokens setter function
     function setEndTimePrivateSubscription(uint256 endTimePrivateSubscription_)
     external
+    onlyHordCongress
     {
         _endTimePrivateSubscription = endTimePrivateSubscription_;
         emit ConfigurationChanged("_endTimePrivateSubscription", _endTimePrivateSubscription);
@@ -231,6 +224,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
     // _totalSupplyHPoolTokens setter function
     function setEndTimePublicSubscription(uint256 endTimePublicSubscription_)
     external
+    onlyHordCongress
     {
         _endTimePublicSubscription = endTimePublicSubscription_;
         emit ConfigurationChanged("_endTimePublicSubscription", _endTimePublicSubscription);
