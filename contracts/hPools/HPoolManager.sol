@@ -649,7 +649,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     view
     returns (uint256)
     {
-        return hp.numberOfTicketsUsed;
+        return hPools[poolId].numberOfTicketsUsed;
     }
 
     /**
