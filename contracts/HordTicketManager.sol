@@ -6,6 +6,7 @@ import "./interfaces/IHordTicketFactory.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155HolderUpgradeable.sol";
 import "./libraries/SafeMath.sol";
 
+
 /**
  * HordTicketManager contract.
  * @author Nikola Madjarevic
@@ -211,7 +212,7 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
     )
     public
     {
-        UserStake [] storage userStakesForNft = addressToTokenIdToStakes[msg.sender][tokenId];
+        UserStake[] storage userStakesForNft = addressToTokenIdToStakes[msg.sender][tokenId];
 
         uint256 totalStakeToWithdraw;
         uint256 ticketsToWithdraw;
@@ -291,7 +292,7 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
         bool[] memory
     )
     {
-        UserStake [] memory userStakes = addressToTokenIdToStakes[account][tokenId];
+        UserStake[] memory userStakes = addressToTokenIdToStakes[account][tokenId];
 
         uint numberOfStakes = userStakes.length;
 
@@ -324,7 +325,7 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
     view
     returns (uint256)
     {
-        UserStake [] memory userStakes = addressToTokenIdToStakes[account][tokenId];
+        UserStake[] memory userStakes = addressToTokenIdToStakes[account][tokenId];
 
         uint numberOfStakes = userStakes.length;
         uint amountCurrentlyStaking = 0;

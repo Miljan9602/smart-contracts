@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155PausableUpgrade
 import "./system/HordUpgradable.sol";
 import "./interfaces/IHordTicketManager.sol";
 
+
 /**
  * HordTicketFactory contract.
  * @author Nikola Madjarevic

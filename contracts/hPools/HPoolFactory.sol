@@ -5,6 +5,7 @@ import "../system/HordUpgradable.sol";
 
 import "./HPool.sol";
 
+
 /**
  * HPoolFactory contract.
  * @author Nikola Madjarevic

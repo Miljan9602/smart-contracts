@@ -3,6 +3,7 @@ pragma solidity 0.6.12;
 import "./system/HordUpgradable.sol";
 import "@openzeppelin/contracts/proxy/Initializable.sol";
 
+
 /**
  * HordConfiguration contract.
  * @author Nikola Madjarevic

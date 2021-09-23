@@ -1,6 +1,7 @@
 pragma solidity ^0.6.12;
 import "../libraries/SafeMath.sol";
 
+
 /**
  * HordCongressMembersRegistry contract.
  * @author Nikola Madjarevic

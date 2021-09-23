@@ -6,6 +6,7 @@ import "../interfaces/IHPoolManager.sol";
 import "./HPoolToken.sol";
 import "../libraries/SafeMath.sol";
 
+
 /**
  * HPool contract.
  * @author Nikola Madjarevic
