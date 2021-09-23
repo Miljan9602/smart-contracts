@@ -8,7 +8,7 @@ const hre = require("hardhat");
 
 
 let hordCongress, hordCongressAddress, accounts, owner, ownerAddr, alice, aliceAddress, bob, bobAddress, maintainer, maintainerAddr,
-    config,
+    config, maintainersRegistry,
     hordToken, keyToken, maintainersRegistryContract, hordTreasuryContract, tokenBalanceBefore, tokenBalanceAfter,
     etherBalanceBefore, etherBalanceAfter;
 
@@ -61,9 +61,9 @@ async function setupContracts () {
     keyToken = keyToken.connect(owner)
 
 
-    const MaintainersRegistry = await ethers.getContractFactory('MaintainersRegistry')
-    const maintainersRegistry = await upgrades.deployProxy(MaintainersRegistry, [[maintainerAddr], hordCongressAddress]);
-    await maintainersRegistry.deployed()
+    const MaintainersRegistry = await ethers.getContractFactory("MaintainersRegistry");
+    maintainersRegistry = await MaintainersRegistry.deploy();
+    await maintainersRegistry.initialize([maintainerAddr], hordCongress.address);
     maintainersRegistryContract = maintainersRegistry.connect(owner);
 
 

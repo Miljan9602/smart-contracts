@@ -14,7 +14,6 @@ let hPoolManager, hPoolFactory, aggregatorV3;
 let etherAmount, bePoolId, weiValue, poolState, poolId = 0, hPool, nftTicketId, championId, tokenId, tx, tokensToClaim, endTicketSalePhase, endPrivateSubscriptionPhase, endPublicSubscriptionSalePhase;
 let subscribedAddresses, tokenName, tokenSymbol, checkDecimals, transferAmount, contractAddress, currAllowance;
 
-const uniswapAddr = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 const zeroValue = 0;
 
 async function setupContractAndAccounts () {
@@ -52,9 +51,9 @@ async function setupContractAndAccounts () {
     await hordToken.deployed()
     hordToken = hordToken.connect(owner)
 
-    const MaintainersRegistry = await ethers.getContractFactory('MaintainersRegistry')
-    maintainersRegistry = await upgrades.deployProxy(MaintainersRegistry, [[maintainerAddr], hordCongressAddr]);
-    await maintainersRegistry.deployed()
+    const MaintainersRegistry = await ethers.getContractFactory("MaintainersRegistry");
+    maintainersRegistry = await MaintainersRegistry.deploy();
+    await maintainersRegistry.initialize([maintainerAddr], hordCongressAddr);
 
     const HordTicketManager = await ethers.getContractFactory('HordTicketManager');
     hordTicketManager = await upgrades.deployProxy(HordTicketManager, [
