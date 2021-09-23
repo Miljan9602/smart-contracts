@@ -51,9 +51,9 @@ async function setupContractAndAccounts () {
     await hordToken.deployed()
     hordToken = hordToken.connect(owner)
 
-    const MaintainersRegistry = await ethers.getContractFactory("MaintainersRegistry");
-    maintainersRegistry = await MaintainersRegistry.deploy();
-    await maintainersRegistry.initialize([maintainerAddr], hordCongressAddr);
+    const MaintainersRegistry = await ethers.getContractFactory('MaintainersRegistry')
+    maintainersRegistry = await upgrades.deployProxy(MaintainersRegistry, [[maintainerAddr], hordCongressAddr]);
+    await maintainersRegistry.deployed()
 
     const HordTicketManager = await ethers.getContractFactory('HordTicketManager');
     hordTicketManager = await upgrades.deployProxy(HordTicketManager, [

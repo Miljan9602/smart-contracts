@@ -20,9 +20,9 @@ async function setupContractAndAccounts () {
     maintainer = accounts[8]
     maintainerAddr = await maintainer.getAddress()
 
-    const MaintainersRegistry = await ethers.getContractFactory("MaintainersRegistry");
-    maintainersRegistry = await MaintainersRegistry.deploy();
-    await maintainersRegistry.initialize([maintainerAddr], hordCongressAddr);
+    const MaintainersRegistry = await ethers.getContractFactory('MaintainersRegistry')
+    maintainersRegistry = await upgrades.deployProxy(MaintainersRegistry, [[maintainerAddr], hordCongressAddr]);
+    await maintainersRegistry.deployed()
 
     const HordConfiguration = await ethers.getContractFactory('HordConfiguration')
     hordConfiguration = await upgrades.deployProxy(HordConfiguration, [
