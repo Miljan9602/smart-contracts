@@ -12,9 +12,8 @@ async function main() {
 
     const HordConfiguration = await hre.ethers.getContractFactory('HordConfiguration');
     const hordConfiguration = await upgrades.deployProxy(HordConfiguration, [
-        contracts["HordCongress"],
-        contractProxies["MaintainersRegistry"],
-        toHordDenomination(config.minChampStake),
+        [contracts["HordCongress"], contractProxies["MaintainersRegistry"]],
+        [toHordDenomination(config.minChampStake),
         config.maxWarmupPeriod,
         config.maxFollowerOnboardPeriod,
         toHordDenomination(config.minFollowerEthStake),
@@ -25,7 +24,10 @@ async function main() {
         config.platformStakeRatio,
         toHordDenomination(config.maxSupplyHPoolToken),
         toHordDenomination(config.maxUSDAllocationPerTicket),
-        toHordDenomination(config.totalSupplyHPoolTokens)
+        toHordDenomination(config.totalSupplyHPoolTokens),
+        config.endTimeTicketSale,
+        config.endTimePrivateSubscription,
+        config.endTimePublicSubscription]
     ]);
     await hordConfiguration.deployed();
     console.log('HordConfiguration Proxy is deployed to: ', hordConfiguration.address);
