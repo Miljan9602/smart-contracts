@@ -358,6 +358,30 @@
                 "type": "function"
             },
             {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "isTicketWithdrawn",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
                 "inputs": [],
                 "name": "maintainersRegistry",
                 "outputs": [
@@ -1275,11 +1299,6 @@
                         "internalType": "address",
                         "name": "_hordPoolManager",
                         "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "_uniswapRouter",
-                        "type": "address"
                     }
                 ],
                 "stateMutability": "nonpayable",
@@ -1603,25 +1622,6 @@
                 "type": "function"
             },
             {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "hPoolTokensHolders",
-                "outputs": [
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
                 "inputs": [],
                 "name": "hordCongress",
                 "outputs": [
@@ -1870,19 +1870,6 @@
                     }
                 ],
                 "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "uniswapRouter",
-                "outputs": [
-                    {
-                        "internalType": "contract IUniswapV2Router01",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
                 "type": "function"
             }
         ],
@@ -2183,19 +2170,6 @@
             },
             {
                 "inputs": [],
-                "name": "getLinkOracle",
-                "outputs": [
-                    {
-                        "internalType": "contract AggregatorV3Interface",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
                 "name": "getMaxSubscriptionInETHPerTicket",
                 "outputs": [
                     {
@@ -2247,6 +2221,25 @@
             {
                 "inputs": [],
                 "name": "getMinimalETHToInitPool",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "poolId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "getNumberOfTicketsUsed",
                 "outputs": [
                     {
                         "internalType": "uint256",
@@ -2375,6 +2368,16 @@
                         "internalType": "uint256",
                         "name": "poolId",
                         "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "startIndex",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "endIndex",
+                        "type": "uint256"
                     }
                 ],
                 "name": "getSubscribedAddresses",
@@ -2383,25 +2386,6 @@
                         "internalType": "address[]",
                         "name": "",
                         "type": "address[]"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "poolId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "getUsedTickets",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
                     }
                 ],
                 "stateMutability": "view",
@@ -2484,6 +2468,11 @@
                     {
                         "internalType": "uint256",
                         "name": "nftTicketId",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "numberOfTicketsUsed",
                         "type": "uint256"
                     },
                     {
@@ -2718,19 +2707,6 @@
                 "inputs": [
                     {
                         "internalType": "address",
-                        "name": "_linkOracle",
-                        "type": "address"
-                    }
-                ],
-                "name": "setLinkOracle",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
                         "name": "_maintainersRegistry",
                         "type": "address"
                     }
@@ -2931,74 +2907,14 @@
             {
                 "inputs": [
                     {
-                        "internalType": "address",
-                        "name": "hordCongress_",
-                        "type": "address"
+                        "internalType": "address[]",
+                        "name": "addreses",
+                        "type": "address[]"
                     },
                     {
-                        "internalType": "address",
-                        "name": "maintainersRegistry_",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "minChampStake_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "maxWarmupPeriod_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "maxFollowerOnboardPeriod_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "minFollowerUSDStake_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "maxFollowerUSDStake_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "minStakePerPoolTicket_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "assetUtilizationRatio_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "gasUtilizationRatio_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "platformStakeRatio_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "maxSupplyHPoolToken_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "maxUSDAllocationPerTicket_",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "totalSupplyHPoolTokens_",
-                        "type": "uint256"
+                        "internalType": "uint256[]",
+                        "name": "configValues",
+                        "type": "uint256[]"
                     }
                 ],
                 "name": "initialize",
@@ -3546,19 +3462,6 @@
                     }
                 ],
                 "name": "setMaintainersRegistry",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "_uniswapRouter",
-                        "type": "address"
-                    }
-                ],
-                "name": "setUniswapRouter",
                 "outputs": [],
                 "stateMutability": "nonpayable",
                 "type": "function"
