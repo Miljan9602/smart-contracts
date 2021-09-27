@@ -52,40 +52,41 @@ async function setupContractAndAccounts () {
     hordToken = hordToken.connect(owner)
 
     const MaintainersRegistry = await ethers.getContractFactory('MaintainersRegistry')
-    maintainersRegistry = await upgrades.deployProxy(MaintainersRegistry, [[maintainerAddr], hordCongressAddr]);
+    maintainersRegistry = await MaintainersRegistry.deploy();
     await maintainersRegistry.deployed()
+    await maintainersRegistry.initialize([maintainerAddr], hordCongressAddr);
 
     const HordTicketManager = await ethers.getContractFactory('HordTicketManager');
-    hordTicketManager = await upgrades.deployProxy(HordTicketManager, [
-            hordCongressAddr,
-            maintainersRegistry.address,
-            hordToken.address,
-            config['minTimeToStake'],
-            toHordDenomination(config['minAmountToStake'])
-        ]
-    );
+    hordTicketManager = await HordTicketManager.deploy();
     await hordTicketManager.deployed()
+    await hordTicketManager.initialize(
+        hordCongressAddr,
+        maintainersRegistry.address,
+        hordToken.address,
+        config['minTimeToStake'],
+        toHordDenomination(config['minAmountToStake'])
+    );
 
     const HordTicketFactory = await ethers.getContractFactory('HordTicketFactory')
-    hordTicketFactory = await upgrades.deployProxy(HordTicketFactory, [
-            hordCongressAddr,
-            maintainersRegistry.address,
-            hordTicketManager.address,
-            config["maxFungibleTicketsPerPool"],
-            config["uri"],
-            config["contractMetadataUri"]
-        ]
-    );
+    hordTicketFactory = await HordTicketFactory.deploy();
     await hordTicketFactory.deployed()
-
     await hordTicketManager.setHordTicketFactory(hordTicketFactory.address);
+    await hordTicketFactory.initialize(
+        hordCongressAddr,
+        maintainersRegistry.address,
+        hordTicketManager.address,
+        config["maxFungibleTicketsPerPool"],
+        config["uri"],
+        config["contractMetadataUri"]
+    );
 
     const HordTreasury = await ethers.getContractFactory('HordTreasury');
-    hordTreasury = await upgrades.deployProxy(HordTreasury, [
+    hordTreasury = await HordTreasury.deploy();
+    await hordTreasury.deployed()
+    await hordTreasury.initialize(
         hordCongressAddr,
         maintainersRegistry.address
-    ]);
-    await hordTreasury.deployed()
+    );
 
     const AggregatorV3 = await ethers.getContractFactory("MockAggregatorV3Interface");
     const aggregator = await AggregatorV3.deploy();
@@ -94,9 +95,11 @@ async function setupContractAndAccounts () {
     aggregatorV3 = aggregator.connect(owner);
 
     const HordConfiguration = await ethers.getContractFactory('HordConfiguration')
-    hordConfiguration = await upgrades.deployProxy(HordConfiguration, [
-            [hordCongressAddr, maintainersRegistry.address],
-            [config["minChampStake"],
+    hordConfiguration = await HordConfiguration.deploy();
+    await hordConfiguration.deployed()
+    await hordConfiguration.initialize(
+        [hordCongressAddr, maintainersRegistry.address],
+        [config["minChampStake"],
             config["maxWarmupPeriod"],
             config["maxFollowerOnboardPeriod"],
             config["minFollowerEthStake"],
@@ -110,19 +113,17 @@ async function setupContractAndAccounts () {
             config["totalSupplyHPoolTokens"],
             config["endTimeTicketSale"],
             config["endTimePrivateSubscription"],
-            config["endTimePublicSubscription"]]
+            config["endTimePublicSubscription"]
         ]
     );
-    await hordConfiguration.deployed()
 
     const HPoolFactory = await ethers.getContractFactory('HPoolFactory')
-    hPoolFactory = await upgrades.deployProxy(HPoolFactory, [
-            hordCongressAddr,
-            maintainersRegistry.address
-        ]
-    );
-
+    hPoolFactory = await HPoolFactory.deploy();
     await hPoolFactory.deployed()
+    await hPoolFactory.initialize(
+        hordCongressAddr,
+        maintainersRegistry.address
+    );
 
     const HPoolManager = await ethers.getContractFactory('HPoolManager');
     hPoolManager = await HPoolManager.deploy();

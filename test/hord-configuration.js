@@ -21,31 +21,34 @@ async function setupContractAndAccounts () {
     maintainerAddr = await maintainer.getAddress()
 
     const MaintainersRegistry = await ethers.getContractFactory('MaintainersRegistry')
-    maintainersRegistry = await upgrades.deployProxy(MaintainersRegistry, [[maintainerAddr], hordCongressAddr]);
-    await maintainersRegistry.deployed()
-
-    const HordConfiguration = await ethers.getContractFactory('HordConfiguration')
-    hordConfiguration = await upgrades.deployProxy(HordConfiguration, [
-                [hordCongressAddr, maintainersRegistry.address],
-                [config["minChampStake"],
-                config["maxWarmupPeriod"],
-                config["maxFollowerOnboardPeriod"],
-                config["minFollowerEthStake"],
-                config["maxFollowerEthStake"],
-                config["minStakePerPoolTicket"],
-                config["assetUtilizationRatio"],
-                config["gasUtilizationRatio"],
-                config["platformStakeRatio"],
-                config["maxSupplyHPoolToken"],
-                config["maxUSDAllocationPerTicket"],
-                config["totalSupplyHPoolTokens"],
-                config["endTimeTicketSale"],
-                config["endTimePrivateSubscription"],
-                config["endTimePublicSubscription"]]
-        ]
+    maintainersRegistry = await MaintainersRegistry.deploy();
+    await maintainersRegistry.deployed();
+    await maintainersRegistry.initialize(
+        [maintainerAddr],
+        hordCongressAddr
     );
 
-    await hordConfiguration.deployed()
+    const HordConfiguration = await ethers.getContractFactory('HordConfiguration')
+    hordConfiguration = await HordConfiguration.deploy();
+    await hordConfiguration.deployed();
+    await hordConfiguration.initialize(
+        [hordCongressAddr, maintainersRegistry.address],
+        [config["minChampStake"],
+            config["maxWarmupPeriod"],
+            config["maxFollowerOnboardPeriod"],
+            config["minFollowerEthStake"],
+            config["maxFollowerEthStake"],
+            config["minStakePerPoolTicket"],
+            config["assetUtilizationRatio"],
+            config["gasUtilizationRatio"],
+            config["platformStakeRatio"],
+            config["maxSupplyHPoolToken"],
+            config["maxUSDAllocationPerTicket"],
+            config["totalSupplyHPoolTokens"],
+            config["endTimeTicketSale"],
+            config["endTimePrivateSubscription"],
+            config["endTimePublicSubscription"]]
+    );
 }
 
 describe('HordConfiguration', async() => {

@@ -13,7 +13,7 @@ const maxTickets = 100;
 const minTickets = 0;
 
 let hordCongress, hordCongressAddress, accounts, owner, ownerAddr, maintainer, maintainerAddr,
-    user, userAddress, config,
+    user, userAddress, config, hordTicketManager, hordTicketFactory,
     hordToken, maintainersRegistryContract, ticketFactoryContract, ticketManagerContract,
     championId, supplyToMint, tx, tokenId, lastAddedId, ticketsToBuy, reservedTickets,
     hordBalance, ticketsBalance, amountStaked, ticketFactory, factoryAddress, supplyToAdd, index, maintainersRegistry;
@@ -49,39 +49,43 @@ async function setupContracts () {
         ownerAddr
     );
     await hordToken.deployed()
-
     hordToken = hordToken.connect(owner)
 
-
     const MaintainersRegistry = await ethers.getContractFactory('MaintainersRegistry')
-    maintainersRegistry = await upgrades.deployProxy(MaintainersRegistry, [[maintainerAddr], hordCongressAddress]);
-    await maintainersRegistry.deployed()
+    maintainersRegistry = await MaintainersRegistry.deploy();
+    await maintainersRegistry.deployed();
+    await maintainersRegistry.initialize(
+        [maintainerAddr],
+        hordCongressAddress
+    );
+
     maintainersRegistryContract = maintainersRegistry.connect(owner);
 
 
     const HordTicketManager = await ethers.getContractFactory('HordTicketManager');
-    hordTicketManager = await upgrades.deployProxy(HordTicketManager, [
-            hordCongressAddress,
-            maintainersRegistry.address,
-            hordToken.address,
-            config['minTimeToStake'],
-            toHordDenomination(config['minAmountToStake'])
-        ]
+    hordTicketManager = await HordTicketManager.deploy();
+    await hordTicketManager.deployed();
+    await hordTicketManager.initialize(
+        hordCongressAddress,
+        maintainersRegistry.address,
+        hordToken.address,
+        config['minTimeToStake'],
+        toHordDenomination(config['minAmountToStake'])
     );
-    await hordTicketManager.deployed()
+
     ticketManagerContract = hordTicketManager.connect(owner);
 
     const HordTicketFactory = await ethers.getContractFactory('HordTicketFactory')
-    hordTicketFactory = await upgrades.deployProxy(HordTicketFactory, [
-            hordCongressAddress,
-            maintainersRegistry.address,
-            hordTicketManager.address,
-            config["maxFungibleTicketsPerPool"],
-            config["uri"],
-            config["contractMetadataUri"]
-        ]
+    hordTicketFactory = await HordTicketFactory.deploy();
+    await hordTicketFactory.deployed();
+    await hordTicketFactory.initialize(
+        hordCongressAddress,
+        maintainersRegistry.address,
+        hordTicketManager.address,
+        config["maxFungibleTicketsPerPool"],
+        config["uri"],
+        config["contractMetadataUri"]
     );
-    await hordTicketFactory.deployed()
 
     ticketFactoryContract = hordTicketFactory.connect(maintainer);
 
