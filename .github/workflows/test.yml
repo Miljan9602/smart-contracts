@@ -21,6 +21,6 @@ jobs:
       - name: Install dependencies
         run: yarn install
       - name: Run node
-        run: npx hardhat node
+        run: npx hardhat node &
       - name: Run tests
         run: npx hardhat test
