@@ -1,6 +1,6 @@
 [![codecov](https://codecov.io/gh/hord/smart-contracts/branch/develop/graph/badge.svg?token=8f1gfxIpRK)](https://codecov.io/gh/hord/smart-contracts)
 [![Mythx](https://github.com/Hord/smart-contracts/actions/workflows/mythx.yml/badge.svg)](https://github.com/Hord/smart-contracts/actions/workflows/mythx.yml)
-
+[![Test](https://github.com/Hord/smart-contracts/actions/workflows/test.yml/badge.svg)](https://github.com/Hord/smart-contracts/actions/workflows/test.yml)
 ## Hord.app Smart Contracts
 
 <img src="./favicon.png" width="100" style="float: left;">
