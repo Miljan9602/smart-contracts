@@ -2370,35 +2370,6 @@
                         "type": "uint256"
                     },
                     {
-                        "internalType": "uint256",
-                        "name": "startIndex",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "endIndex",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "getSubscribedAddresses",
-                "outputs": [
-                    {
-                        "internalType": "address[]",
-                        "name": "",
-                        "type": "address[]"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "poolId",
-                        "type": "uint256"
-                    },
-                    {
                         "internalType": "address",
                         "name": "user",
                         "type": "address"
@@ -2581,6 +2552,25 @@
                         "internalType": "contract IMaintainersRegistry",
                         "name": "",
                         "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "numberOfSubscriptions",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
                     }
                 ],
                 "stateMutability": "view",

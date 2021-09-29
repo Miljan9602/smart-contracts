@@ -5,14 +5,14 @@
         "HordTicketFactory": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
     },
     "ropsten": {
-        "MaintainersRegistry": "0x7925d123ca04309f3378201D092319C4A345e3B2",
-        "HordTicketManager": "0xcCb97F7cF269287d8212fA2188bE5019080b900B",
-        "HordTicketFactory": "0xF10454a814e3c14f828E295B6820307d82617A71",
-        "ProxyAdmin": "0x728a44F64d30486003D14D46726fa16f323F2Ef5",
-        "HordTreasury": "0x17B0F380B899f96fBFC192eEeBC3D698A1D3a295",
-        "HordConfiguration": "0x29201D08E694F5320da10dbdD99B9AE6407Bd98f",
-        "HPoolFactory": "0x18261D3b1Fe985Cca2F08d8721647B32f96963b8",
-        "HPoolManager": "0x4f45192f1515dd55b44FbF819D524e879c2556B9"
+        "MaintainersRegistry": "0x502f63b3263B68CfFa7cE5C63b649b472DD09b9e",
+        "HordTicketManager": "0x5FB77B094A51fBfa1E0E3191C6a62DA4553C445a",
+        "HordTicketFactory": "0xdb8d8E5066Fdf3310C4D91353a72dDA4371De3Fe",
+        "ProxyAdmin": "0x3Ab23f13d252Cc5c0b54650B501D787196CbD2a1",
+        "HordTreasury": "0x7937e05a852aE265Ea13cf4895A061630fc5f24e",
+        "HordConfiguration": "0xCF19E3D25b4897ad753e763847F06CDd4710EE9d",
+        "HPoolFactory": "0x9679721abDAe57fef3f7b7226D98E5cb771D59d1",
+        "HPoolManager": "0x55f6b05873E27e175a3DeFfFa2A34A7a42D998D8"
     },
     "ropstenStaging": {
         "MaintainersRegistry": "0xAEE26e9af071a40F8AE83EDF5478810d5F1971a6",
