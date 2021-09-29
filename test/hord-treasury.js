@@ -62,17 +62,23 @@ async function setupContracts () {
 
 
     const MaintainersRegistry = await ethers.getContractFactory('MaintainersRegistry')
-    const maintainersRegistry = await upgrades.deployProxy(MaintainersRegistry, [[maintainerAddr], hordCongressAddress]);
+    const maintainersRegistry = await MaintainersRegistry.deploy();
     await maintainersRegistry.deployed()
+    await maintainersRegistry.initialize(
+        [maintainerAddr], hordCongressAddress
+    );
     maintainersRegistryContract = maintainersRegistry.connect(owner);
 
 
     const HordTreasury = await ethers.getContractFactory('HordTreasury');
-    const hordTreasury = await upgrades.deployProxy(HordTreasury, [
+    const hordTreasury = await HordTreasury.deploy();
+    await hordTreasury.deployed();
+
+    await hordTreasury.initialize(
         hordCongressAddress,
         maintainersRegistry.address
-    ]);
-    await hordTreasury.deployed()
+    );
+
     hordTreasuryContract = hordTreasury.connect(owner);
 
 }

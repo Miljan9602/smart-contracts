@@ -1,6 +1,7 @@
 [![codecov](https://codecov.io/gh/hord/smart-contracts/branch/develop/graph/badge.svg?token=8f1gfxIpRK)](https://codecov.io/gh/hord/smart-contracts)
-[![MythXBadge](https://badgen.net/https/api.mythx.io/v1/projects/9e90a63e-ce2e-4d90-b091-0923f4e89a98/badge/data?cache=300&icon=https://raw.githubusercontent.com/ConsenSys/mythx-github-badge/main/logo_white.svg)](https://docs.mythx.io/dashboard/github-badges)
-
+[![Mythx](https://github.com/Hord/smart-contracts/actions/workflows/mythx.yml/badge.svg)](https://github.com/Hord/smart-contracts/actions/workflows/mythx.yml)
+![Test](https://github.com/Hord/smart-contracts/actions/workflows/test.yml/badge.svg)
+![lint](https://github.com/Hord/smart-contracts/actions/workflows/lint.yml/badge.svg)
 ## Hord.app Smart Contracts
 
 <img src="./favicon.png" width="100" style="float: left;">
