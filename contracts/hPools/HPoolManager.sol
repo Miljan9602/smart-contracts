@@ -83,6 +83,8 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
     // All hPools
     hPool[] public hPools;
+    //Number of subscriptions on hPool
+    mapping(uint256 => uint256) public numberOfSubscriptions;
     // Map pool Id to all subscriptions
     mapping(uint256 => Subscription[]) internal poolIdToSubscriptions;
     // Map user address to pool id to his subscription for that pool
@@ -292,6 +294,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         // Store subscription
         poolIdToSubscriptions[poolId].push(s);
+        numberOfSubscriptions[poolId] = numberOfSubscriptions[poolId].add(1);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
         userToPoolIdsSubscribedFor[msg.sender].push(poolId);
         hp.numberOfTicketsUsed = hp.numberOfTicketsUsed.add(numberOfTicketsToUse);
@@ -347,6 +350,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         // Store subscription
         poolIdToSubscriptions[poolId].push(s);
+        numberOfSubscriptions[poolId] = numberOfSubscriptions[poolId].add(1);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
         userToPoolIdsSubscribedFor[msg.sender].push(poolId);
 
@@ -613,25 +617,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         }
 
         return amountOfTicketsToUse;
-    }
-
-    /**
-     * @notice          Function to get all subscribed addresses on one hPool
-     */
-    function getSubscribedAddresses(uint256 poolId, uint256 startIndex, uint256 endIndex)
-    external
-    view
-    returns (address[] memory)
-    {
-        address[] memory subscribedAddresses = new address[](endIndex - startIndex);
-        uint256 counter;
-
-        for (uint256 i = startIndex; i < endIndex; i++) {
-            subscribedAddresses[counter] = poolIdToSubscriptions[poolId][i].user;
-            counter++;
-        }
-
-        return subscribedAddresses;
     }
 
     function getNumberOfTicketsUsed(uint256 poolId)
