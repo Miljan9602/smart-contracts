@@ -29,17 +29,22 @@ async function main() {
     const proxies = getSavedContractProxies()[hre.network.name];
 
     const contractsToPush = [];
+    const payload = [];
+
     // Implementations
     Object.keys(contracts).forEach(name => {
         contractsToPush.push({
             name: toCamel(name),
             address: contracts[name]
         })
+        payload.push({
+            "network_id": hre.network.config.chainId.toString(),
+            "address": contracts[name],
+            "display_name": name
+        })
     });
 
     await hre.tenderly.push(...contractsToPush)
-
-    const payload = [];
 
     Object.keys(proxies).forEach(name => {
         payload.push({
