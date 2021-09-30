@@ -9,10 +9,8 @@ pragma experimental ABIEncoderV2;
  */
 contract SignatureValidator {
     uint256 constant chainId = 3;
-    //    enum TradeType {MarketOrderLaunch, MarketOrder, StopLoss, BuyLimit, TakeProfit}
 
     struct TradeOrder {
-        //        TradeType type;
         address srcToken;
         address dstToken;
         uint256 ratioFromPool;
@@ -26,11 +24,6 @@ contract SignatureValidator {
 
     string public constant TRADE_ORDER_TYPE =
         "TradeOrder(address srcToken,address dstToken,uint256 ratioFromPool,uint256 amountSrc,uint256 minReceivedDst,uint256 validUntil)";
-
-    // type hashes. Hash of the following strings:
-    // 1. EIP712 Domain separator.
-    // 2. string describing identity type
-    // 3. string describing message type (enclosed identity type description included in the string)
 
     bytes32 public constant EIP712_DOMAIN_TYPEHASH =
         keccak256(abi.encodePacked(EIP712_DOMAIN));
