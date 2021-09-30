@@ -52,6 +52,33 @@ contract SignatureValidator {
         );
     }
 
+    function recoverSigner(
+        address srcToken,
+        address dstToken,
+        uint256 ratioFromPool,
+        uint256 amountSrc,
+        uint256 minReceivedDst,
+        uint256 validUntil,
+        bytes32 sigV,
+        bytes32 sigR,
+        uint8 sigS
+    ) external view returns (address) {
+        // Build tradeOrder structure based on the params
+        TradeOrder memory tradeOrder = TradeOrder(
+            srcToken,
+            dstToken,
+            ratioFromPool,
+            amountSrc,
+            minReceivedDst,
+            validUntil
+        );
+
+        // Compute hash
+        bytes32 hash = hashTradeOrder(tradeOrder);
+        // Verify who signed the message
+        return recoverSignature(tradeOrder, sigV, sigR, sigS);
+    }
+
     // functions to generate hash representation of the struct objects
     function hashTradeOrder(TradeOrder memory tradeOrder)
         public
@@ -83,7 +110,7 @@ contract SignatureValidator {
         bytes32 sigR,
         bytes32 sigS,
         uint8 sigV
-    ) external view returns (address) {
+    ) internal view returns (address) {
         return ecrecover(hashTradeOrder(_msg), sigV, sigR, sigS);
     }
 }
