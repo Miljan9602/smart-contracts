@@ -15,15 +15,15 @@ import "./interfaces/IHordTicketManager.sol";
 contract HordTicketFactory is HordUpgradable, ERC1155PausableUpgradeable {
 
     // Store contract uri
-    string contractLevelURI;
+    string private contractLevelURI;
     // Store always last ID minted
     uint256 public lastMintedTokenId;
     // Maximal number of fungible tickets per Pool
     uint256 public maxFungibleTicketsPerPool;
     // Maximal number of fungible tickets per Pool
-    mapping (uint256 => uint256) tokenIdToMaxFungibleTicketsPerPool;
+    mapping (uint256 => uint256) private tokenIdToMaxFungibleTicketsPerPool;
     // Mapping token ID to minted supply
-    mapping (uint256 => uint256) tokenIdToMintedSupply;
+    mapping (uint256 => uint256) private tokenIdToMintedSupply;
 
     // Manager contract handling tickets
     IHordTicketManager public hordTicketManager;
@@ -118,7 +118,7 @@ contract HordTicketFactory is HordUpgradable, ERC1155PausableUpgradeable {
     external
     onlyHordCongress
     {
-        require(_maxFungibleTicketsPerPool > 0);
+        require(_maxFungibleTicketsPerPool > 0, "Value must be higher than 0.");
         maxFungibleTicketsPerPool = _maxFungibleTicketsPerPool;
     }
 

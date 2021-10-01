@@ -98,8 +98,8 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
     function setMinTimeToStake(
         uint256 _minimalTimeToStake
     )
-    onlyHordCongress
     external
+    onlyHordCongress
     {
         minTimeToStake = _minimalTimeToStake;
     }
@@ -112,8 +112,8 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
     function setMinAmountToStake(
         uint256 _minimalAmountToStake
     )
-    onlyHordCongress
     external
+    onlyHordCongress
     {
         minAmountToStake = _minimalAmountToStake;
     }
