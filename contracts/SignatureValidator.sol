@@ -103,7 +103,7 @@ contract SignatureValidator {
 //        return recoverSignature(tradeOrder, sigV, sigR, sigS);
 //    }
 
-    // functions to generate hash representation of the struct objects
+    // functions to generate hash representation of the BuyOrderRatio struct
     function hashBuyOrderRatio(BuyOrderRatio memory buyOrderRatio)
         internal
         view
@@ -136,6 +136,118 @@ contract SignatureValidator {
     returns (address)
     {
         return ecrecover(hashBuyOrderRatio(_msg), sigV, sigR, sigS);
+    }
+
+    // functions to generate hash representation of the TradeOrder struct
+    function hashTradeOrder(TradeOrder memory tradeOrder)
+    internal
+    view
+    returns (bytes32)
+    {
+        return
+        keccak256(
+            abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(
+                    abi.encode(
+                        TRADE_ORDER_TYPEHASH,
+                        tradeOrder.srcToken,
+                        tradeOrder.dstToken,
+                        tradeOrder.amountSrc
+                    )
+                )
+            )
+        );
+    }
+
+    function recoverSignatureTradeOrder(
+        TradeOrder memory _msg,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint8 sigV
+    )
+    internal
+    view
+    returns (address)
+    {
+        return ecrecover(hashTradeOrder(_msg), sigV, sigR, sigS);
+    }
+
+    // functions to generate hash representation of the SellLimit struct
+    function hashSellLimit(SellLimit memory sellLimit)
+    internal
+    view
+    returns (bytes32)
+    {
+        return
+        keccak256(
+            abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(
+                    abi.encode(
+                        SELL_LIMIT_TYPEHASH,
+                        sellLimit.srcToken,
+                        sellLimit.dstToken,
+                        sellLimit.priceUSD,
+                        sellLimit.amountSrc,
+                        sellLimit.validUntil
+                    )
+                )
+            )
+        );
+    }
+
+    function recoverSignatureSellLimit(
+        SellLimit memory _msg,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint8 sigV
+    )
+    internal
+    view
+    returns (address)
+    {
+        return ecrecover(hashSellLimit(_msg), sigV, sigR, sigS);
+    }
+
+    // functions to generate hash representation of the BuyLimit struct
+    function hashBuyLimit(BuyLimit memory buyLimit)
+    internal
+    view
+    returns (bytes32)
+    {
+        return
+        keccak256(
+            abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(
+                    abi.encode(
+                        BUY_LIMIT_TYPEHASH,
+                        buyLimit.srcToken,
+                        buyLimit.dstToken,
+                        buyLimit.priceUSD,
+                        buyLimit.amountUSD,
+                        buyLimit.validUntil
+                    )
+                )
+            )
+        );
+    }
+
+    function recoverSignatureBuyLimit(
+        BuyLimit memory _msg,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint8 sigV
+    )
+    internal
+    view
+    returns (address)
+    {
+        return ecrecover(hashBuyLimit(_msg), sigV, sigR, sigS);
     }
 
 }
