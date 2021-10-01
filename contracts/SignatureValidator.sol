@@ -8,27 +8,53 @@ pragma experimental ABIEncoderV2;
  * Github: madjarevicn
  */
 contract SignatureValidator {
+
     uint256 constant chainId = 3;
+
+    struct BuyOrderRatio {
+        address dstToken;
+        uint256 ratio;
+    }
 
     struct TradeOrder {
         address srcToken;
         address dstToken;
-        uint256 ratioFromPool;
         uint256 amountSrc;
-        uint256 minReceivedDst;
+    }
+
+    struct SellLimit{
+        address srcToken;
+        address dstToken;
+        uint256 priceUSD;
+        uint256 amountSrc;
         uint256 validUntil;
     }
 
+    struct BuyLimit{
+        address srcToken;
+        address dstToken;
+        uint256 priceUSD;
+        uint256 amountUSD;
+        uint256 validUntil;
+    }
+
+
     string public constant EIP712_DOMAIN =
         "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
+    string public constant BUY_ORDER_RATIO_TYPE = "BuyOrderRatio(address dstToken,uint256 ratio)";
+    string public constant TRADE_ORDER_TYPE = "TradeOrder(address srcToken,address dstToken,uint256 amountSrc)";
+    string public constant SELL_LIMIT_TYPE =
+        "SellLimit(address srcToken,address dstToken,uint256 priceUSD,uint256 amountSrc,uint256 validUntil)";
+    string public constant BUY_LIMIT_TYPE =
+        "BuyLimit(address srcToken,address dstToken,uint256 priceUSD,uint256 amountUSD,uint256 validUntil)";
 
-    string public constant TRADE_ORDER_TYPE =
-        "TradeOrder(address srcToken,address dstToken,uint256 ratioFromPool,uint256 amountSrc,uint256 minReceivedDst,uint256 validUntil)";
 
-    bytes32 public constant EIP712_DOMAIN_TYPEHASH =
-        keccak256(abi.encodePacked(EIP712_DOMAIN));
-    bytes32 public constant TRADE_ORDER_TYPEHASH =
-        keccak256(abi.encodePacked(TRADE_ORDER_TYPE));
+    // Compute typehashes
+    bytes32 public constant EIP712_DOMAIN_TYPEHASH = keccak256(abi.encodePacked(EIP712_DOMAIN));
+    bytes32 public constant BUY_ORDER_RATIO_TYPEHASH = keccak256(abi.encodePacked(BUY_ORDER_RATIO_TYPE));
+    bytes32 public constant TRADE_ORDER_TYPEHASH = keccak256(abi.encodePacked(TRADE_ORDER_TYPE));
+    bytes32 public constant SELL_LIMIT_TYPEHASH = keccak256(abi.encodePacked(SELL_LIMIT_TYPE));
+    bytes32 public constant BUY_LIMIT_TYPEHASH = keccak256(abi.encodePacked(BUY_LIMIT_TYPE));
 
     bytes32 public DOMAIN_SEPARATOR;
 
@@ -52,36 +78,34 @@ contract SignatureValidator {
         );
     }
 
-    function recoverSigner(
-        address srcToken,
-        address dstToken,
-        uint256 ratioFromPool,
-        uint256 amountSrc,
-        uint256 minReceivedDst,
-        uint256 validUntil,
-        bytes32 sigV,
-        bytes32 sigR,
-        uint8 sigS
-    ) external view returns (address) {
-        // Build tradeOrder structure based on the params
-        TradeOrder memory tradeOrder = TradeOrder(
-            srcToken,
-            dstToken,
-            ratioFromPool,
-            amountSrc,
-            minReceivedDst,
-            validUntil
-        );
-
-        // Compute hash
-        bytes32 hash = hashTradeOrder(tradeOrder);
-        // Verify who signed the message
-        return recoverSignature(tradeOrder, sigV, sigR, sigS);
-    }
+//
+//    function recoverSigner(
+//        address srcToken,
+//        address dstToken,
+//        uint256 ratioFromPool,
+//        uint256 amountSrc,
+//        uint256 minReceivedDst,
+//        uint256 validUntil,
+//        bytes32 sigV,
+//        bytes32 sigR,
+//        uint8 sigS
+//    ) external view returns (address) {
+//        // Build tradeOrder structure based on the params
+//        TradeOrder memory tradeOrder = TradeOrder(
+//            srcToken,
+//            dstToken,
+//            ratioFromPool,
+//            amountSrc,
+//            minReceivedDst,
+//            validUntil
+//        );
+//        // Verify who signed the message
+//        return recoverSignature(tradeOrder, sigV, sigR, sigS);
+//    }
 
     // functions to generate hash representation of the struct objects
-    function hashTradeOrder(TradeOrder memory tradeOrder)
-        public
+    function hashBuyOrderRatio(BuyOrderRatio memory buyOrderRatio)
+        internal
         view
         returns (bytes32)
     {
@@ -92,25 +116,26 @@ contract SignatureValidator {
                     DOMAIN_SEPARATOR,
                     keccak256(
                         abi.encode(
-                            TRADE_ORDER_TYPEHASH,
-                            tradeOrder.srcToken,
-                            tradeOrder.dstToken,
-                            tradeOrder.ratioFromPool,
-                            tradeOrder.amountSrc,
-                            tradeOrder.minReceivedDst,
-                            tradeOrder.validUntil
+                            BUY_ORDER_RATIO_TYPEHASH,
+                            buyOrderRatio.dstToken,
+                            buyOrderRatio.ratio
                         )
                     )
                 )
             );
     }
 
-    function recoverSignature(
-        TradeOrder memory _msg,
+    function recoverSignatureBuyOrderRatio(
+        BuyOrderRatio memory _msg,
         bytes32 sigR,
         bytes32 sigS,
         uint8 sigV
-    ) internal view returns (address) {
-        return ecrecover(hashTradeOrder(_msg), sigV, sigR, sigS);
+    )
+    internal
+    view
+    returns (address)
+    {
+        return ecrecover(hashBuyOrderRatio(_msg), sigV, sigR, sigS);
     }
+
 }
