@@ -131,7 +131,7 @@ contract SignatureValidator {
         bytes32 sigS,
         uint8 sigV
     )
-    internal
+    external
     view
     returns (address)
     {
@@ -167,7 +167,7 @@ contract SignatureValidator {
         bytes32 sigS,
         uint8 sigV
     )
-    internal
+    external
     view
     returns (address)
     {
@@ -205,7 +205,7 @@ contract SignatureValidator {
         bytes32 sigS,
         uint8 sigV
     )
-    internal
+    external
     view
     returns (address)
     {
@@ -243,7 +243,7 @@ contract SignatureValidator {
         bytes32 sigS,
         uint8 sigV
     )
-    internal
+    external
     view
     returns (address)
     {
