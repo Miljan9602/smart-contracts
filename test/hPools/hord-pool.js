@@ -426,6 +426,11 @@ describe('hPools', async () => {
                 .to.be.revertedWith("User can not subscribe more than once.");
         });
 
+        it('should check return value in getNumberOfTicketsUsed function', async() => {
+            let numberOfTickets = 2;
+            expect(await hPoolManager.getNumberOfTicketsUsed(poolId))
+                .to.be.equal(numberOfTickets);
+        });
 
     });
 
@@ -773,7 +778,7 @@ describe('hPools', async () => {
                 .to.be.equal(checkValue);
         });
 
-        it('should check return values in getNumberOfTicketsUsed function', async() => {
+        it('should check return values in numberOfSubscriptions function', async() => {
             expect(await hPoolManager.numberOfSubscriptions(poolId))
                 .to.be.equal(numberOfSubscribers);
         });
