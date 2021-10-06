@@ -23,4 +23,5 @@ interface IHordConfiguration {
     function endTimeTicketSale() external view returns (uint256);
     function endTimePrivateSubscription() external view returns (uint256);
     function endTimePublicSubscription() external view returns (uint256);
+    function percentBurntFromPublicSubscription() external view returns (uint256);
 }

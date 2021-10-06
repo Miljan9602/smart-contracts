@@ -31,18 +31,20 @@ contract HordConfiguration is HordUpgradable, Initializable {
     uint256 private _platformStakeRatio;
     // Representing decimals precision for %, defaults to 100
     uint256 private _percentPrecision;
-    //
+    // Max supply for hPoolToken
     uint256 private _maxSupplyHPoolToken;
     // Representing maximal USD allocation per ticket
     uint256 private _maxUSDAllocationPerTicket;
-    //Total supply for HPoolToken
+    // Total supply for HPoolToken
     uint256 private _totalSupplyHPoolTokens;
-    //End time for TICKET_SALE phase
+    // End time for TICKET_SALE phase
     uint256 private _endTimeTicketSale;
-    //End time for PRIVATE_SUBSCRIPTION phase
+    // End time for PRIVATE_SUBSCRIPTION phase
     uint256 private _endTimePrivateSubscription;
-    //End time for PUBLIC_SUBSCRIPTION phase
+    // End time for PUBLIC_SUBSCRIPTION phase
     uint256 private _endTimePublicSubscription;
+    // Representing % of burnt hord tokens in public subscription phase
+    uint256 private _percentBurntFromPublicSubscription;
 
     event ConfigurationChanged(string parameter, uint256 newValue);
 
@@ -71,6 +73,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
         _endTimeTicketSale = configValues[12];
         _endTimePrivateSubscription = configValues[13];
         _endTimePublicSubscription = configValues[14];
+        _percentBurntFromPublicSubscription = configValues[15];
 
         _percentPrecision = 100;
     }
@@ -231,6 +234,15 @@ contract HordConfiguration is HordUpgradable, Initializable {
         emit ConfigurationChanged("_endTimePublicSubscription", _endTimePublicSubscription);
     }
 
+    //_percentBurntFromPublicSubscription
+    function setPercentBurntFromPublicSubscription(uint256 percentBurntFromPublicSubscription_)
+    external
+    onlyHordCongress
+    {
+        _percentBurntFromPublicSubscription = percentBurntFromPublicSubscription_;
+        emit ConfigurationChanged("_percentBurntFromPublicSubscription", _percentBurntFromPublicSubscription);
+    }
+
 
     // Getter Functions
     // _minChampStake getter function
@@ -311,6 +323,12 @@ contract HordConfiguration is HordUpgradable, Initializable {
     // _endTimePublicSubscription getter function
     function endTimePublicSubscription() external view returns (uint256) {
         return _endTimePublicSubscription;
+    }
+
+
+    // _percentBurntFromPublicSubscription getter function
+    function percentBurntFromPublicSubscription() external view returns (uint256) {
+        return _percentBurntFromPublicSubscription;
     }
 
 }
