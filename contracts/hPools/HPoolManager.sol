@@ -7,6 +7,7 @@ import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IHordTicketFactory.sol";
 import "../interfaces/IHordTreasury.sol";
 import "../interfaces/IHPoolFactory.sol";
+import "../interfaces/IERC20.sol";
 import "../interfaces/IHordConfiguration.sol";
 import "../interfaces/IHPool.sol";
 import "../system/HordUpgradable.sol";
@@ -341,6 +342,18 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
         require(s.amountEth == 0, "User can not subscribe more than once.");
 
+        uint256 amountToBurn = msg.value.mul(hordConfiguration.percentBurntFromPublicSubscription()).div(1000);
+
+        hordToken.transferFrom(
+            hordCongress,
+            msg.sender,
+            amountToBurn
+        );
+
+        hordToken.burn(
+            amountToBurn
+        );
+
         s.amountEth = msg.value;
         s.numberOfTickets = 0;
         s.user = msg.sender;
@@ -619,6 +632,10 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         return amountOfTicketsToUse;
     }
 
+    /**
+     * @notice          Function to get number of used tickets for the hPool.
+     * @param           poolId is the ID of the pool
+    */
     function getNumberOfTicketsUsed(uint256 poolId)
     external
     view
