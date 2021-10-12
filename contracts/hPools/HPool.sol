@@ -15,21 +15,26 @@ import "../libraries/SafeMath.sol";
  */
 contract HPool is HordUpgradable, HPoolToken {
 
+    //TODO: Compute initial worth of the pool at the launch time
+    //TODO: Compute gains with the ratio
     using SafeMath for uint256;
-    address private constant uniswapAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
     IHPoolManager public hPoolManager;
-    IUniswapV2Router01 private uniswapRouter;
+    IUniswapV2Router01 private uniswapRouter = IUniswapV2Router01(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
     uint256 public hPoolId;
     bool public isHPoolTokenMinted;
     mapping(address => bool) public didUserClaimHPoolTokens;
     mapping(address => uint256) public amountOfTokens;
 
+    // Array storing all assets bought on the smart-contract.
+    address [] public assets;
+
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
     event HPoolTokenMinted(string name, string symbol, uint256 totalSupply);
     event ClaimedHPoolTokens(address beneficiary, uint256 numberOfClaimedTokens);
+
 
     modifier onlyHPoolManager {
         require(msg.sender == address(hPoolManager), "Restricted only to HPoolManager.");
@@ -47,7 +52,6 @@ contract HPool is HordUpgradable, HPoolToken {
         setCongressAndMaintainers(_hordCongress, _hordMaintainersRegistry);
         hPoolId = _hPoolId;
         hPoolManager = IHPoolManager(_hordPoolManager);
-        uniswapRouter = IUniswapV2Router01(uniswapAddress);
     }
 
     function depositBudgetFollowers()
@@ -85,6 +89,7 @@ contract HPool is HordUpgradable, HPoolToken {
 
     function claimHPoolTokens()
     external
+    //TODO: add pausable()
     {
         require(!didUserClaimHPoolTokens[msg.sender], "Follower already withdraw tokens.");
 
@@ -174,6 +179,7 @@ contract HPool is HordUpgradable, HPoolToken {
         amountOfTokens[tokenB] = amountOfTokens[tokenB].add(amounts[2]);
     }
 
+
     function getNumberOfTokensUserCanClaim(address follower)
     public
     view
@@ -190,5 +196,53 @@ contract HPool is HordUpgradable, HPoolToken {
         uint256 tokensForClaiming = subscriptionETHUser.mul(totalSupply()).div(totalFollowerDeposit);
         return tokensForClaiming;
     }
+
+
+    //TODO: Based on assumption that number of assets inside HPool won't be more than X, so everything fits inside 1 tx
+    function liquidatePositionAndPullAssets()
+    public
+    {
+
+        // Compute how much HPool tokens user hold or has an option to claim
+        uint256 hPoolTokensAmount = balanceOf(msg.sender) != 0 ? balanceOf(msg.sender) : getNumberOfTokensUserCanClaim(msg.sender);
+
+        if(hPoolTokensAmount == 0) {
+            revert("User does not have any HPool tokens.");
+        }
+
+        // Compute share against all other hPool token holders
+        uint256 share = hPoolTokensAmount.mul(10**18).div(totalSupply());
+
+        /**
+         * total supply = minted - burned
+         * An example:
+         *  total suypply = 1000 tokens
+         * hPoolTokensAmount I have = 37
+         ==> share = 0,037
+         */
+
+        // Iterate through all assets and transfer them to user 1 by 1
+        for(uint i = 0; i < assets.length; i++) {
+            // Instantiate asset
+            IERC20 asset = IERC20(assets[i]);
+
+            // Compute balance of this asset inside HPool contract
+            uint256 balanceOfAsset = asset.balanceOf(address(this));
+
+            // Transfer asset to user
+            asset.transfer(msg.sender, balanceOfAsset.mul(share).div(10**18));
+        }
+
+        if(balanceOf(msg.sender)) {
+            // Burn users HPool Tokens
+            _burn(msg.sender, hPoolTokensAmount);
+        } else {
+            // Burn non-claimed HPool tokens by user
+            _burn(address(this), hPoolTokensAmount);
+            //TODO: Mark the tokens are claimed
+        }
+
+    }
+
 
 }
