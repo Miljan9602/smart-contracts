@@ -1,5 +1,6 @@
 //"SPDX-License-Identifier: UNLICENSED"
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155HolderUpgradeable.sol";
 
@@ -71,6 +72,13 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         uint256 treasuryFeePaid;
     }
 
+    struct PlatformFee {
+        uint256 feesCollected;
+        uint256 feesWithdrawn;
+    }
+
+    // Struct representing platform fee and it's withdrawal history
+    PlatformFee internal platformFee;
     // Instance of Hord Configuration contract
     IHordConfiguration internal hordConfiguration;
     // Instance of oracle
@@ -343,19 +351,12 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         require(s.amountEth == 0, "User can not subscribe more than once.");
 
         // TODO: Percent precision should be taken from configuration contract
-        uint256 amountToBurn = msg.value.mul(hordConfiguration.percentBurntFromPublicSubscription()).div(1000);
+        uint256 feeAmount = msg.value.mul(hordConfiguration.percentBurntFromPublicSubscription()).div(1000);
 
-//        hordToken.transferFrom(
-//            hordCongress,
-//            msg.sender,
-//            amountToBurn
-//        );
-//
-//        hordToken.burn(
-//            amountToBurn
-//        );
+        // Account platform fee
+        platformFee.feesCollected = platformFee.feesCollected.add(feeAmount);
 
-        s.amountEth = msg.value.sub(amountToBurn);
+        s.amountEth = msg.value.sub(feeAmount);
         s.numberOfTickets = 0;
         s.user = msg.sender;
         s.sr = SubscriptionRound.PUBLIC;
@@ -511,6 +512,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         s.numberOfTickets = 0;
     }
 
+    //TODO: Add function for Congress to withdraw platform fees, on withdrawal make sure amount <= collected-withdrawn and increase withdrawn for amount
     /**
      * @notice          Function to get minimal amount of ETH champion needs to
      *                  put in, in order to create hPool.
@@ -661,6 +663,15 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         ];
 
         return (subscription.amountEth, subscription.numberOfTickets);
+    }
+
+    //TODO: Annotation comments
+    function getPlatformFeeStats()
+    external
+    view
+    returns (PlatformFee memory)
+    {
+        return platformFee;
     }
 
     /**
