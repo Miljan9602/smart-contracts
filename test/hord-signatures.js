@@ -69,44 +69,20 @@ async function getSignature(message, primaryType, type) {
     // v = parseInt(signature.substring(128, 130), 16);
     // v = v < 27 ? v + 27 : v;
 
-    // const hexPrivateKey = "0xae78c8b502571dba876742437f8bc78b689cf8518356c0921393d89caaf284ce";
-    // const signingKey = new ethers.utils.SigningKey(hexPrivateKey);
-    // const digest = ethers.utils.id("message");
-    // signature = signingKey.signDigest(digest);
-    // const joinedSignature = ethers.utils.joinSignature(signature);
-    // recoveredAddress = ethers.utils.recoverAddress(digest, signature);
-    //
-    // r = signature.r;
-    // s = signature.s;
-    // v = signature.v;
-    //
-    // console.log(r);
-    // console.log(s);
-    // console.log(v);
+    const hexPrivateKey = "0xae78c8b502571dba876742437f8bc78b689cf8518356c0921393d89caaf284ce";
+    const signingKey = new ethers.utils.SigningKey(hexPrivateKey);
+    const digest = ethers.utils.id("message");
+    signature = signingKey.signDigest(digest);
+    const joinedSignature = ethers.utils.joinSignature(signature);
+    recoveredAddress = ethers.utils.recoverAddress(digest, signature);
 
+    r = signature.r;
+    s = signature.s;
+    v = signature.v;
 
-    let Example = require('/home/srdjan/Desktop/hord/smart-contracts/test/hord-signatures.js')
-
-    let Web3 = require('web3')
-    let web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
-
-    contract('Example', (accounts) => {
-        let address = accounts[0]
-
-        it('ecrecover result matches address', async function() {
-            let instance = await Example.deployed()
-            let msg = '0x8CbaC5e4d803bE2A3A5cd3DbE7174504c6DD0c1C'
-
-            let h = web3.sha3(msg)
-            let sig = web3.eth.sign(address, h).slice(2)
-            let r = `0x${sig.slice(0, 64)}`
-            let s = `0x${sig.slice(64, 128)}`
-            let v = web3.toDecimal(sig.slice(128, 130)) + 27
-
-            let result = await instance.testRecovery.call(h, v, r, s)
-            assert.equal(result, address)
-        })
-    })
+    console.log(r);
+    console.log(s);
+    console.log(v);
 
     // const pubKey = util.ecrecover(signature.v, signature.r, signature.s);
     // console.log(pubKey);

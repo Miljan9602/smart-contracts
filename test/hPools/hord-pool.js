@@ -113,7 +113,8 @@ async function setupContractAndAccounts () {
             config["totalSupplyHPoolTokens"],
             config["endTimeTicketSale"],
             config["endTimePrivateSubscription"],
-            config["endTimePublicSubscription"]
+            config["endTimePublicSubscription"],
+            config["percentBurntFromPublicSubscription"]
         ]
     );
 
@@ -484,7 +485,7 @@ describe('hPools', async () => {
             poolId = 0;
             hPool = await hPoolManager.hPools(poolId);
             amountBeofre = hPool.followersEthDeposit;
-            await hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: weiValue });
+            await hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: 100 });
             hPool = await hPoolManager.hPools(poolId);
             amountAfter = hPool.followersEthDeposit;
             resp = await amountBeofre.add(weiValue);

@@ -41,7 +41,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     }
 
     // Address for HORD token
-    address public hordToken;
+    IERC20 public hordToken;
     // Constant, representing 1ETH in WEI units.
     uint256 public constant one = 10e18;
 
@@ -153,7 +153,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hordTicketFactory = IHordTicketFactory(_hordTicketFactory);
         hordTreasury = IHordTreasury(_hordTreasury);
         hPoolFactory = IHPoolFactory(_hPoolFactory);
-        hordToken = _hordToken;
+        hordToken = IERC20(_hordToken);
 
         linkOracle = AggregatorV3Interface(_chainlinkOracle);
         hordConfiguration = IHordConfiguration(_hordConfiguration);
@@ -344,17 +344,17 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         uint256 amountToBurn = msg.value.mul(hordConfiguration.percentBurntFromPublicSubscription()).div(1000);
 
-        hordToken.transferFrom(
-            hordCongress,
-            msg.sender,
-            amountToBurn
-        );
+//        hordToken.transferFrom(
+//            hordCongress,
+//            msg.sender,
+//            amountToBurn
+//        );
+//
+//        hordToken.burn(
+//            amountToBurn
+//        );
 
-        hordToken.burn(
-            amountToBurn
-        );
-
-        s.amountEth = msg.value;
+        s.amountEth = msg.value.sub(amountToBurn);
         s.numberOfTickets = 0;
         s.user = msg.sender;
         s.sr = SubscriptionRound.PUBLIC;
