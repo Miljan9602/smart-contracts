@@ -342,6 +342,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
         require(s.amountEth == 0, "User can not subscribe more than once.");
 
+        // TODO: Percent precision should be taken from configuration contract
         uint256 amountToBurn = msg.value.mul(hordConfiguration.percentBurntFromPublicSubscription()).div(1000);
 
 //        hordToken.transferFrom(
