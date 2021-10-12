@@ -11,6 +11,8 @@ import "@openzeppelin/contracts/proxy/Initializable.sol";
  * Github: madjarevicn
  */
 contract HordConfiguration is HordUpgradable, Initializable {
+    //TODO: Make sure all values which are holding % are same precision
+    //TODO: Add variable which will be precision, same in configuration and use it on all places
     // Stating minimal champion stake in USD in order to launch pool
     uint256 private _minChampStake;
     // Maximal warmup period
