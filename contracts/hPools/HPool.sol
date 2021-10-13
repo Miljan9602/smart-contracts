@@ -103,19 +103,19 @@ contract HPool is HordUpgradable, HPoolToken {
 
     function swapExactTokensForEth(
         address token,
-        uint amountIn,
         uint amountOutMin,
         uint deadline
     )
     external
+    payable
     {
-        require(msg.sender.balance >= amountIn);
+        require(msg.value > 0, "Token amount is less than minimal amount.");
         address[] memory path = new address[](2);
         path[0] = token;
         path[1] = uniswapRouter.WETH();
 
         uint256[] memory amounts = uniswapRouter.swapExactTokensForETH(
-            amountIn,
+            msg.value,
             amountOutMin,
             path,
             msg.sender,
@@ -154,13 +154,13 @@ contract HPool is HordUpgradable, HPoolToken {
     function swapExactTokensForTokens(
         address tokenA,
         address tokenB,
-        uint amountIn,
         uint amountOutMin,
         uint deadline
     )
     external
+    payable
     {
-        require(msg.sender.balance >= amountIn);
+        require(msg.value > 0, "Token amount is less than minimal amount.");
         address[] memory path = new address[](2);
 
         path[0] = tokenA;
@@ -168,7 +168,7 @@ contract HPool is HordUpgradable, HPoolToken {
         path[2] = tokenB;
 
         uint256[] memory amounts = uniswapRouter.swapExactTokensForTokens(
-            amountIn,
+            msg.value,
             amountOutMin,
             path,
             msg.sender,
