@@ -78,31 +78,6 @@ contract SignatureValidator {
         );
     }
 
-//
-//    function recoverSigner(
-//        address srcToken,
-//        address dstToken,
-//        uint256 ratioFromPool,
-//        uint256 amountSrc,
-//        uint256 minReceivedDst,
-//        uint256 validUntil,
-//        bytes32 sigV,
-//        bytes32 sigR,
-//        uint8 sigS
-//    ) external view returns (address) {
-//        // Build tradeOrder structure based on the params
-//        TradeOrder memory tradeOrder = TradeOrder(
-//            srcToken,
-//            dstToken,
-//            ratioFromPool,
-//            amountSrc,
-//            minReceivedDst,
-//            validUntil
-//        );
-//        // Verify who signed the message
-//        return recoverSignature(tradeOrder, sigV, sigR, sigS);
-//    }
-
     // functions to generate hash representation of the BuyOrderRatio struct
     function hashBuyOrderRatio(BuyOrderRatio memory buyOrderRatio)
         internal

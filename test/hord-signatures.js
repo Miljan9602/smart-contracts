@@ -13,6 +13,17 @@ let signatureValidator;
 let recoveredAddress, signature;
 let r, s, v;
 
+const sendAsync = (payload) =>
+    new Promise((resolve, reject) => {
+        hre.web3.currentProvider.send(payload, (err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res.result);
+            }
+        });
+    });
+
 async function setupContractAndAccounts () {
     config = configuration[hre.network.name];
 
@@ -30,62 +41,62 @@ async function setupContractAndAccounts () {
 
 }
 
-async function getSignature(message, primaryType, type) {
+async function getSignature(contractAddress) {
+        const data = {
+            domain: {
+                chainId: 3,
+                // Give a user friendly name to the specific contract you are signing for.
+                name: 'TestApp1',
+                // If name isn't enough add verifying contract to make sure you are establishing contracts with the proper entity
+                verifyingContract: contractAddress.toString(),
+                // Just let's you know the latest version. Definitely make sure the field name is correct.
+                version: '1',
+            },
+            message: {
+                dstToken: '0xd74d196eccf1c5a5220efff4bb628a4ffd31d870',
+                ratio: '50'
+            },
+            primaryType: 'BuyOrderRatio',
+            types: {
+                EIP712Domain: [
+                    { name: 'name', type: 'string' },
+                    { name: 'version', type: 'string' },
+                    { name: 'chainId', type: 'uint256' },
+                    { name: 'verifyingContract', type: 'address' },
+                ],
+                BuyOrderRatio: [
+                    { name: 'dstToken', type: 'address' },
+                    { name: 'ratio', type: 'uint256' },
+                ],
+            },
+        };
 
-    // const data = {
-    //     domain: {
-    //         chainId: 3,
-    //         name: 'TestApp1',
-    //         verifyingContract: '',
-    //         version: '1',
-    //     },
-    //     message,
-    //     primaryType,
-    //     types: {
-    //         EIP712Domain: [
-    //             { name: 'name', type: 'string' },
-    //             { name: 'version', type: 'string' },
-    //             { name: 'chainId', type: 'uint256' },
-    //             { name: 'verifyingContract', type: 'address' },
-    //         ],
-    //         ...type,
-    //     },
-    // };
-    //
-    //
-    // const msgParams = JSON.stringify(data);
-    // const from = owner;
-    // const params = [from, msgParams];
-    // const method = 'eth_signTypedData_v4';
-    // const result = await sendAsync({
-    //     method,
-    //     params,
-    //     from,
-    // });
-    //
-    // signature = result.substring(2);
-    // r = `0x${signature.substring(0, 64)}`;
-    // s = `0x${signature.substring(64, 128)}`;
-    // v = parseInt(signature.substring(128, 130), 16);
-    // v = v < 27 ? v + 27 : v;
+        const msgParams = JSON.stringify(data);
+        const from = ownerAddr;
+        const params = [from, msgParams];
+        const method = 'eth_signTypedData_v4';
+        console.log(params);
 
-    const hexPrivateKey = "0xae78c8b502571dba876742437f8bc78b689cf8518356c0921393d89caaf284ce";
-    const signingKey = new ethers.utils.SigningKey(hexPrivateKey);
-    const digest = ethers.utils.id("message");
-    signature = signingKey.signDigest(digest);
-    const joinedSignature = ethers.utils.joinSignature(signature);
-    recoveredAddress = ethers.utils.recoverAddress(digest, signature);
+        const res = await sendAsync(
+            {
+                method,
+                params,
+                from
+            }
+        );
 
-    r = signature.r;
-    s = signature.s;
-    v = signature.v;
+        console.log(res);
+        const signature = res.substring(2);
 
-    console.log(r);
-    console.log(s);
-    console.log(v);
+        const r = `0x${ signature.substring(0, 64)}`;
+        const s = `0x${ signature.substring(64, 128)}`;
+        let v = parseInt(signature.substring(128, 130), 16);
 
-    // const pubKey = util.ecrecover(signature.v, signature.r, signature.s);
-    // console.log(pubKey);
+        v = v < 27 ? v + 27 : v;
+
+        console.log( {
+            result, signature, r, s, v,
+        });
 }
 
 async function invalidSignature() {
@@ -99,16 +110,16 @@ async function invalidSignature() {
 }
 
 describe('HordSignatures', async() => {
-
-    before('setup contracts', async () => {
-        await setupContractAndAccounts();
-        DOMAIN_SEPARATOR = await signatureValidator.DOMAIN_SEPARATOR();
-    });
-
     describe('Valid signature', async() => {
 
-        before('Sign transaction', async() => {
-            await getSignature();
+        before('setup contracts', async () => {
+            await setupContractAndAccounts();
+            DOMAIN_SEPARATOR = await signatureValidator.DOMAIN_SEPARATOR();
+        });
+
+        describe('Sign transaction', async() => {
+            const sig = await getSignature(signatureValidator.address);
+            console.log(sig);
         });
 
         describe('HordSignatures:: BuyOrderRatio', async() => {
@@ -117,27 +128,27 @@ describe('HordSignatures', async() => {
                 console.log(recoveredAddress);
             });
         });
-
-        describe('HordSignatures:: TradeOrder', async() => {
-            it('should check if return value is correct value in recoverSignatureTradeOrder function', async() => {
-                recoveredAddress = await signatureValidator.recoverSignatureTradeOrder([tokenAAddrs, tokenBAddr, 10], r, s, v);
-                console.log(recoveredAddress);
-            });
-        });
-
-        describe('HordSignatures:: SellLimit', async() => {
-            it('should check if return value is correct value in recoverSignatureSellLimit function', async() => {
-                recoveredAddress = await signatureValidator.recoverSignatureSellLimit([tokenAAddrs, tokenBAddr, 100, 10, 10000], r, s, v);
-                console.log(recoveredAddress);
-            });
-        });
-
-        describe('HordSignatures:: BuyLimit', async() => {
-            it('should check if return value is correct in recoverSignatureBuyLimit function', async() => {
-                recoveredAddress = await signatureValidator.recoverSignatureBuyLimit([tokenAAddrs, tokenBAddr, 100, 10, 10000], r, s, v);
-                console.log(recoveredAddress);
-            });
-        });
+        //
+        // describe('HordSignatures:: TradeOrder', async() => {
+        //     it('should check if return value is correct value in recoverSignatureTradeOrder function', async() => {
+        //         recoveredAddress = await signatureValidator.recoverSignatureTradeOrder([tokenAAddrs, tokenBAddr, 10], r, s, v);
+        //         console.log(recoveredAddress);
+        //     });
+        // });
+        //
+        // describe('HordSignatures:: SellLimit', async() => {
+        //     it('should check if return value is correct value in recoverSignatureSellLimit function', async() => {
+        //         recoveredAddress = await signatureValidator.recoverSignatureSellLimit([tokenAAddrs, tokenBAddr, 100, 10, 10000], r, s, v);
+        //         console.log(recoveredAddress);
+        //     });
+        // });
+        //
+        // describe('HordSignatures:: BuyLimit', async() => {
+        //     it('should check if return value is correct in recoverSignatureBuyLimit function', async() => {
+        //         recoveredAddress = await signatureValidator.recoverSignatureBuyLimit([tokenAAddrs, tokenBAddr, 100, 10, 10000], r, s, v);
+        //         console.log(recoveredAddress);
+        //     });
+        // });
     });
 
     describe('Invalid signatures', async() => {

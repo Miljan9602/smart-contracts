@@ -29,6 +29,7 @@ contract HPool is HordUpgradable, HPoolToken {
     // Mapping which hold current state of assets amount
     mapping(address => uint256) public assetsAmount;
 
+    address [] public assets;
 
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
