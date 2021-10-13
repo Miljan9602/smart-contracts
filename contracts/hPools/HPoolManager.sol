@@ -350,8 +350,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         Subscription memory s = userToPoolIdToSubscription[msg.sender][poolId];
         require(s.amountEth == 0, "User can not subscribe more than once.");
 
-        // TODO: Percent precision should be taken from configuration contract
-        uint256 feeAmount = msg.value.mul(hordConfiguration.percentBurntFromPublicSubscription()).div(1000);
+        uint256 feeAmount = msg.value.mul(hordConfiguration.percentBurntFromPublicSubscription()).div(hordConfiguration.percentPrecision());
 
         // Account platform fee
         platformFee.feesCollected = platformFee.feesCollected.add(feeAmount);
@@ -513,6 +512,18 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     }
 
     //TODO: Add function for Congress to withdraw platform fees, on withdrawal make sure amount <= collected-withdrawn and increase withdrawn for amount
+    function withdrawPlatformFees(uint256 amount)
+    external
+    onlyHordCongress
+    {
+        require(amount <= platformFee.feesCollected.sub(platformFee.feesWithdrawn), "Amount is below threshold.");
+
+        safeTransferETH(msg.sender, amount);
+
+        platformFee.feesWithdrawn = platformFee.feesWithdrawn.add(amount);
+        platformFee.feesCollected = platformFee.feesCollected.sub(amount);
+    }
+
     /**
      * @notice          Function to get minimal amount of ETH champion needs to
      *                  put in, in order to create hPool.
@@ -665,7 +676,10 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         return (subscription.amountEth, subscription.numberOfTickets);
     }
 
-    //TODO: Annotation comments
+    /**
+     * @notice          Function to get pltaform fee stats.
+     * @return          PlatformFee struct which contains data about collected/withdrawn fees.
+     */
     function getPlatformFeeStats()
     external
     view
