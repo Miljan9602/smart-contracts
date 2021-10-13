@@ -368,11 +368,11 @@ describe('hPools', async () => {
         it('should check values after privateSubscribeForHPool function', async() => {
             etherAmount = 30;
 
-            await hordToken.connect(owner).transfer(bobAddr, toHordDenomination(config['minAmountToStake'] * 3));
-            await hordToken.connect(owner).transfer(aliceAddr, toHordDenomination(config['minAmountToStake'] * 3));
-            await hordToken.connect(owner).transfer(user1Addr, toHordDenomination(config['minAmountToStake'] * 3));
+            await hordToken.connect(owner).transfer(bobAddr, toHordDenomination(config['minAmountToStake'] * 100));
+            await hordToken.connect(owner).transfer(aliceAddr, toHordDenomination(config['minAmountToStake'] * 100));
+            await hordToken.connect(owner).transfer(user1Addr, toHordDenomination(config['minAmountToStake'] * 100));
 
-            let numberOfTickets = 3;
+            let numberOfTickets = 10;
             let balanceB = await hordToken.balanceOf(bobAddr);
             await hordToken.connect(bob).approve(hordTicketManager.address, balanceB);
             await hordTicketManager.connect(bob).stakeAndReserveNFTs(tokenId, numberOfTickets);
@@ -485,7 +485,7 @@ describe('hPools', async () => {
             poolId = 0;
             hPool = await hPoolManager.hPools(poolId);
             amountBeofre = hPool.followersEthDeposit;
-            await hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: 100 });
+            await hPoolManager.connect(owner).publicSubscribeForHPool(poolId, { value: weiValue });
             hPool = await hPoolManager.hPools(poolId);
             amountAfter = hPool.followersEthDeposit;
             resp = await amountBeofre.add(weiValue);

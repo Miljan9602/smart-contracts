@@ -1,6 +1,6 @@
 pragma solidity 0.6.12;
 
-import "../token/Context.sol";
+import "../token/Pausable.sol";
 import "../interfaces/IERC20Metadata.sol";
 
 
@@ -10,7 +10,7 @@ import "../interfaces/IERC20Metadata.sol";
  * Date created: 20.7.21.
  * Github: madjarevicn
  */
-contract HPoolToken is Context, IERC20Metadata {
+contract HPoolToken is Pausable, IERC20Metadata {
 
     string private _name;
     string private _symbol;
