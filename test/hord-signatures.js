@@ -95,7 +95,7 @@ async function getSignature(contractAddress) {
         v = v < 27 ? v + 27 : v;
 
         console.log( {
-            result, signature, r, s, v,
+            res, signature, r, s, v,
         });
 }
 
