@@ -24,11 +24,11 @@ contract HPool is HordUpgradable, HPoolToken {
 
     uint256 public hPoolId;
     bool public isHPoolTokenMinted;
+    // Mapping that represent is user calim his hPoolTokens
     mapping(address => bool) public didUserClaimHPoolTokens;
-    mapping(address => uint256) public amountOfTokens;
+    // Mapping which hold current state of assets amount
+    mapping(address => uint256) public assetsAmount;
 
-    // Array storing all assets bought on the smart-contract.
-    address [] public assets;
 
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
@@ -89,7 +89,7 @@ contract HPool is HordUpgradable, HPoolToken {
 
     function claimHPoolTokens()
     external
-    //TODO: add pausable()
+    whenNotPaused
     {
         require(!didUserClaimHPoolTokens[msg.sender], "Follower already withdraw tokens.");
 
@@ -122,8 +122,8 @@ contract HPool is HordUpgradable, HPoolToken {
             deadline
         );
 
-        amountOfTokens[token] = amountOfTokens[token].sub(amounts[0]);
-        amountOfTokens[path[1]] = amountOfTokens[path[1]].add(amounts[1]);
+        assetsAmount[token] = assetsAmount[token].sub(amounts[0]);
+        assetsAmount[path[1]] = assetsAmount[path[1]].add(amounts[1]);
     }
 
 
@@ -135,7 +135,7 @@ contract HPool is HordUpgradable, HPoolToken {
     external
     payable
     {
-        require(msg.value > 0, "ETH amount is less than minimum amount.");
+        require(msg.value > 0, "ETH amount is less than minimal amount.");
         address[] memory path = new address[](2);
         path[0] = uniswapRouter.WETH();
         path[1] = token;
@@ -147,8 +147,8 @@ contract HPool is HordUpgradable, HPoolToken {
             deadline
         );
 
-        amountOfTokens[path[0]] = amountOfTokens[path[0]].sub(amounts[0]);
-        amountOfTokens[token] = amountOfTokens[token].add(amounts[1]);
+        assetsAmount[path[0]] = assetsAmount[path[0]].sub(amounts[0]);
+        assetsAmount[token] = assetsAmount[token].add(amounts[1]);
     }
 
     function swapExactTokensForTokens(
@@ -175,8 +175,8 @@ contract HPool is HordUpgradable, HPoolToken {
             deadline
         );
 
-        amountOfTokens[tokenA] = amountOfTokens[tokenA].sub(amounts[0]);
-        amountOfTokens[tokenB] = amountOfTokens[tokenB].add(amounts[2]);
+        assetsAmount[tokenA] = assetsAmount[tokenA].sub(amounts[0]);
+        assetsAmount[tokenB] = assetsAmount[tokenB].add(amounts[2]);
     }
 
 
@@ -233,13 +233,13 @@ contract HPool is HordUpgradable, HPoolToken {
             asset.transfer(msg.sender, balanceOfAsset.mul(share).div(10**18));
         }
 
-        if(balanceOf(msg.sender)) {
+        if(balanceOf(msg.sender) != 0) {
             // Burn users HPool Tokens
             _burn(msg.sender, hPoolTokensAmount);
         } else {
             // Burn non-claimed HPool tokens by user
             _burn(address(this), hPoolTokensAmount);
-            //TODO: Mark the tokens are claimed
+            didUserClaimHPoolTokens[msg.sender] = true;
         }
 
     }
