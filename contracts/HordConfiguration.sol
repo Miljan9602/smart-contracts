@@ -54,11 +54,11 @@ contract HordConfiguration is HordUpgradable, Initializable {
      * @notice          Initializer function
      */
     function initialize(
-        address[] memory addreses,
+        address[] memory addresses,
         uint256[] memory configValues
     ) external initializer {
         // Set hord congress and maintainers registry
-        setCongressAndMaintainers(addreses[0], addreses[1]);
+        setCongressAndMaintainers(addresses[0], addresses[1]);
 
         _minChampStake = configValues[0];
         _maxWarmupPeriod = configValues[1];
@@ -77,7 +77,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
         _endTimePublicSubscription = configValues[14];
         _percentBurntFromPublicSubscription = configValues[15];
 
-        _percentPrecision = 100;
+        _percentPrecision = 1000000;
     }
 
     // Setter Functions
