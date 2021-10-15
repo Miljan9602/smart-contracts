@@ -210,7 +210,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
         emit ConfigurationChanged("_totalSupplyHPoolTokens", _totalSupplyHPoolTokens);
     }
 
-    // _endTimeTicketSale setter function
+    // _endTimePublicSubscription setter function
     function setEndTimeTicketSale(uint256 endTimeTicketSale_)
     external
     onlyHordCongress
@@ -219,7 +219,7 @@ contract HordConfiguration is HordUpgradable, Initializable {
         emit ConfigurationChanged("_endTimeTicketSale", _endTimeTicketSale);
     }
 
-    // _totalSupplyHPoolTokens setter function
+    // _etEndTimePublicSubscription setter function
     function setEndTimePrivateSubscription(uint256 endTimePrivateSubscription_)
     external
     onlyHordCongress
@@ -227,7 +227,8 @@ contract HordConfiguration is HordUpgradable, Initializable {
         _endTimePrivateSubscription = endTimePrivateSubscription_;
         emit ConfigurationChanged("_endTimePrivateSubscription", _endTimePrivateSubscription);
     }
-    // _totalSupplyHPoolTokens setter function
+
+    // _setEndTimePublicSubscription setter function
     function setEndTimePublicSubscription(uint256 endTimePublicSubscription_)
     external
     onlyHordCongress

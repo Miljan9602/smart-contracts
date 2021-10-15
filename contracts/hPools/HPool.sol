@@ -1,10 +1,12 @@
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router01.sol";
 import "../system/HordUpgradable.sol";
 import "../interfaces/IHPoolManager.sol";
 import "./HPoolToken.sol";
 import "../libraries/SafeMath.sol";
+import "../SignatureValidator.sol";
 
 
 /**
@@ -13,7 +15,7 @@ import "../libraries/SafeMath.sol";
  * Date created: 20.7.21.
  * Github: madjarevicn
  */
-contract HPool is HordUpgradable, HPoolToken {
+contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
 
     //TODO: Compute initial worth of the pool at the launch time
     //TODO: Compute gains with the ratio
@@ -21,6 +23,7 @@ contract HPool is HordUpgradable, HPoolToken {
 
     IHPoolManager public hPoolManager;
     IUniswapV2Router01 private uniswapRouter = IUniswapV2Router01(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    SignatureValidator private signatureValidator;
 
     uint256 public hPoolId;
     bool public isHPoolTokenMinted;
@@ -104,11 +107,12 @@ contract HPool is HordUpgradable, HPoolToken {
 
     function swapExactTokensForEth(
         address token,
-        uint amountOutMin,
-        uint deadline
+        uint256 amountOutMin,
+        uint256 deadline
     )
     external
     payable
+    onlyMaintainer
     {
         require(msg.value > 0, "Token amount is less than minimal amount.");
         address[] memory path = new address[](2);
@@ -130,21 +134,32 @@ contract HPool is HordUpgradable, HPoolToken {
 
     function swapExactEthForTokens(
         address token,
-        uint amountOutMin,
-        uint deadline
+        bytes32 sigR,
+        bytes32 sigS,
+        uint256 amountOutMin,
+        uint256 deadline,
+        uint8 sigV
     )
     external
     payable
+    onlyMaintainer
     {
         require(msg.value > 0, "ETH amount is less than minimal amount.");
         address[] memory path = new address[](2);
         path[0] = uniswapRouter.WETH();
         path[1] = token;
 
+        TradeOrder memory tradeOrder;
+        tradeOrder.srcToken = path[0];
+        tradeOrder.dstToken = path[1];
+        tradeOrder.amountSrc = msg.value;
+
+        address publicAddress = signatureValidator.recoverSignatureTradeOrder(tradeOrder, sigR, sigS, sigV);
+
         uint256[] memory amounts = uniswapRouter.swapExactETHForTokens(
             amountOutMin,
             path,
-            msg.sender,
+            publicAddress,
             deadline
         );
 
@@ -155,11 +170,12 @@ contract HPool is HordUpgradable, HPoolToken {
     function swapExactTokensForTokens(
         address tokenA,
         address tokenB,
-        uint amountOutMin,
-        uint deadline
+        uint256 amountOutMin,
+        uint256 deadline
     )
     external
     payable
+    onlyMaintainer
     {
         require(msg.value > 0, "Token amount is less than minimal amount.");
         address[] memory path = new address[](2);
@@ -223,7 +239,7 @@ contract HPool is HordUpgradable, HPoolToken {
          */
 
         // Iterate through all assets and transfer them to user 1 by 1
-        for(uint i = 0; i < assets.length; i++) {
+        for(uint256 i = 0; i < assets.length; i++) {
             // Instantiate asset
             IERC20 asset = IERC20(assets[i]);
 

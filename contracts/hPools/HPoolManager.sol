@@ -65,7 +65,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         uint256 endPrivateSubscriptionPhase;
         uint256 endPublicSubscriptionSalePhase;
         uint256 nftTicketId;
-        uint256 numberOfTicketsUsed;
         bool isValidated;
         uint256 followersEthDeposit;
         address hPoolContractAddress;
@@ -103,6 +102,9 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     mapping(address => uint256[]) internal userToPoolIdsSubscribedFor;
     // Support listing pools per champion
     mapping(address => uint256[]) internal championAddressToHPoolIds;
+    // Mapping poolId to number of used tickets for that hPool
+    mapping(uint256 => uint256) numberOfTicketsUsed;
+
 
     /**
      * Events
@@ -306,7 +308,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         numberOfSubscriptions[poolId] = numberOfSubscriptions[poolId].add(1);
         userToPoolIdToSubscription[msg.sender][poolId] = s;
         userToPoolIdsSubscribedFor[msg.sender].push(poolId);
-        hp.numberOfTicketsUsed = hp.numberOfTicketsUsed.add(numberOfTicketsToUse);
+        numberOfTicketsUsed[poolId] = numberOfTicketsUsed[poolId].add(numberOfTicketsToUse);
 
         hp.followersEthDeposit = hp.followersEthDeposit.add(msg.value);
 
@@ -329,7 +331,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         uint256 maxTicketsToUse = getRequiredNumberOfTicketsToUse(hordConfiguration.maxFollowerUSDStake());
 
-        require(block.timestamp >= hp.endPrivateSubscriptionPhase || hp.numberOfTicketsUsed < maxTicketsToUse);
+        require(block.timestamp >= hp.endPrivateSubscriptionPhase || numberOfTicketsUsed[poolId] < maxTicketsToUse);
         require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION);
         hp.poolState = PoolState.PUBLIC_SUBSCRIPTION;
         hp.endPublicSubscriptionSalePhase = block.timestamp + hordConfiguration.endTimePublicSubscription();
@@ -655,7 +657,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     view
     returns (uint256)
     {
-        return hPools[poolId].numberOfTicketsUsed;
+        return numberOfTicketsUsed[poolId];
     }
 
     /**

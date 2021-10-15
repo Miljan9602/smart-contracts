@@ -10,6 +10,7 @@ let config;
 let accounts, owner, ownerAddr, tokenA, tokenAAddrs, tokenB, tokenBAddr;
 let signatureValidator;
 let recoveredAddress, signature;
+let ratio, amountSrc, priceUSD, validUntil, amountUSD;
 let r, s, v;
 
 async function setupContractAndAccounts () {
@@ -110,6 +111,8 @@ describe('HordSignatures', async() => {
 
         describe('HordSignatures:: BuyOrderRatio', async() => {
             it('should check return value if we passed right arguments in recoverSignatureBuyOrderRatio function', async() => {
+                ratio = 50;
+
                 let messageJSON = {
                     dstToken: tokenAAddrs.toString(),
                     ratio: '50'
@@ -128,12 +131,14 @@ describe('HordSignatures', async() => {
                 };
 
                 signature = await getSignature(message, type, primaryType);
-                recoveredAddress = await signatureValidator.recoverSignatureBuyOrderRatio([tokenAAddrs.toString(), 50], r, s, v);
+                recoveredAddress = await signatureValidator.recoverSignatureBuyOrderRatio([tokenAAddrs.toString(), ratio], r, s, v);
                 expect(recoveredAddress)
                    .to.equal(ownerAddr);
             });
 
             it('should check return value if we passed wrong arguments in recoverSignatureBuyOrderRatio function', async() => {
+                ratio = 100;
+
                 let messageJSON = {
                     dstToken: tokenAAddrs.toString(),
                     ratio: '50'
@@ -152,7 +157,7 @@ describe('HordSignatures', async() => {
                 };
 
                 signature = await getSignature(message, type, primaryType);
-                recoveredAddress = await signatureValidator.recoverSignatureBuyOrderRatio([tokenAAddrs.toString(), 100], r, s, v);
+                recoveredAddress = await signatureValidator.recoverSignatureBuyOrderRatio([tokenAAddrs.toString(), ratio], r, s, v);
                 expect(recoveredAddress)
                     .to.not.equal(ownerAddr);
             });
@@ -160,6 +165,7 @@ describe('HordSignatures', async() => {
 
         describe('HordSignatures:: TradeOrder', async() => {
             it('should check return value if we passed right arguments in recoverSignatureTradeOrder function', async() => {
+                amountSrc = 100;
                 let messageJSON = {
                     srcToken: tokenAAddrs.toString(),
                     dstToken: tokenBAddr.toString(),
@@ -180,12 +186,14 @@ describe('HordSignatures', async() => {
                 };
 
                 signature = await getSignature(message, type, primaryType);
-                recoveredAddress = await signatureValidator.recoverSignatureTradeOrder([tokenAAddrs.toString(), tokenBAddr.toString(), 100], r, s, v);
+                recoveredAddress = await signatureValidator.recoverSignatureTradeOrder([tokenAAddrs.toString(), tokenBAddr.toString(), amountSrc], r, s, v);
                 expect(recoveredAddress)
                     .to.equal(ownerAddr);
             });
 
             it('should check return value if we passed wrong arguments in recoverSignatureTradeOrder function', async() => {
+                amountSrc = 1000;
+
                 let messageJSON = {
                     srcToken: tokenAAddrs.toString(),
                     dstToken: tokenBAddr.toString(),
@@ -206,7 +214,7 @@ describe('HordSignatures', async() => {
                 };
 
                 signature = await getSignature(message, type, primaryType);
-                recoveredAddress = await signatureValidator.recoverSignatureTradeOrder([tokenAAddrs.toString(), tokenBAddr.toString(), 1000], r, s, v);
+                recoveredAddress = await signatureValidator.recoverSignatureTradeOrder([tokenAAddrs.toString(), tokenBAddr.toString(), amountSrc], r, s, v);
                 expect(recoveredAddress)
                     .to.not.equal(ownerAddr);
             });
@@ -214,12 +222,16 @@ describe('HordSignatures', async() => {
 
         describe('HordSignatures:: SellLimit', async() => {
             it('should check return value if we passed right arguments in recoverSignatureSellLimit function', async() => {
+                priceUSD = 100;
+                amountSrc = 100;
+                validUntil = 1000;
+
                 let messageJSON = {
                     srcToken: tokenAAddrs.toString(),
                     dstToken: tokenBAddr.toString(),
                     priceUSD: '100',
                     amountSrc: '100',
-                    validUntil: '100',
+                    validUntil: '1000',
                 };
                 let message = eval(messageJSON);
 
@@ -238,18 +250,20 @@ describe('HordSignatures', async() => {
                 };
 
                 signature = await getSignature(message, type, primaryType);
-                recoveredAddress = await signatureValidator.recoverSignatureSellLimit([tokenAAddrs.toString(), tokenBAddr.toString(), 100, 100, 100], r, s, v);
+                recoveredAddress = await signatureValidator.recoverSignatureSellLimit([tokenAAddrs.toString(), tokenBAddr.toString(), priceUSD, amountSrc, validUntil], r, s, v);
                 expect(recoveredAddress)
                     .to.equal(ownerAddr);
             });
 
             it('should check return value if we passed wrong arguments in recoverSignatureSellLimit function', async() => {
+                priceUSD = 1000;
+
                 let messageJSON = {
                     srcToken: tokenAAddrs.toString(),
                     dstToken: tokenBAddr.toString(),
                     priceUSD: '100',
                     amountSrc: '100',
-                    validUntil: '100',
+                    validUntil: '1000',
                 };
                 let message = eval(messageJSON);
 
@@ -268,7 +282,7 @@ describe('HordSignatures', async() => {
                 };
 
                 signature = await getSignature(message, type, primaryType);
-                recoveredAddress = await signatureValidator.recoverSignatureSellLimit([tokenAAddrs.toString(), tokenBAddr.toString(), 1000, 100, 100], r, s, v);
+                recoveredAddress = await signatureValidator.recoverSignatureSellLimit([tokenAAddrs.toString(), tokenBAddr.toString(), priceUSD, amountSrc, validUntil], r, s, v);
                 expect(recoveredAddress)
                     .to.not.equal(ownerAddr);
             });
@@ -276,12 +290,16 @@ describe('HordSignatures', async() => {
 
         describe('HordSignatures:: BuyLimit', async() => {
             it('should check return value if we passed right arguments in recoverSignatureBuyLimit function', async() => {
+                priceUSD = 100;
+                amountUSD = 100;
+                validUntil = 1000;
+
                 let messageJSON = {
                     srcToken: tokenAAddrs.toString(),
                     dstToken: tokenBAddr.toString(),
                     priceUSD: '100',
                     amountUSD: '100',
-                    validUntil: '100',
+                    validUntil: '1000',
                 };
                 let message = eval(messageJSON);
 
@@ -300,18 +318,20 @@ describe('HordSignatures', async() => {
                 };
 
                 signature = await getSignature(message, type, primaryType);
-                recoveredAddress = await signatureValidator.recoverSignatureBuyLimit([tokenAAddrs.toString(), tokenBAddr.toString(), 100, 100, 100], r, s, v);
+                recoveredAddress = await signatureValidator.recoverSignatureBuyLimit([tokenAAddrs.toString(), tokenBAddr.toString(), priceUSD, amountUSD, validUntil], r, s, v);
                 expect(recoveredAddress)
                     .to.equal(ownerAddr);
             });
 
             it('should check return value if we passed wrong arguments in recoverSignatureBuyLimit function', async() => {
+                amountUSD = 1000;
+
                 let messageJSON = {
                     srcToken: tokenAAddrs.toString(),
                     dstToken: tokenBAddr.toString(),
                     priceUSD: '100',
                     amountUSD: '100',
-                    validUntil: '100',
+                    validUntil: '1000',
                 };
                 let message = eval(messageJSON);
 
@@ -330,7 +350,7 @@ describe('HordSignatures', async() => {
                 };
 
                 signature = await getSignature(message, type, primaryType);
-                recoveredAddress = await signatureValidator.recoverSignatureBuyLimit([tokenAAddrs.toString(), tokenBAddr.toString(), 100, 1000, 100], r, s, v);
+                recoveredAddress = await signatureValidator.recoverSignatureBuyLimit([tokenAAddrs.toString(), tokenBAddr.toString(), priceUSD, amountUSD, validUntil], r, s, v);
                 expect(recoveredAddress)
                     .to.not.equal(ownerAddr);
             });
