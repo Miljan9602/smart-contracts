@@ -47,9 +47,7 @@ async function setupContractAndAccounts () {
             config["totalSupplyHPoolTokens"],
             config["endTimeTicketSale"],
             config["endTimePrivateSubscription"],
-            config["endTimePublicSubscription"],
-            config["percentBurntFromPublicSubscription"],
-        ]
+            config["endTimePublicSubscription"]]
     );
 }
 
@@ -169,13 +167,6 @@ describe('HordConfiguration', async() => {
         await hordConfiguration.connect(hordCongress).setEndTimePublicSubscription(endTimePublicSubscription);
         expect(await hordConfiguration.endTimePublicSubscription())
             .to.be.equal(endTimePublicSubscription);
-    });
-
-    it('should check return values in percentBurntFromPublicSubscription function', async() => {
-        let percentBurntFromPublicSubscription = 10;
-        await hordConfiguration.connect(hordCongress).setPercentBurntFromPublicSubscription(percentBurntFromPublicSubscription);
-        expect(await hordConfiguration.percentBurntFromPublicSubscription())
-            .to.be.equal(percentBurntFromPublicSubscription);
     });
 
 });
