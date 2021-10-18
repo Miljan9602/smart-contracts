@@ -39,14 +39,11 @@ contract SignatureValidator {
     }
 
 
-    string public constant EIP712_DOMAIN =
-        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
+    string public constant EIP712_DOMAIN = "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
     string public constant BUY_ORDER_RATIO_TYPE = "BuyOrderRatio(address dstToken,uint256 ratio)";
     string public constant TRADE_ORDER_TYPE = "TradeOrder(address srcToken,address dstToken,uint256 amountSrc)";
-    string public constant SELL_LIMIT_TYPE =
-        "SellLimit(address srcToken,address dstToken,uint256 priceUSD,uint256 amountSrc,uint256 validUntil)";
-    string public constant BUY_LIMIT_TYPE =
-        "BuyLimit(address srcToken,address dstToken,uint256 priceUSD,uint256 amountUSD,uint256 validUntil)";
+    string public constant SELL_LIMIT_TYPE = "SellLimit(address srcToken,address dstToken,uint256 priceUSD,uint256 amountSrc,uint256 validUntil)";
+    string public constant BUY_LIMIT_TYPE = "BuyLimit(address srcToken,address dstToken,uint256 priceUSD,uint256 amountUSD,uint256 validUntil)";
 
 
     // Compute typehashes

@@ -148,8 +148,8 @@ contract HordTicketManager is HordUpgradable, ERC1155HolderUpgradeable {
         // Get number of reserved tickets
         uint256 numberOfTicketsReserved = tokenIdToNumberOfTicketsReserved[tokenId];
         // Check there's enough tickets to get
-        require(numberOfTicketsReserved.add(numberOfTickets)<= hordTicketFactory.getTokenSupply(tokenId),
-            "Not enough tickets to sell.");
+        bool check = numberOfTicketsReserved.add(numberOfTickets)<= hordTicketFactory.getTokenSupply(tokenId);
+        require(check, "Not enough tickets to sell.");
 
         // Fixed stake per ticket
         uint amountOfTokensToStake = minAmountToStake.mul(numberOfTickets);

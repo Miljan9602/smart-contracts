@@ -32,7 +32,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     // Mapping which hold current state of assets amount
     mapping(address => uint256) public assetsAmount;
 
-    address [] public assets;
+    address[] public assets;
 
     event FollowersBudgetDeposit(uint256 amount);
     event ChampionBudgetDeposit(uint256 amount);
