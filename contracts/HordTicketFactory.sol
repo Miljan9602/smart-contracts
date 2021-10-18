@@ -167,7 +167,8 @@ contract HordTicketFactory is HordUpgradable, ERC1155PausableUpgradeable {
     onlyMaintainer
     {
         require(tokenIdToMintedSupply[tokenId] > 0, "AddTokenSupply: Firstly MINT token, then expand supply.");
-        require(tokenIdToMintedSupply[tokenId].add(supplyToAdd) <= tokenIdToMaxFungibleTicketsPerPool[tokenId], "More than allowed.");
+        bool check = tokenIdToMintedSupply[tokenId].add(supplyToAdd) <= tokenIdToMaxFungibleTicketsPerPool[tokenId];
+        require(check, "More than allowed.");
 
         tokenIdToMintedSupply[tokenId] = tokenIdToMintedSupply[tokenId].add(supplyToAdd);
         _mint(address(hordTicketManager), tokenId, supplyToAdd, "0x0");
