@@ -101,13 +101,12 @@ async function getSignature(message, type, primaryType) {
 }
 
 describe('HordSignatures', async() => {
-    describe('Valid signature', async() => {
+    before('setup contracts', async () => {
+        await setupContractAndAccounts();
+        DOMAIN_SEPARATOR = await signatureValidator.DOMAIN_SEPARATOR();
+    });
 
-        before('setup contracts', async () => {
-            await setupContractAndAccounts();
-            DOMAIN_SEPARATOR = await signatureValidator.DOMAIN_SEPARATOR();
-        });
-
+    xdescribe('Valid signature', async() => {
         describe('HordSignatures:: BuyOrderRatio', async() => {
             it('should check return value if we passed right arguments in recoverSignatureBuyOrderRatio function', async() => {
                 let messageJSON = {
