@@ -25,4 +25,4 @@ jobs:
       - name: Install ethlint
         run: npm install -g ethlint && solium --init
       - name: Lint
-        run: solhint contracts/*.sol
+        run: solhint contracts/*.sol && solium -d contracts/
