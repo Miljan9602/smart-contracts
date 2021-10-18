@@ -47,7 +47,8 @@ async function setupContractAndAccounts () {
             config["totalSupplyHPoolTokens"],
             config["endTimeTicketSale"],
             config["endTimePrivateSubscription"],
-            config["endTimePublicSubscription"]]
+            config["endTimePublicSubscription"],
+            config["percentBurntFromPublicSubscription"]]
     );
 }
 

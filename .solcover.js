@@ -5,6 +5,6 @@ module.exports = {
         'token/Context.sol',
         'upgradabilityTest/',
         'hPools/HPool.sol',
-        'SignatureValidator.sol'
+        'token/Pausable.sol'
     ]
 };

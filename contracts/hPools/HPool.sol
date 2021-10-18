@@ -131,7 +131,6 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         assetsAmount[path[1]] = assetsAmount[path[1]].add(amounts[1]);
     }
 
-
     function swapExactEthForTokens(
         address token,
         bytes32 sigR,
@@ -178,7 +177,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     onlyMaintainer
     {
         require(msg.value > 0, "Token amount is less than minimal amount.");
-        address[] memory path = new address[](2);
+        address[] memory path = new address[](3);
 
         path[0] = tokenA;
         path[1] = uniswapRouter.WETH();
