@@ -31,7 +31,7 @@ contract MockAggregatorV3Interface {
     {
         return (
             0,
-            2500 * 10e18,
+            100 * 10e18,
             0,
             0,
             0
