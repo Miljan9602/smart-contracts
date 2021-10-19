@@ -69,6 +69,28 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         hPoolManager = IHPoolManager(_hordPoolManager);
     }
 
+    /**
+     * @notice  Function allowing congress to pause the smart-contract
+     * @dev     Can be only called by HordCongress
+     */
+    function pause()
+    public
+    onlyHordCongress
+    {
+        _pause();
+    }
+
+    /**
+     * @notice  Function allowing congress to unpause the smart-contract
+     * @dev     Can be only called by HordCongress
+     */
+    function unpause()
+    public
+    onlyHordCongress
+    {
+        _unpause();
+    }
+
     function depositBudgetFollowers()
     external
     onlyHPoolManager
