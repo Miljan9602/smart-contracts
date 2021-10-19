@@ -7,5 +7,5 @@ pragma solidity 0.6.12;
  * Github: madjarevicn
  */
 interface IHPoolFactory {
-    function deployHPool(uint256 hPoolId) external returns (address);
+    function deployHPool(uint256 hPoolId, address championAddress) external returns (address);
 }
