@@ -168,14 +168,14 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hordConfiguration = IHordConfiguration(_hordConfiguration);
     }
 
-    function setChampionAddress(address championAddress, uint256 poolId) external {
+    function setChampionAddress(address _championAddress, uint256 poolId) external {
         hPool storage hp = hPools[poolId];
         require(msg.sender == hp.championAddress, "Champion address does not exist.");
 
-        hp.championAddress = championAddress;
+        hp.championAddress = _championAddress;
         IHPool hpContract = IHPool(hp.hPoolContractAddress);
-        hpContract.setChampionAddress(championAddress);
-        championAddressToHPoolIds[championAddress].push(poolId);
+        hpContract.setChampionAddress(_championAddress);
+        championAddressToHPoolIds[_championAddress].push(poolId);
         delete championAddressToHPoolIds[msg.sender][poolId];
     }
 

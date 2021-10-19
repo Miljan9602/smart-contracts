@@ -22,6 +22,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     using SafeMath for uint256;
 
     enum TradeType {
+        BUY_ORDER_RATIO,
         BUY_LIMIT,
         SELL_LIMIT,
         MARKET_BUY,
@@ -30,12 +31,14 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     }
 
     IHPoolManager public hPoolManager;
-
     IUniswapV2Router01 private uniswapRouter = IUniswapV2Router01(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
     SignatureValidator private signatureValidator;
 
+    address public championAddress;
+    uint256 public totalBaseAssetAtLaunch;
     uint256 public hPoolId;
     bool public isHPoolTokenMinted;
+
     // Mapping that represent is user calim his hPoolTokens
     mapping(address => bool) public didUserClaimHPoolTokens;
     // Mapping which hold current state of assets amount
@@ -49,10 +52,8 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     event ChampionBudgetDeposit(uint256 amount);
     event HPoolTokenMinted(string name, string symbol, uint256 totalSupply);
     event ClaimedHPoolTokens(address beneficiary, uint256 numberOfClaimedTokens);
-    event TradeExecuted(TradeType tradeTtpe, uint256 amountSource, uint256 amountTarget, address sourceToken, address targetToken);
+    event TradeExecuted(uint256 amountSource, uint256 amountTarget, address sourceToken, address targetToken);
 
-    uint256 public totalBaseAssetAtLaunch;
-    address public championAddress;
 
     modifier onlyHPoolManager {
         require(msg.sender == address(hPoolManager), "Restricted only to HPoolManager.");
@@ -75,15 +76,20 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         championAddress = _championAddress;
     }
 
-    //TODO: add setter by hpool manager to update champion address
+    function setChampionAddress(address _championAddress)
+    external
+    onlyHPoolManager
+    {
+        championAddress = _championAddress;
+    }
 
     /**
      * @notice  Function allowing congress to pause the smart-contract
      * @dev     Can be only called by HordCongress
      */
-    function pause() //TODO callable by maintainer as well
+    function pause()
     public
-    onlyHordCongress
+    onlyMaintainer
     {
         _pause();
     }
@@ -94,7 +100,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
      */
     function unpause()
     public
-    onlyHordCongress
+    onlyMaintainer
     {
         _unpause();
     }
@@ -104,7 +110,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     onlyHPoolManager
     payable
     {
-        //TODO: totalEthAtLaunch += msg.value
+        totalBaseAssetAtLaunch = totalBaseAssetAtLaunch.add(msg.value);
         emit FollowersBudgetDeposit(msg.value);
     }
 
@@ -113,7 +119,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     onlyHPoolManager
     payable
     {
-        //TODO: totalEthAtLaunch += msg.value
+        totalBaseAssetAtLaunch = totalBaseAssetAtLaunch.add(msg.value);
         emit ChampionBudgetDeposit(msg.value);
     }
 
@@ -148,6 +154,91 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         emit ClaimedHPoolTokens(msg.sender, numberOfTokensToClaim);
     }
 
+    function verifyAndExecuteBuyOrderRatio(
+        address dstToken,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint256 ratio,
+        uint256 amountSrc,
+        uint256 minAmountOut,
+        uint8 sigV
+    )
+    external
+    onlyMaintainer
+    {
+        BuyOrderRatio memory buyOrderRatio;
+        buyOrderRatio.dstToken = dstToken;
+        buyOrderRatio.ratio = ratio;
+
+        address signer = signatureValidator.recoverSignatureBuyOrderRatio(buyOrderRatio, sigR, sigS, sigV);
+        require(signer == championAddress, "Invalid signer address.");
+
+        uint256 actualAmountPerRatio = ratio.mul(totalBaseAssetAtLaunch);
+        require(amountSrc == actualAmountPerRatio);
+
+        swapExactEthForTokens(dstToken, amountSrc, minAmountOut);
+    }
+
+    function verifyAndExecuteBuyOrderExactAmount(
+        address dstToken,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint256 amountSrc,
+        uint256 minAmountOut,
+        uint8 sigV
+    )
+    external
+    onlyMaintainer
+    {
+        address[] memory path = new address[](2);
+        path[0] = uniswapRouter.WETH();
+        path[1] = dstToken;
+
+        TradeOrder memory tradeOrder;
+        tradeOrder.srcToken = path[0];
+        tradeOrder.dstToken = path[1];
+        tradeOrder.amountSrc = amountSrc;
+
+        address signer = signatureValidator.recoverSignatureTradeOrder(tradeOrder, sigR, sigS, sigV);
+        require(signer == championAddress, "Invalid signer address.");
+
+        swapExactEthForTokens(dstToken, amountSrc, minAmountOut);
+    }
+
+    /*
+        1. on pool creation - champion is signing target token and ratio, so maintainer should send target token and ratio in the params and contracts should verify it
+        2. on pool edit post launch - champion will sign for buy orders the target token and the ETH amount, so these should be sent + verified by the contract
+        3. amount out min is optional, and if maintainer sends it, contracts can verify.
+    */
+
+    function swapExactEthForTokens(
+        address token,
+        uint256 amountSrc,
+        uint256 minAmountOut
+    )
+    private
+    {
+        address[] memory path = new address[](2);
+        path[0] = uniswapRouter.WETH();
+        path[1] = token;
+
+        uint256 deadline = block.timestamp.add(60);
+        uint256[] memory actualAmountOutMin = uniswapRouter.getAmountsOut(amountSrc, path);
+        require(actualAmountOutMin[1] >= minAmountOut);
+
+        uint256[] memory amounts = uniswapRouter.swapExactETHForTokens(
+            actualAmountOutMin[1],
+            path,
+            address(this),
+            deadline
+        );
+
+        assetsAmount[path[0]] = assetsAmount[path[0]].sub(amounts[0]);
+        assetsAmount[token] = assetsAmount[token].add(amounts[1]);
+
+        emit TradeExecuted(amounts[0], amounts[1], path[0], path[1]);
+    }
+
     function swapExactTokensForEth(
         address token,
         uint256 amountOutMin,
@@ -172,92 +263,6 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
 
         assetsAmount[token] = assetsAmount[token].sub(amounts[0]);
         assetsAmount[path[1]] = assetsAmount[path[1]].add(amounts[1]);
-    }
-
-    function verifyAndExecuteBuyOrderRatio(
-        address dstToken,
-        bytes32 sigR,
-        bytes32 sigS,
-        uint256 ratio,
-        uint256 amountSrc,
-        uint256 minAmountOut,
-        uint8 sigV
-    )
-    external
-    onlyMaintainer
-    {
-        BuyOrderRatio memory buyOrderRatio;
-        buyOrderRatio.dstToken = dstToken;
-        buyOrderRatio.ratio = ratio;
-
-        address signer = signatureValidator.recoverSignatureBuyOrderRatio(buyOrderRatio, sigR, sigS, sigV);
-        require(signer == championAddress);
-
-        uint256 actualAmountPerRatio = ratio * totalBaseAssetAtLaunch;
-        require(amountSrc == actualAmountPerRatio);
-
-        swapExactEthForTokens();
-
-    }
-
-    function verifyAndExecuteBuyOrderExactAmount(
-        address dstToken,
-        bytes32 sigR,
-        bytes32 sigS,
-        uint256 amountSrc,
-        uint256 minAmountOut,
-        uint8 sigV
-    )
-    external
-    onlyMaintainer
-    {
-        TradeOrder memory tradeOrder;
-        tradeOrder.srcToken = path[0];
-        tradeOrder.dstToken = path[1];
-        tradeOrder.amountSrc = amountSrc;
-
-        address signer = signatureValidator.recoverSignatureTradeOrder(tradeOrder, sigR, sigS, sigV);
-        require(signer == championAddress);
-
-        swapExactEthForTokens();
-
-    }
-
-    /*
-        1. on pool creation - champion is signing target token and ratio, so maintainer should send target token and ratio in the params and contracts should verify it
-        2. on pool edit post launch - champion will sign for buy orders the target token and the ETH amount, so these should be sent + verified by the contract
-        3. amount out min is optional, and if maintainer sends it, contracts can verify.
-    */
-
-    function swapExactEthForTokens(
-        address token,
-        TradeType tradeType,
-        uint256 amountSrc,
-        uint256 amountOutMin
-    )
-    private
-    {
-        address[] memory path = new address[](2);
-        path[0] = uniswapRouter.WETH();
-        path[1] = token;
-
-        //https://docs.uniswap.org/protocol/V2/reference/smart-contracts/router-02
-        uint256 actualAmountOutMin = uniswapRouter.getAmountsOut(amountSrc,path);
-        require(actualAmountOutMin >= amountOutMin);
-        uint256 deadline = block.timestamp + 60 sec;
-
-        uint256[] memory amounts = uniswapRouter.swapExactETHForTokens(
-            actualAmountOutMin,
-            path,
-            address(this),
-            deadline
-        );
-
-        assetsAmount[path[0]] = assetsAmount[path[0]].sub(amounts[0]);
-        assetsAmount[token] = assetsAmount[token].add(amounts[1]);
-        //TODO: update ratios of both tokens
-
-        emit TradeExecuted(tradeType, amounts[0], amounts[1], path[0], path[1]);
     }
 
     function swapExactTokensForTokens(
