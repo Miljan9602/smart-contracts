@@ -105,6 +105,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     // Mapping poolId to number of used tickets for that hPool
     mapping(uint256 => uint256) numberOfTicketsUsed;
 
+    //TODO: add setter to update champion address (can only be called by existing champion), should also update mappings from champion address to other things + update on the hpool contract itself
 
     /**
      * Events
@@ -393,7 +394,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hp.poolState = PoolState.ASSET_STATE_TRANSITION_IN_PROGRESS;
 
         // Deploy the HPool contract
-        IHPool hpContract = IHPool(hPoolFactory.deployHPool(poolId));
+        IHPool hpContract = IHPool(hPoolFactory.deployHPool(poolId, hp.championAddress));
 
         //Mint HPoolToken for certain HPool
         hpContract.mintHPoolToken(name, symbol, hordConfiguration.totalSupplyHPoolTokens());

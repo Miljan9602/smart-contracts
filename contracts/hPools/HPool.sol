@@ -30,6 +30,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     }
 
     IHPoolManager public hPoolManager;
+
     IUniswapV2Router01 private uniswapRouter = IUniswapV2Router01(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
     SignatureValidator private signatureValidator;
 
@@ -50,30 +51,37 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     event ClaimedHPoolTokens(address beneficiary, uint256 numberOfClaimedTokens);
     event TradeExecuted(TradeType tradeTtpe, uint256 amountSource, uint256 amountTarget, address sourceToken, address targetToken);
 
+    uint256 public totalBaseAssetAtLaunch;
+    address public championAddress;
 
     modifier onlyHPoolManager {
         require(msg.sender == address(hPoolManager), "Restricted only to HPoolManager.");
         _;
     }
 
+
     constructor(
         uint256 _hPoolId,
         address _hordCongress,
         address _hordMaintainersRegistry,
-        address _hordPoolManager
+        address _hordPoolManager,
+        address _championAddress
     )
     public
     {
         setCongressAndMaintainers(_hordCongress, _hordMaintainersRegistry);
         hPoolId = _hPoolId;
         hPoolManager = IHPoolManager(_hordPoolManager);
+        championAddress = _championAddress;
     }
+
+    //TODO: add setter by hpool manager to update champion address
 
     /**
      * @notice  Function allowing congress to pause the smart-contract
      * @dev     Can be only called by HordCongress
      */
-    function pause()
+    function pause() //TODO callable by maintainer as well
     public
     onlyHordCongress
     {
@@ -96,6 +104,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     onlyHPoolManager
     payable
     {
+        //TODO: totalEthAtLaunch += msg.value
         emit FollowersBudgetDeposit(msg.value);
     }
 
@@ -104,6 +113,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     onlyHPoolManager
     payable
     {
+        //TODO: totalEthAtLaunch += msg.value
         emit ChampionBudgetDeposit(msg.value);
     }
 
@@ -164,11 +174,13 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         assetsAmount[path[1]] = assetsAmount[path[1]].add(amounts[1]);
     }
 
-    function verifyBuyOrderRatioSig(
+    function verifyAndExecuteBuyOrderRatio(
         address dstToken,
         bytes32 sigR,
         bytes32 sigS,
         uint256 ratio,
+        uint256 amountSrc,
+        uint256 minAmountOut,
         uint8 sigV
     )
     external
@@ -178,8 +190,37 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         buyOrderRatio.dstToken = dstToken;
         buyOrderRatio.ratio = ratio;
 
-        signatureValidator.recoverSignatureBuyOrderRatio(buyOrderRatio, sigR, sigS, sigV);
-        assetsRatio[dstToken] = ratio;
+        address signer = signatureValidator.recoverSignatureBuyOrderRatio(buyOrderRatio, sigR, sigS, sigV);
+        require(signer == championAddress);
+
+        uint256 actualAmountPerRatio = ratio * totalBaseAssetAtLaunch;
+        require(amountSrc == actualAmountPerRatio);
+
+        swapExactEthForTokens();
+
+    }
+
+    function verifyAndExecuteBuyOrderExactAmount(
+        address dstToken,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint256 amountSrc,
+        uint256 minAmountOut,
+        uint8 sigV
+    )
+    external
+    onlyMaintainer
+    {
+        TradeOrder memory tradeOrder;
+        tradeOrder.srcToken = path[0];
+        tradeOrder.dstToken = path[1];
+        tradeOrder.amountSrc = amountSrc;
+
+        address signer = signatureValidator.recoverSignatureTradeOrder(tradeOrder, sigR, sigS, sigV);
+        require(signer == championAddress);
+
+        swapExactEthForTokens();
+
     }
 
     /*
@@ -191,39 +232,30 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     function swapExactEthForTokens(
         address token,
         TradeType tradeType,
-        bytes32 sigR,
-        bytes32 sigS,
         uint256 amountSrc,
-        uint256 amountOutMin,
-        uint256 deadline,
-        uint8 sigV
+        uint256 amountOutMin
     )
-    external
-    onlyMaintainer
+    private
     {
         address[] memory path = new address[](2);
         path[0] = uniswapRouter.WETH();
         path[1] = token;
 
-        TradeOrder memory tradeOrder;
-        tradeOrder.srcToken = path[0];
-        tradeOrder.dstToken = path[1];
-        tradeOrder.amountSrc = amountSrc;
-
-        address userAddress = signatureValidator.recoverSignatureTradeOrder(tradeOrder, sigR, sigS, sigV);
-
-        //TODO: in the ratio function, backend has to also send exact tokens so verify that the ratio sent by backend and checksummed on sig matches the exact eth sent by backend, and contrct the trade function accordingly
-        //TODO: in launch state, persist to memory the total amount of ETH launched, and verify ratios accordingly
+        //https://docs.uniswap.org/protocol/V2/reference/smart-contracts/router-02
+        uint256 actualAmountOutMin = uniswapRouter.getAmountsOut(amountSrc,path);
+        require(actualAmountOutMin >= amountOutMin);
+        uint256 deadline = block.timestamp + 60 sec;
 
         uint256[] memory amounts = uniswapRouter.swapExactETHForTokens(
-            amountOutMin,
+            actualAmountOutMin,
             path,
-            userAddress,
+            address(this),
             deadline
         );
 
         assetsAmount[path[0]] = assetsAmount[path[0]].sub(amounts[0]);
         assetsAmount[token] = assetsAmount[token].add(amounts[1]);
+        //TODO: update ratios of both tokens
 
         emit TradeExecuted(tradeType, amounts[0], amounts[1], path[0], path[1]);
     }
