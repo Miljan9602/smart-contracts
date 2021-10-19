@@ -21,6 +21,14 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     //TODO: Compute gains with the ratio
     using SafeMath for uint256;
 
+    enum TradeType {
+        BUY_LIMIT,
+        SELL_LIMIT,
+        MARKET_BUY,
+        MARKET_SELL,
+        STOP_LOSS
+    }
+
     IHPoolManager public hPoolManager;
     IUniswapV2Router01 private uniswapRouter = IUniswapV2Router01(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
     SignatureValidator private signatureValidator;
@@ -31,6 +39,8 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     mapping(address => bool) public didUserClaimHPoolTokens;
     // Mapping which hold current state of assets amount
     mapping(address => uint256) public assetsAmount;
+    // Mapping which hold current state of ratio for exact assets
+    mapping(address => uint256) public assetsRatio;
 
     address[] public assets;
 
@@ -38,6 +48,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     event ChampionBudgetDeposit(uint256 amount);
     event HPoolTokenMinted(string name, string symbol, uint256 totalSupply);
     event ClaimedHPoolTokens(address beneficiary, uint256 numberOfClaimedTokens);
+    event TradeExecuted(TradeType tradeTtpe, uint256 amountSource, uint256 amountTarget, address sourceToken, address targetToken);
 
 
     modifier onlyHPoolManager {
@@ -131,28 +142,43 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         assetsAmount[path[1]] = assetsAmount[path[1]].add(amounts[1]);
     }
 
-
-    /*
-    1. on pool creation - champion is signing target token and ratio, so maintainer should send target token and ratio in the params and contracts should verify it
-    2. on pool edit post launch - champion will sign for buy orders the target token and the ETH amount, so these should be sent + verified by the contract
-    3. amount out min is optional, and if maintainer sends it, contracts can verify.
-
-
-
-    */
-    function swapExactEthForTokens(
-        address token,
+    function verifyBuyOrderRatioSig(
+        address dstToken,
         bytes32 sigR,
         bytes32 sigS,
+        uint256 ratio,
+        uint8 sigV
+    )
+    external
+    onlyMaintainer
+    {
+        BuyOrderRatio memory buyOrderRatio;
+        buyOrderRatio.dstToken = dstToken;
+        buyOrderRatio.ratio = ratio;
+
+        signatureValidator.recoverSignatureBuyOrderRatio(buyOrderRatio, sigR, sigS, sigV);
+        assetsRatio[dstToken] = ratio;
+    }
+
+    /*
+        1. on pool creation - champion is signing target token and ratio, so maintainer should send target token and ratio in the params and contracts should verify it
+        2. on pool edit post launch - champion will sign for buy orders the target token and the ETH amount, so these should be sent + verified by the contract
+        3. amount out min is optional, and if maintainer sends it, contracts can verify.
+    */
+
+    function swapExactEthForTokens(
+        address token,
+        TradeType tradeType,
+        bytes32 sigR,
+        bytes32 sigS,
+        uint256 amountSrc,
         uint256 amountOutMin,
         uint256 deadline,
         uint8 sigV
     )
     external
-    payable
     onlyMaintainer
     {
-        require(msg.value > 0, "ETH amount is less than minimal amount.");
         address[] memory path = new address[](2);
         path[0] = uniswapRouter.WETH();
         path[1] = token;
@@ -160,24 +186,24 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         TradeOrder memory tradeOrder;
         tradeOrder.srcToken = path[0];
         tradeOrder.dstToken = path[1];
-        tradeOrder.amountSrc = msg.value; //TODO: maintainer doesn't hold ETH and doesn't send it, the hpool holds the assets
+        tradeOrder.amountSrc = amountSrc;
 
-        address publicAddress = signatureValidator.recoverSignatureTradeOrder(tradeOrder, sigR, sigS, sigV);
+        address userAddress = signatureValidator.recoverSignatureTradeOrder(tradeOrder, sigR, sigS, sigV);
 
-        //TODO: in the ratio function, backend has to also send exact tokens so verify that the ratio sent by backend and checksummed on sig matches the exact eth sent by backend, and contruct the trade function accordingly
+        //TODO: in the ratio function, backend has to also send exact tokens so verify that the ratio sent by backend and checksummed on sig matches the exact eth sent by backend, and contrct the trade function accordingly
         //TODO: in launch state, persist to memory the total amount of ETH launched, and verify ratios accordingly
 
         uint256[] memory amounts = uniswapRouter.swapExactETHForTokens(
             amountOutMin,
             path,
-            publicAddress,
+            userAddress,
             deadline
         );
 
         assetsAmount[path[0]] = assetsAmount[path[0]].sub(amounts[0]);
         assetsAmount[token] = assetsAmount[token].add(amounts[1]);
 
-        //TODO: emit event TradeExecuted(TradeType, amountSource, amountTarget, sourceToken, targetToken)
+        emit TradeExecuted(tradeType, amounts[0], amounts[1], path[0], path[1]);
     }
 
     function swapExactTokensForTokens(
