@@ -105,8 +105,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
     // Mapping poolId to number of used tickets for that hPool
     mapping(uint256 => uint256) numberOfTicketsUsed;
 
-    //TODO: add setter to update champion address (can only be called by existing champion), should also update mappings from champion address to other things + update on the hpool contract itself
-
     /**
      * Events
      */
@@ -168,6 +166,17 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         linkOracle = AggregatorV3Interface(_chainlinkOracle);
         hordConfiguration = IHordConfiguration(_hordConfiguration);
+    }
+
+    function setChampionAddress(address championAddress, uint256 poolId) external {
+        hPool storage hp = hPools[poolId];
+        require(msg.sender == hp.championAddress, "Champion address does not exist.");
+
+        hp.championAddress = championAddress;
+        IHPool hpContract = IHPool(hp.hPoolContractAddress);
+        hpContract.setChampionAddress(championAddress);
+        championAddressToHPoolIds[championAddress].push(poolId);
+        delete championAddressToHPoolIds[msg.sender][poolId];
     }
 
     /**
@@ -247,7 +256,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         hp.isValidated = true;
         hp.nftTicketId = _nftTicketId;
         hp.poolState = PoolState.TICKET_SALE;
-        hp.endTicketSalePhase = block.timestamp + hordConfiguration.endTimeTicketSale();
+        hp.endTicketSalePhase = block.timestamp.add(hordConfiguration.endTimeTicketSale());
 
         emit TicketIdSetForPool(poolId, hp.nftTicketId);
         emit HPoolStateChanged(poolId, hp.poolState);
@@ -268,7 +277,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
 
         require(hp.poolState == PoolState.TICKET_SALE);
         hp.poolState = PoolState.PRIVATE_SUBSCRIPTION;
-        hp.endPrivateSubscriptionPhase = block.timestamp + hordConfiguration.endTimePrivateSubscription();
+        hp.endPrivateSubscriptionPhase = block.timestamp.add(hordConfiguration.endTimePrivateSubscription());
 
         emit HPoolStateChanged(poolId, hp.poolState);
     }
@@ -335,7 +344,7 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         require(block.timestamp >= hp.endPrivateSubscriptionPhase || numberOfTicketsUsed[poolId] < maxTicketsToUse);
         require(hp.poolState == PoolState.PRIVATE_SUBSCRIPTION);
         hp.poolState = PoolState.PUBLIC_SUBSCRIPTION;
-        hp.endPublicSubscriptionSalePhase = block.timestamp + hordConfiguration.endTimePublicSubscription();
+        hp.endPublicSubscriptionSalePhase = block.timestamp.add(hordConfiguration.endTimePublicSubscription());
 
         emit HPoolStateChanged(poolId, hp.poolState);
     }
@@ -514,7 +523,6 @@ contract HPoolManager is ERC1155HolderUpgradeable, HordUpgradable {
         s.numberOfTickets = 0;
     }
 
-    //TODO: Add function for Congress to withdraw platform fees, on withdrawal make sure amount <= collected-withdrawn and increase withdrawn for amount
     function withdrawPlatformFees(uint256 amount)
     external
     onlyHordCongress
