@@ -137,7 +137,8 @@ async function setupContractAndAccounts () {
         poolId,
         hordCongressAddr,
         maintainersRegistry.address,
-        hPoolManagerSinAddr
+        hPoolManagerSinAddr,
+        championAddr
     );
     await hPoolContract.deployed()
 
