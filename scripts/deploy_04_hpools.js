@@ -27,7 +27,8 @@ async function main() {
         toHordDenomination(config.totalSupplyHPoolTokens),
         config.endTimeTicketSale,
         config.endTimePrivateSubscription,
-        config.endTimePublicSubscription]
+        config.endTimePublicSubscription,
+        config.percentBurntFromPublicSubscription]
     ]);
     await hordConfiguration.deployed();
     console.log('HordConfiguration Proxy is deployed to: ', hordConfiguration.address);
