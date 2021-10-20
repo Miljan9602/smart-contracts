@@ -31,12 +31,13 @@
         "HordCongressMembersRegistry": "0x2Aee5DAB49757c6c97b40b41D48B7F1577142b84",
         "HordToken": "0xa08fBA7e2eeDBCC1Bf58EDefeDfF569d5792F099",
         "MaintainersRegistry": "0xb4Da3509210DaF45eED4D4EE780017D926821c62",
-        "HordTicketManager": "0x3AB0bD5C7693Bd845d9C346509CFEFb02d3DD3c9",
-        "HordTicketFactory": "0x50eaC4794E041fed58DE57Cea2637BF60E1b0473",
+        "HordTicketManager": "0x73de149722A8CfAd71dF8e6A9131676A93C48ea9",
+        "HordTicketFactory": "0x3E26D68671f58529CE89B2039FE36A11Fbd443a3",
         "HordTreasury": "0xC0656086e7D766C19b4F8B5134F3EFAeE614bAbB",
-        "AggregatorV3Interface": "0x85272270D91a1852C3a99EC600341e2DdE4dFDd7",
-        "HordConfiguration": "0x5a3E3dc33C07caB6D29726e8584Ae2a0858Ff53E",
-        "HPoolFactory": "0xa7290fB0A58c896c1A22F33906d675a5Fe26C79f",
-        "HPoolManager": "0xd34ED3a82cB8fe03D4a4C6A5F7c0E780aaE2A8c7"
+        "AggregatorV3Interface": "0x4Dca65Ac69b6BAD77CF25943EE8e94F5B6E45Cf1",
+        "HordConfiguration": "0x8Fddb1741AaCd715c8E428A068329a505fF96CFb",
+        "HPoolFactory": "0x8d7F9a5f117915c3eE4B6c5EAE8b4Cb80ACA798c",
+        "HPoolManager": "0x2212BeC52f63c8036D0CD19E32F033a296049158",
+        "SignatureValidator": "0x23171A5e220F4411913A1076aB795795e864F053"
     }
 }
