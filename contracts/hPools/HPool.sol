@@ -23,11 +23,9 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
 
     enum TradeType {
         BUY_ORDER_RATIO,
+        TRADE_ORDER,
         BUY_LIMIT,
-        SELL_LIMIT,
-        MARKET_BUY,
-        MARKET_SELL,
-        STOP_LOSS
+        SELL_LIMIT
     }
 
     IHPoolManager public hPoolManager;
@@ -176,7 +174,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         uint256 actualAmountPerRatio = ratio.mul(totalBaseAssetAtLaunch);
         require(amountSrc == actualAmountPerRatio);
 
-        swapExactEthForTokens(dstToken, amountSrc, minAmountOut);
+        swapExactEthForTokens(dstToken, amountSrc, minAmountOut, TradeType.BUY_ORDER_RATIO);
     }
 
     function verifyAndExecuteBuyOrderExactAmount(
@@ -202,7 +200,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         address signer = signatureValidator.recoverSignatureTradeOrder(tradeOrder, sigR, sigS, sigV);
         require(signer == championAddress, "Invalid signer address.");
 
-        swapExactEthForTokens(dstToken, amountSrc, minAmountOut);
+        swapExactEthForTokens(dstToken, amountSrc, minAmountOut, TradeType.TRADE_ORDER);
     }
 
     /*
@@ -214,7 +212,8 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     function swapExactEthForTokens(
         address token,
         uint256 amountSrc,
-        uint256 minAmountOut
+        uint256 minAmountOut,
+        TradeType tradeType
     )
     private
     {
