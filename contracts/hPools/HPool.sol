@@ -50,7 +50,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
     event ChampionBudgetDeposit(uint256 amount);
     event HPoolTokenMinted(string name, string symbol, uint256 totalSupply);
     event ClaimedHPoolTokens(address beneficiary, uint256 numberOfClaimedTokens);
-    event TradeExecuted(uint256 amountSource, uint256 amountTarget, address sourceToken, address targetToken);
+    event TradeExecuted(TradeType tradeType, uint256 amountSource, uint256 amountTarget, address sourceToken, address targetToken);
 
 
     modifier onlyHPoolManager {
@@ -235,7 +235,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
         assetsAmount[path[0]] = assetsAmount[path[0]].sub(amounts[0]);
         assetsAmount[token] = assetsAmount[token].add(amounts[1]);
 
-        emit TradeExecuted(amounts[0], amounts[1], path[0], path[1]);
+        emit TradeExecuted(tradeType, amounts[0], amounts[1], path[0], path[1]);
     }
 
     function swapExactTokensForEth(
