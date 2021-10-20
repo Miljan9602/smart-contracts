@@ -1299,6 +1299,11 @@
                         "internalType": "address",
                         "name": "_hordPoolManager",
                         "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "_championAddress",
+                        "type": "address"
                     }
                 ],
                 "stateMutability": "nonpayable",
@@ -1403,6 +1408,56 @@
                 "anonymous": false,
                 "inputs": [
                     {
+                        "indexed": false,
+                        "internalType": "address",
+                        "name": "account",
+                        "type": "address"
+                    }
+                ],
+                "name": "Paused",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "internalType": "enum HPool.TradeType",
+                        "name": "tradeType",
+                        "type": "uint8"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "amountSource",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "amountTarget",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "address",
+                        "name": "sourceToken",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "address",
+                        "name": "targetToken",
+                        "type": "address"
+                    }
+                ],
+                "name": "TradeExecuted",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
                         "indexed": true,
                         "internalType": "address",
                         "name": "from",
@@ -1425,6 +1480,162 @@
                 "type": "event"
             },
             {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "internalType": "address",
+                        "name": "account",
+                        "type": "address"
+                    }
+                ],
+                "name": "Unpaused",
+                "type": "event"
+            },
+            {
+                "inputs": [],
+                "name": "BUY_LIMIT_TYPE",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "BUY_LIMIT_TYPEHASH",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "BUY_ORDER_RATIO_TYPE",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "BUY_ORDER_RATIO_TYPEHASH",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "DOMAIN_SEPARATOR",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "EIP712_DOMAIN",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "EIP712_DOMAIN_TYPEHASH",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "SELL_LIMIT_TYPE",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "SELL_LIMIT_TYPEHASH",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "TRADE_ORDER_TYPE",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "TRADE_ORDER_TYPEHASH",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
                 "inputs": [
                     {
                         "internalType": "address",
@@ -1438,25 +1649,6 @@
                     }
                 ],
                 "name": "allowance",
-                "outputs": [
-                    {
-                        "internalType": "uint256",
-                        "name": "",
-                        "type": "uint256"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "name": "amountOfTokens",
                 "outputs": [
                     {
                         "internalType": "uint256",
@@ -1494,6 +1686,63 @@
             {
                 "inputs": [
                     {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "assets",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "name": "assetsAmount",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "name": "assetsRatio",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
                         "internalType": "address",
                         "name": "account",
                         "type": "address"
@@ -1521,6 +1770,19 @@
                 "name": "burn",
                 "outputs": [],
                 "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "championAddress",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
                 "type": "function"
             },
             {
@@ -1649,6 +1911,13 @@
             },
             {
                 "inputs": [],
+                "name": "liquidatePositionAndPullAssets",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
                 "name": "maintainersRegistry",
                 "outputs": [
                     {
@@ -1697,6 +1966,258 @@
                 "type": "function"
             },
             {
+                "inputs": [],
+                "name": "pause",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "paused",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "srcToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "address",
+                                "name": "dstToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "priceUSD",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "amountUSD",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "validUntil",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct SignatureValidator.BuyLimit",
+                        "name": "_msg",
+                        "type": "tuple"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigR",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigS",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "sigV",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "recoverSignatureBuyLimit",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "dstToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "ratio",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct SignatureValidator.BuyOrderRatio",
+                        "name": "_msg",
+                        "type": "tuple"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigR",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigS",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "sigV",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "recoverSignatureBuyOrderRatio",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "srcToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "address",
+                                "name": "dstToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "priceUSD",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "amountSrc",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "validUntil",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct SignatureValidator.SellLimit",
+                        "name": "_msg",
+                        "type": "tuple"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigR",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigS",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "sigV",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "recoverSignatureSellLimit",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "srcToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "address",
+                                "name": "dstToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "amountSrc",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct SignatureValidator.TradeOrder",
+                        "name": "_msg",
+                        "type": "tuple"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigR",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigS",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "sigV",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "recoverSignatureTradeOrder",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_championAddress",
+                        "type": "address"
+                    }
+                ],
+                "name": "setChampionAddress",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
                 "inputs": [
                     {
                         "internalType": "address",
@@ -1727,37 +2248,9 @@
                         "type": "uint256"
                     }
                 ],
-                "name": "swapExactEthForTokens",
-                "outputs": [],
-                "stateMutability": "payable",
-                "type": "function"
-            },
-            {
-                "inputs": [
-                    {
-                        "internalType": "address",
-                        "name": "token",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "amountIn",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "amountOutMin",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "deadline",
-                        "type": "uint256"
-                    }
-                ],
                 "name": "swapExactTokensForEth",
                 "outputs": [],
-                "stateMutability": "nonpayable",
+                "stateMutability": "payable",
                 "type": "function"
             },
             {
@@ -1774,11 +2267,6 @@
                     },
                     {
                         "internalType": "uint256",
-                        "name": "amountIn",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
                         "name": "amountOutMin",
                         "type": "uint256"
                     },
@@ -1790,7 +2278,7 @@
                 ],
                 "name": "swapExactTokensForTokens",
                 "outputs": [],
-                "stateMutability": "nonpayable",
+                "stateMutability": "payable",
                 "type": "function"
             },
             {
@@ -1801,6 +2289,19 @@
                         "internalType": "string",
                         "name": "",
                         "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalBaseAssetAtLaunch",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
                     }
                 ],
                 "stateMutability": "view",
@@ -1869,6 +2370,94 @@
                         "type": "bool"
                     }
                 ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "unpause",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "dstToken",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigR",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigS",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "amountSrc",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "minAmountOut",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "sigV",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "verifyAndExecuteBuyOrderExactAmount",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "dstToken",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigR",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigS",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "ratio",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "amountSrc",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "minAmountOut",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "sigV",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "verifyAndExecuteBuyOrderRatio",
+                "outputs": [],
                 "stateMutability": "nonpayable",
                 "type": "function"
             }
@@ -2251,6 +2840,31 @@
                 "type": "function"
             },
             {
+                "inputs": [],
+                "name": "getPlatformFeeStats",
+                "outputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "uint256",
+                                "name": "feesCollected",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "feesWithdrawn",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct HPoolManager.PlatformFee",
+                        "name": "",
+                        "type": "tuple"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
                 "inputs": [
                     {
                         "internalType": "uint256",
@@ -2442,11 +3056,6 @@
                         "type": "uint256"
                     },
                     {
-                        "internalType": "uint256",
-                        "name": "numberOfTicketsUsed",
-                        "type": "uint256"
-                    },
-                    {
                         "internalType": "bool",
                         "name": "isValidated",
                         "type": "bool"
@@ -2488,7 +3097,7 @@
                 "name": "hordToken",
                 "outputs": [
                     {
-                        "internalType": "address",
+                        "internalType": "contract IERC20",
                         "name": "",
                         "type": "address"
                     }
@@ -2697,6 +3306,24 @@
                 "inputs": [
                     {
                         "internalType": "address",
+                        "name": "_championAddress",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "poolId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "setChampionAddress",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
                         "name": "_maintainersRegistry",
                         "type": "address"
                     }
@@ -2778,6 +3405,19 @@
                     }
                 ],
                 "name": "withdrawDeposit",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "withdrawPlatformFees",
                 "outputs": [],
                 "stateMutability": "nonpayable",
                 "type": "function"
@@ -2898,7 +3538,7 @@
                 "inputs": [
                     {
                         "internalType": "address[]",
-                        "name": "addreses",
+                        "name": "addresses",
                         "type": "address[]"
                     },
                     {
@@ -3019,6 +3659,19 @@
             {
                 "inputs": [],
                 "name": "minStakePerPoolTicket",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "percentBurntFromPublicSubscription",
                 "outputs": [
                     {
                         "internalType": "uint256",
@@ -3241,6 +3894,19 @@
                 "inputs": [
                     {
                         "internalType": "uint256",
+                        "name": "percentBurntFromPublicSubscription_",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "setPercentBurntFromPublicSubscription",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
                         "name": "percentPrecision_",
                         "type": "uint256"
                     }
@@ -3323,6 +3989,11 @@
                         "internalType": "uint256",
                         "name": "hPoolId",
                         "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "championAddress",
+                        "type": "address"
                     }
                 ],
                 "name": "deployHPool",
@@ -3876,6 +4547,375 @@
                 "name": "removeMaintainer",
                 "outputs": [],
                 "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ],
+        "SignatureValidator": [
+            {
+                "inputs": [],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "inputs": [],
+                "name": "BUY_LIMIT_TYPE",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "BUY_LIMIT_TYPEHASH",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "BUY_ORDER_RATIO_TYPE",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "BUY_ORDER_RATIO_TYPEHASH",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "DOMAIN_SEPARATOR",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "EIP712_DOMAIN",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "EIP712_DOMAIN_TYPEHASH",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "SELL_LIMIT_TYPE",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "SELL_LIMIT_TYPEHASH",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "TRADE_ORDER_TYPE",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "TRADE_ORDER_TYPEHASH",
+                "outputs": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "srcToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "address",
+                                "name": "dstToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "priceUSD",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "amountUSD",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "validUntil",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct SignatureValidator.BuyLimit",
+                        "name": "_msg",
+                        "type": "tuple"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigR",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigS",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "sigV",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "recoverSignatureBuyLimit",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "dstToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "ratio",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct SignatureValidator.BuyOrderRatio",
+                        "name": "_msg",
+                        "type": "tuple"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigR",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigS",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "sigV",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "recoverSignatureBuyOrderRatio",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "srcToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "address",
+                                "name": "dstToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "priceUSD",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "amountSrc",
+                                "type": "uint256"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "validUntil",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct SignatureValidator.SellLimit",
+                        "name": "_msg",
+                        "type": "tuple"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigR",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigS",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "sigV",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "recoverSignatureSellLimit",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "srcToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "address",
+                                "name": "dstToken",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "amountSrc",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct SignatureValidator.TradeOrder",
+                        "name": "_msg",
+                        "type": "tuple"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigR",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "sigS",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint8",
+                        "name": "sigV",
+                        "type": "uint8"
+                    }
+                ],
+                "name": "recoverSignatureTradeOrder",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
                 "type": "function"
             }
         ]
