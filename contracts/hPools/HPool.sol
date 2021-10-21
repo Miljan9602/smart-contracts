@@ -87,7 +87,8 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
      */
     function pause()
     public
-    onlyMaintainer //TODO both maintainer and congress should be able to call this
+    onlyHordCongress
+    onlyMaintainer
     {
         _pause();
     }
@@ -98,6 +99,7 @@ contract HPool is HordUpgradable, HPoolToken, SignatureValidator {
      */
     function unpause()
     public
+    onlyHordCongress
     onlyMaintainer
     {
         _unpause();
